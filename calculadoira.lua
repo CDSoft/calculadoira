@@ -84,6 +84,24 @@ hexadecimal, octal and/or binary.
 float mode shows the float value of a 32 bit IEEE float.
 ieee mode shows the IEEE coding of a 32 bit float.
 
+Blocks
+------
+
+A bloc is made of several expressions can be separated
+by `,`. The value of the block is the value of the last
+expression.
+
+e.g. x=1, y=2, x+y defines x=1, y=2 and returns 3
+
+Definitions made in functions are local.
+
+e.g. f(x) = (y=1, x+y) defines a function f that
+returns x+1. y is local to f.
+
+Local definitions can be functions.
+
+e.g. fact(n) = (f(n,p)=(n==1)?p:f(n-1,n*p), f(n,1))
+
 Operator precedence
 -------------------
 
@@ -103,6 +121,7 @@ Logical and                 and
 Logical or                  or xor
 Ternary operator            x ? y : z
 Assignement                 x = y
+Blocks                      expr1, ..., exprn
 
 Credits
 -------
@@ -110,12 +129,25 @@ Credits
 Calculadoira: http://www.cdsoft.fr/calculadoira
 BonaLuna    : http://www.cdsoft.fr/bl
 
-« Calculadoira » means « Calculator » in Occitan.
+"Calculadoira" means "Calculator" in Occitan.
 ]]
 
 if sys.platform == "Windows" then
     os.execute "title Calculadoira"
     os.execute "color f0"
+end
+
+if sys.platform == "Windows" then
+    function readline(prompt)
+        io.write(prompt)
+        return io.read "*l"
+    end
+else
+    function readline(prompt)
+        local line = rl.read(prompt)
+        rl.add(line:gsub("^%s*(.-)%s*$", "%1"))
+        return line
+    end
 end
 
 function pp(t, indent)
@@ -828,35 +860,34 @@ end
 if #arg > 0 then print "" end
 
 function int(val, config)
-	config = config or {}
-	local radix = config.radix or 10
-	local digits = config.digits or nil
-	local groups = config.groups or 3
-	local val = math.floor(val)
-	local s = ""
-	if radix == 10 and val < 0 then
-		n = math.abs(val)
-	else
-		n = val
-	end
-	local nb_digits = 0
-	n = n % 2^32
-	while (digits and nb_digits<digits) or (not digits and n ~= 0) do
-		local d = n%radix
-		n = (n-d)/radix
-		s = string.sub("0123456789ABCDEF", d+1, d+1)..s
-		nb_digits = nb_digits + 1
-		if nb_digits % groups == 0 then s = " "..s end
-	end
-	s = string.gsub(s, "^ ", "")
-	if s == "" then s = "0" end
-	if radix == 10 and val < 0 then s = "-"..s end
-	return s
+    config = config or {}
+    local radix = config.radix or 10
+    local digits = config.digits or nil
+    local groups = config.groups or 3
+    local val = math.floor(val)
+    local s = ""
+    if radix == 10 and val < 0 then
+        n = math.abs(val)
+    else
+        n = val
+    end
+    local nb_digits = 0
+    n = n % 2^32
+    while (digits and nb_digits<digits) or (not digits and n ~= 0) do
+        local d = n%radix
+        n = (n-d)/radix
+        s = string.sub("0123456789ABCDEF", d+1, d+1)..s
+        nb_digits = nb_digits + 1
+        if nb_digits % groups == 0 then s = " "..s end
+    end
+    s = string.gsub(s, "^ ", "")
+    if s == "" then s = "0" end
+    if radix == 10 and val < 0 then s = "-"..s end
+    return s
 end
 
 while true do
-    io.write(": ")
-    local line = io.read "*l"
+    local line = readline(": ")
     line = line:gsub("%s+", "")
     if #line > 0 then
         local expr = calc(line)
@@ -870,9 +901,9 @@ while true do
             elseif val ~= nil then
                 print("=", val)
                 if dec then print("dec", int(val)) end
-				if hex then print("hex", int(val, {radix=16, digits=8,  groups=4})) end
-				if oct then print("oct", int(val, {radix=8,  digits=nil, groups=999})) end
-				if bin then print("bin", int(val, {radix=2,  digits=32, groups=4})) end
+                if hex then print("hex", int(val, {radix=16, digits=8,  groups=4})) end
+                if oct then print("oct", int(val, {radix=8,  digits=nil, groups=999})) end
+                if bin then print("bin", int(val, {radix=2,  digits=32, groups=4})) end
                 if float then print("float", ieee2float(val)) end
                 if ieee then print("ieee", "0x"..int(float2ieee(val), {radix=16, digits=8, groups=8})) end
             end

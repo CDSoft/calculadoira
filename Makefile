@@ -18,7 +18,7 @@
 # along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
 AHK_URL = http://www.autohotkey.com/download/AutoHotkey.zip
-BL_URL  = http://www.cdsoft.fr/bl/bonaluna-0.5.0.tgz
+BL_URL  = http://www.cdsoft.fr/bl/bonaluna-0.6.0.tgz
 BL      = bl.exe
 RESHACK = http://delphi.icm.edu.pl/ftp/tools/ResHack.zip
 
