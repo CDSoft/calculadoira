@@ -1,9 +1,6 @@
 #!/usr/bin/env bl
 
---[[ TODO:
-    - debug : affichage de l'AST (méthode dis)
-    - calcul rationel
---]]
+--__debug__ = true
 
 license = [[
 Calculadoira
@@ -44,7 +41,7 @@ help = [[
 +---------------------------------------------------------------------+
 ]]
 
-fullhelp = [[
+longhelp = [[
 Math functions (Lua module)
 ---------------------------
 
@@ -87,9 +84,8 @@ ieee mode shows the IEEE coding of a 32 bit float.
 Blocks
 ------
 
-A bloc is made of several expressions can be separated
-by `,`. The value of the block is the value of the last
-expression.
+A bloc is made of several expressions separated by `,`.
+The value of the block is the value of the last expression.
 
 e.g. x=1, y=2, x+y defines x=1, y=2 and returns 3
 
@@ -108,7 +104,7 @@ Operator precedence
 From highest to lowest precedence:
 
 Operator family             Syntax
-=========================== ===============
+=========================== =================
 Precedence overloading      (...)
 Function evaluation         f(...)
 Exponentiation              x**y
@@ -164,6 +160,26 @@ function pp(t, indent)
     end
 end
 
+function Mode()
+    local self = {}
+    function self.set(...)
+        for _, mode in ipairs({...}) do
+            self[mode] = true
+        end
+    end
+    function self.toggle(mode)
+        self[mode] = not self[mode]
+    end
+    function self.clear()
+        for k,v in pairs(self) do
+            if v == true then self[k] = false end
+        end
+    end
+    return self
+end
+
+mode = Mode()
+
 function Virtual(obj, method)
     return function()
         error(string.format("%s.%s not implemented", obj.class, method))
@@ -194,11 +210,11 @@ function Help()
     return self
 end
 
-function FullHelp()
-    local self = Expr "FullHelp"
+function LongHelp()
+    local self = Expr "LongHelp"
     function self.eval()
         print(help)
-        print(fullhelp)
+        print(longhelp)
     end
     return self
 end
@@ -238,10 +254,12 @@ function Object(val)
 end
 
 function float2ieee(x)
+    if running then mode.set("float", "ieee") end
     return (struct.unpack("I4", struct.pack("f", x)))
 end
 
 function ieee2float(x)
+    if running then mode.set("float", "ieee") end
     return (struct.unpack("f", struct.pack("I4", x)))
 end
 
@@ -250,20 +268,24 @@ nan = ieee2float(0x7FC00000)
 function Number(n)
     local self = Expr "Number"
     local digits, val
+    local m = nil
     digits = n:match("^0x(.*)") or n:match("^h(.*)") or n:match("(.*)h$")
-    if digits then val = tonumber(digits, 16)
+    if digits then val = tonumber(digits, 16) m="hex"
     else
         digits = n:match("^o(.*)") or n:match("(.*)o$")
-        if digits then val = tonumber(digits, 8)
+        if digits then val = tonumber(digits, 8) m="oct"
         else
             digits = n:match("^b(.*)") or n:match("(.*)b$")
-            if digits then val = tonumber(digits, 2)
+            if digits then val = tonumber(digits, 2) m="bin"
             else val = tonumber(n)
             end
         end
     end
     function self.dis() return n end
-    function self.eval() return val end
+    function self.eval()
+        mode.set(m)
+        return val
+    end
     return self
 end
 
@@ -297,7 +319,6 @@ end
 
 function Function(args, expr)
     local self = Expr "Function"
-    function self.dis() return args.dis().."="..expr.dis() end
     function self.dis()
         if #args > 0 then
             return args.dis().."="..expr.dis()
@@ -316,7 +337,6 @@ function Function(args, expr)
         if #xs > #args then error("Too many arguments") end
         if #xs < #args then error("Not enough arguments") end
         for i, arg in ipairs(args) do
-            --print("set arg", arg.name, xs[i].dis())
             fenv.set(arg.name, xs[i].eval(env))
         end
         return expr.eval(fenv)
@@ -403,7 +423,7 @@ builtins = {
     [1] = {
         ["+"] = B(function(x) return x end),
         ["-"] = B(function(x) return -x end),
-        ["~"] = B(function(x) return bit32.bnot(x) end),
+        ["~"] = B(function(x) mode.set("hex", "bin") return bit32.bnot(x) end),
         ["not"] = B(function(x) return not x end),
         ["abs"] = B(math.abs),
         ["acos"] = B(math.acos),
@@ -435,14 +455,14 @@ builtins = {
     [2] = {
         ["+"] = B(function(x, y) return x + y end),
         ["-"] = B(function(x, y) return x - y end),
-        ["|"] = B(function(x, y) return bit32.bor(x, y) end),
-        ["^"] = B(function(x, y) return bit32.bxor(x, y) end),
+        ["|"] = B(function(x, y) mode.set("hex", "bin") return bit32.bor(x, y) end),
+        ["^"] = B(function(x, y) mode.set("hex", "bin") return bit32.bxor(x, y) end),
         ["*"] = B(function(x, y) return x * y end),
         ["/"] = B(function(x, y) return x / y end),
         ["%"] = B(function(x, y) return x % y end),
-        ["&"] = B(function(x, y) return bit32.band(x, y) end),
-        ["<<"] = B(function(x, y) return bit32.lshift(x, y) end),
-        [">>"] = B(function(x, y) return bit32.rshift(x, y) end),
+        ["&"] = B(function(x, y) mode.set("hex", "bin") return bit32.band(x, y) end),
+        ["<<"] = B(function(x, y) mode.set("hex", "bin") return bit32.lshift(x, y) end),
+        [">>"] = B(function(x, y) mode.set("hex", "bin") return bit32.rshift(x, y) end),
         ["**"] = B(function(x, y) return x ^ y end),
         ["or"] = Or(),
         ["xor"] = B(function(x, y) return x and not y or y and not x end),
@@ -491,21 +511,12 @@ function F(f, ...)
             or (builtins[#xs] and builtins[#xs][f])
             or error("Unknown function: "..f.."/"..#xs)
         )
-        --print("call", f)
         return func.call(env, table.unpack(xs))
     end
     return self
 end
 
 function Assign(ident, expr)
-    --[[ pour les expressions du type f(x) = y=x, y+1
-            Assign("f", Eval({"x"},
-                Block(
-                    Assign("y", Ident("x"),
-                    F("+", Ident("y"), Number("1"))
-                )
-            )
-    --]]
     local self = Expr "Assign"
     function self.dis() return ident.name.."="..expr.dis() end
     function self.eval(env)
@@ -537,9 +548,15 @@ end
 
 function Toggle(k)
     local self = Expr "Toggle"
-    function self.eval(env)
-        _G[k] = not _G[k]
-    end
+    function self.dis() return "Toggle("..k..")" end
+    function self.eval(env) mode.toggle(k) end
+    return self
+end
+
+function Set(k)
+    local self = Expr "Set"
+    function self.dis() return "Set("..k..")" end
+    function self.eval(env) mode.set(k) end
     return self
 end
 
@@ -700,8 +717,8 @@ do
             andterm -> notop andterm
             andterm -> relation
 
-            relation -> arith srelation
-            srelation -> relop arith srelation | null
+            relation -> arith srelation | arith
+            srelation -> relop arith srelation | relop arith
 
             arith -> term sarith
             sarith -> addop term sarith | null
@@ -738,7 +755,7 @@ do
 
     calc = parser(Alt{
         T("bye", Quit), T("exit", Quit), T("quit", Quit),
-        T("%?", Help), T("help", FullHelp),
+        T("%?", Help), T("help", LongHelp),
         T("license", License),
         T("dec", Toggle), T("hex", Toggle), T("oct", Toggle), T("bin", Toggle),
         T("float", Toggle), T("ieee", Toggle),
@@ -750,6 +767,10 @@ do
     sblock(Seq({T(",", _B_), stat, sblock}, _fyg))
     sblock(null)
 
+    stat(Alt{
+        T("dec", Set), T("hex", Set), T("oct", Set), T("bin", Set),
+        T("float", Set), T("ieee", Set),
+    })
     stat(Seq({proto, T"=", ternary},
         function(f, _, expr)
             return Assign(f.name, Function(f.args, expr))
@@ -793,10 +814,12 @@ do
     andterm(Seq({notop, andterm}, fx))
     andterm(relation)
 
+    -- relation x<y<z <=> x<y and y<z
     local srelation = Rule()
     relation(Seq({arith, srelation}, xf))
-    srelation(Seq({relop, arith, srelation}, _fyg))
-    srelation(null)
+    relation(arith)
+    srelation(Seq({relop, arith, srelation}, function(f, y, g) return function(x) return F("and", f(x,y), g(y)) end end))
+    srelation(Seq({relop, arith}, function(f, y) return function(x) return f(x,y) end end))
 
     local sarith = Rule()
     arith(Seq({term, sarith}, xf))
@@ -825,10 +848,7 @@ do
 end
 
 local env = Env()
-
---x = calc "f(x) = 0, f+1"
---print(x.dis(), "=", x.eval(env))
---os.exit()
+running = true
 
 print(help)
 
@@ -837,25 +857,26 @@ for i = 1, #arg do
     local f = io.open(arg[i])
     if not f then
         print("! can not open "..arg[i])
-    end
-    repeat
-        local expr = ""
-        local line
+    else
         repeat
-            line = f:read "*l"
-            if line then expr = expr..line:gsub("\\%s*$", "") end
-        until not line or not line:match("\\%s*$")
-        expr = expr:gsub("^%s+", "")
-        expr = expr:gsub("%s+$", "")
-        if not expr:match("^%-%-") and not expr:match("^%s*$") then
-            expr = calc(expr)
-            if not expr then
-                print("!", "syntax error")
-            else
-                expr.eval(env)
+            local expr = ""
+            local line
+            repeat
+                line = f:read "*l"
+                if line then expr = expr..line:gsub("\\%s*$", "") end
+            until not line or not line:match("\\%s*$")
+            expr = expr:gsub("^%s+", "")
+            expr = expr:gsub("%s+$", "")
+            if not expr:match("^%-%-") and not expr:match("^%s*$") then
+                expr = calc(expr)
+                if not expr then
+                    print("!", "syntax error")
+                else
+                    expr.eval(env)
+                end
             end
-        end
-    until not line
+        until not line
+    end
 end
 if #arg > 0 then print "" end
 
@@ -864,7 +885,8 @@ function int(val, config)
     local radix = config.radix or 10
     local digits = config.digits or nil
     local groups = config.groups or 3
-    local val = math.floor(val)
+    local isnumber, val = pcall(math.floor, val)
+    if not isnumber then return "" end
     local s = ""
     if radix == 10 and val < 0 then
         n = math.abs(val)
@@ -894,18 +916,19 @@ while true do
         if not expr then
             print("!", "syntax error")
         else
+            if __debug__ then print("debug", expr.dis()) end
             local ok, val = pcall(expr.eval, env)
             if not ok then
                 val = val:gsub(".*:%d+:", "")
                 print("!", val)
             elseif val ~= nil then
                 print("=", val)
-                if dec then print("dec", int(val)) end
-                if hex then print("hex", int(val, {radix=16, digits=8,  groups=4})) end
-                if oct then print("oct", int(val, {radix=8,  digits=nil, groups=999})) end
-                if bin then print("bin", int(val, {radix=2,  digits=32, groups=4})) end
-                if float then print("float", ieee2float(val)) end
-                if ieee then print("ieee", "0x"..int(float2ieee(val), {radix=16, digits=8, groups=8})) end
+                if mode.dec then print("dec", int(val)) end
+                if mode.hex then print("hex", int(val, {radix=16, digits=8,  groups=4})) end
+                if mode.oct then print("oct", int(val, {radix=8,  digits=nil, groups=999})) end
+                if mode.bin then print("bin", int(val, {radix=2,  digits=32, groups=4})) end
+                if mode.float then print("float", ieee2float(val)) end
+                if mode.ieee then print("ieee", "0x"..int(float2ieee(val), {radix=16, digits=8, groups=8})) end
             end
         end
     end
