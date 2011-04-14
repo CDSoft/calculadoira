@@ -163,11 +163,13 @@ end
 function Mode()
     local self = {}
     function self.set(...)
+        if not running then return end
         for _, mode in ipairs({...}) do
             self[mode] = true
         end
     end
     function self.toggle(mode)
+        if not running then return end
         self[mode] = not self[mode]
     end
     function self.clear()
@@ -191,6 +193,13 @@ function Expr(class)
     self.eval = Virtual(self, "eval")
     self.call = Virtual(self, "call")
     self.dis = Virtual(self, "dis")
+    function self.evaluate(env)
+        running = true
+        local ok, val = pcall(self.eval, env)
+        running = false
+        if not ok then val = val:gsub(".*:%d+:", "") end
+        return ok, val
+    end
     return self
 end
 
@@ -231,12 +240,7 @@ function Env(up)
     local self = {}
     local vars = {}
     function self.set(name, value)
-        if type(value) == "number"
-        or type(value) == "boolean"
-        or value == nil then
-            value = Object(value)
-        end
-        vars[name] = value
+        vars[name] = Object(value)
     end
     function self.get(name)
         return vars[name] or (up and up.get(name))
@@ -248,18 +252,22 @@ function Env(up)
 end
 
 function Object(val)
-    local self = Expr "Object"
-    function self.eval() return val end
-    return self
+    if type(val) == "table" and type(val.eval) == "function" then
+        return val
+    else
+        local self = Expr "Object"
+        function self.eval() return val end
+        return self
+    end
 end
 
 function float2ieee(x)
-    if running then mode.set("float", "ieee") end
+    mode.set("float", "ieee")
     return (struct.unpack("I4", struct.pack("f", x)))
 end
 
 function ieee2float(x)
-    if running then mode.set("float", "ieee") end
+    mode.set("float", "ieee")
     return (struct.unpack("f", struct.pack("I4", x)))
 end
 
@@ -848,7 +856,6 @@ do
 end
 
 local env = Env()
-running = true
 
 print(help)
 
@@ -917,9 +924,8 @@ while true do
             print("!", "syntax error")
         else
             if __debug__ then print("debug", expr.dis()) end
-            local ok, val = pcall(expr.eval, env)
+            local ok, val = expr.evaluate(env)
             if not ok then
-                val = val:gsub(".*:%d+:", "")
                 print("!", val)
             elseif val ~= nil then
                 print("=", val)
