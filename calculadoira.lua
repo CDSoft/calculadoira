@@ -49,7 +49,7 @@ See http://www.lua.org/manual/5.1/manual.html#5.6
 
 General functions:
     abs, ceil, floor
-    exp, log, log10
+    exp, log, log10, log2, ln
     fmod, int, fract (1)
     frexp, ldexp
     min, max,
@@ -445,7 +445,9 @@ builtins = {
         ["floor"] = B(math.floor),
         ["frexp"] = B(math.frexp),
         ["log"] = B(math.log),
-        ["log10"] = B(math.log10),
+        ["ln"] = B(math.log),
+        ["log10"] = B(function(x) return math.log(x, 10) end),
+        ["log2"] = B(function(x) return math.log(x, 2) end),
         ["int"] = B(function(x) local i, f = math.modf(x); return i end),
         ["fract"] = B(function(x) local i, f = math.modf(x); return f end),
         ["rad"] = B(math.rad),
@@ -485,6 +487,7 @@ builtins = {
         ["atan2"] = B(math.atan2),
         ["fmod"] = B(math.fmod),
         ["ldexp"] = B(math.ldexp),
+        ["log"] = B(math.log),
         ["max"] = B(math.max),
         ["min"] = B(math.min),
         ["pow"] = B(math.pow),
