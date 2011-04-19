@@ -2,6 +2,8 @@
 
 --__debug__ = true
 
+version = "1.2.0"
+
 license = [[
 Calculadoira
 Copyright (C) 2011 Christophe Delord
@@ -21,25 +23,25 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-help = [[
+help = string.gsub([[
 +---------------------------------------------------------------------+
-|                       C A L C U L A D O I R A                       |
+|      C A L C U L A D O I R A       | X.Y.Z | cdsoft.fr/calculadoira |
 |---------------------------------------------------------------------|
 | Modes:                          | Numbers:                          |
-|     hex oct bin float ieee      |     binary: b... or ...b          |
+|     hex oct bin float ieee str  |     binary: b... or ...b          |
 |---------------------------------|     octal : o... or ...o          |
 | Variable and function:          |     hexa  : h... or ...h or 0x... |
 |     variable = expression       |     float : 1.2e-3                |
-|     function(x, y) = expression |-----------------------------------|
-| Multiple statements:            | Operators:                        |
-|     expr1, ..., exprn           |     or xor and not                |
-|---------------------------------|     < <= > >= == !=               |
-| Builtin functions:              |     cond?expr:expr                |
-|     see Lua's math module       |     + - * / % ** | ^ & >> << ~    |
-|---------------------------------------------------------------------|
-| Commands: ? help bye license    | http://www.cdsoft.fr/calculadoira |
+|     function(x, y) = expression | Strings: "abcd" or 'abcd'         |
+| Multiple statements:            | Booleans: true or false           |
+|     expr1, ..., exprn           |-----------------------------------|
+|---------------------------------| Operators:                        |
+| Builtin functions:              |     or xor and not                |
+|     see Lua's math module       |     < <= > >= == !=               |
+|---------------------------------|     cond?expr:expr                |
+| Commands: ? help bye license    |     + - * / % ** | ^ & >> << ~    |
 +---------------------------------------------------------------------+
-]]
+]], "X.Y.Z", version)
 
 longhelp = [[
 Math functions (Lua module)
@@ -80,6 +82,7 @@ When enabled, the integer result is displayed in
 hexadecimal, octal and/or binary.
 float mode shows the float value of a 32 bit IEEE float.
 ieee mode shows the IEEE coding of a 32 bit float.
+str mode show the ASCII representation of 1 to 4 chars.
 
 Blocks
 ------
@@ -263,12 +266,16 @@ end
 
 function float2ieee(x)
     mode.set("float", "ieee")
-    return (struct.unpack("I4", struct.pack("f", x)))
+    if type(x) == 'number' then
+        return (struct.unpack("I4", struct.pack("f", x)))
+    end
 end
 
 function ieee2float(x)
     mode.set("float", "ieee")
-    return (struct.unpack("f", struct.pack("I4", x)))
+    if type(x) == 'number' then
+        return (struct.unpack("f", struct.pack("I4", x)))
+    end
 end
 
 nan = ieee2float(0x7FC00000)
@@ -304,6 +311,21 @@ function Bool(b)
     if b == "false" then val = false end
     function self.dis() return b end
     function self.eval() return val end
+    return self
+end
+
+function Str(s)
+    local self = Expr "Str"
+    s = string.sub(s, 2, -2)
+    assert(1 <= #s and #s <=4, "Only 8 to 32 bit strings are supported")
+    local bytes = {string.byte(s, 1, #s)}
+    local val = 0
+    for i = 1, #bytes do val = val*256 + bytes[i] end
+    function self.dis() return string.format("'%s'", s) end
+    function self.eval()
+        mode.set("str", "hex")
+        return val
+    end
     return self
 end
 
@@ -662,6 +684,9 @@ do
     bool(T("true", Bool))
     bool(T("false", Bool))
     bool(T("nil", Bool))
+    local str = Rule()
+    str(T([["[^"]+"]], Str))
+    str(T([['[^']+']], Str))
 
     local addop = Alt{
         T("%+", _F_),
@@ -743,7 +768,7 @@ do
             spow -> powop fact | null
 
             atom -> '(' block ')'
-            atom -> number | bool | ident
+            atom -> number | bool | str | ident
             atom -> eval
 
             proto -> ident fargs
@@ -852,6 +877,7 @@ do
 
     atom(number)
     atom(bool)
+    atom(str)
     atom(ident)
     atom(Seq({T"%(", block, T"%)"}, function(_, x, _) return x end))
     atom(eval)
@@ -895,6 +921,7 @@ function int(val, config)
     local radix = config.radix or 10
     local digits = config.digits or nil
     local groups = config.groups or 3
+    local format = config.format or "%s"
     local isnumber, val = pcall(math.floor, val)
     if not isnumber then return "" end
     local s = ""
@@ -915,12 +942,24 @@ function int(val, config)
     s = string.gsub(s, "^ ", "")
     if s == "" then s = "0" end
     if radix == 10 and val < 0 then s = "-"..s end
-    return s
+    return string.format(format, s)
+end
+
+function str(val)
+    local isnumber, val = pcall(math.floor, val)
+    if not isnumber then return "" end
+    local s = ""
+    n = val % 2^32
+    while n > 0 do
+        s = string.char(n%256)..s
+        n = bit32.rshift(n, 8)
+    end
+    return string.format("%q", s)
 end
 
 while true do
     local line = readline(": ")
-    line = line:gsub("%s+", "")
+    line = line:gsub("^%s+", ""):gsub("%s+$", "")
     if #line > 0 then
         local expr = calc(line)
         if not expr then
@@ -937,7 +976,8 @@ while true do
                 if mode.oct then print("oct", int(val, {radix=8,  digits=nil, groups=999})) end
                 if mode.bin then print("bin", int(val, {radix=2,  digits=32, groups=4})) end
                 if mode.float then print("float", ieee2float(val)) end
-                if mode.ieee then print("ieee", "0x"..int(float2ieee(val), {radix=16, digits=8, groups=8})) end
+                if mode.ieee then print("ieee", int(float2ieee(val), {radix=16, digits=8, groups=8, format="0x%s"})) end
+                if mode.str then print("str", str(val)) end
             end
         end
     end
