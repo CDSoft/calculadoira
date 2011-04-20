@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "1.2.1"
+version = "1.2.2"
 
 license = [[
 Calculadoira
@@ -317,7 +317,6 @@ end
 function Str(s)
     local self = Expr "Str"
     s = string.sub(s, 2, -2)
-    assert(1 <= #s and #s <=4, "Only 8 to 32 bit strings are supported")
     local bytes = {string.byte(s, 1, #s)}
     local val = 0
     for i = 1, #bytes do val = val*256 + bytes[i] end
@@ -685,8 +684,8 @@ do
     bool(T("false", Bool))
     bool(T("nil", Bool))
     local str = Rule()
-    str(T([["[^"]+"]], Str))
-    str(T([['[^']+']], Str))
+    str(T([["[^"][^"]?[^"]?[^"]?"]], Str))
+    str(T([['[^'][^']?[^']?[^']?']], Str))
 
     local addop = Alt{
         T("%+", _F_),
@@ -795,6 +794,7 @@ do
         T("license", License),
         T("dec", Toggle), T("hex", Toggle), T("oct", Toggle), T("bin", Toggle),
         T("float", Toggle), T("ieee", Toggle),
+        T("str", Toggle),
         block
     })
 
@@ -806,6 +806,7 @@ do
     stat(Alt{
         T("dec", Set), T("hex", Set), T("oct", Set), T("bin", Set),
         T("float", Set), T("ieee", Set),
+        T("str", Set),
     })
     stat(Seq({proto, T"=", ternary},
         function(f, _, expr)
@@ -901,8 +902,7 @@ for i = 1, #arg do
                 line = f:read "*l"
                 if line then expr = expr..line:gsub("\\%s*$", "") end
             until not line or not line:match("\\%s*$")
-            expr = expr:gsub("^%s+", "")
-            expr = expr:gsub("%s+$", "")
+            expr = expr:gsub("^%s+", ""):gsub("%s+$", "")
             if not expr:match("^%-%-") and not expr:match("^%s*$") then
                 expr = calc(expr)
                 if not expr then
