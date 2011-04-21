@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "1.3.0"
+version = "1.3.1"
 
 license = [[
 Calculadoira
@@ -357,7 +357,7 @@ function Function(args, expr)
     end
     function self.eval(env)
         if #args == 0 then
-            return expr.eval(env)
+            return expr.eval(env.push())
         end
     end
     function self.call(env, ...)
@@ -912,8 +912,7 @@ function ConfigFile(name)
                 line = f:read "*l"
                 if line then expr = expr..line:gsub("\\%s*$", "") end
             until not line or not line:match("\\%s*$")
-            expr = expr:gsub("^%s+", ""):gsub("%s+$", "")
-            if not expr:match("^%-%-") and not expr:match("^%s*$") then
+            if not expr:match("^%s*%-%-") and not expr:match("^%s*$") then
                 expr = calc(expr)
                 if not expr then
                     print("!", "syntax error")
@@ -953,6 +952,7 @@ function int(val, config)
     local isnumber, val = pcall(math.floor, val)
     if not isnumber then return "" end
     local s = ""
+    local n
     if radix == 10 and val < 0 then
         n = math.abs(val)
     else
@@ -977,7 +977,7 @@ function str(val)
     local isnumber, val = pcall(math.floor, val)
     if not isnumber then return "" end
     local s = ""
-    n = val % 2^32
+    local n = val % 2^32
     while n > 0 do
         s = string.char(n%256)..s
         n = bit32.rshift(n, 8)
@@ -996,8 +996,7 @@ config.run(env)
 while true do
     local line = readline(": ")
     config.run(env) -- autoreload
-    line = line:gsub("^%s+", ""):gsub("%s+$", "")
-    if #line > 0 then
+    if not line:match("^%s*$") then
         local expr = calc(line)
         if not expr then
             print("!", "syntax error")
