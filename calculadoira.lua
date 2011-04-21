@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "1.2.2"
+version = "1.3.0"
 
 license = [[
 Calculadoira
@@ -885,16 +885,26 @@ do
 
 end
 
-local env = Env()
-
-print(help)
-
-for i = 1, #arg do
-    print("loading "..arg[i])
-    local f = io.open(arg[i])
-    if not f then
-        print("! can not open "..arg[i])
-    else
+function ConfigFile(name)
+    local self = {}
+    local mtime = 0
+    function self.run(env)
+        local st = fs.stat(name)
+        if st == nil then
+            print("! can not find "..name)
+            return
+        end
+        if st.mtime == mtime then
+            -- file already loaded
+            return
+        end
+        mtime = st.mtime
+        local f = io.open(name)
+        if not f then
+            print("! can not open "..name)
+            return
+        end
+        print("loading "..name)
         repeat
             local expr = ""
             local line
@@ -908,13 +918,31 @@ for i = 1, #arg do
                 if not expr then
                     print("!", "syntax error")
                 else
-                    expr.eval(env)
+                    local ok, val = expr.evaluate(env)
+                    if not ok then
+                        print("!", val)
+                    end
                 end
             end
         until not line
     end
+    return self
 end
-if #arg > 0 then print "" end
+
+function Config()
+    local self = {}
+    local configs = {}
+    function self.add(name)
+        table.insert(configs, ConfigFile(name))
+    end
+    function self.run(env)
+        for i = 1, #configs do
+            configs[i].run(env)
+        end
+        if #configs > 0 then print "" end
+    end
+    return self
+end
 
 function int(val, config)
     config = config or {}
@@ -957,8 +985,17 @@ function str(val)
     return string.format("%q", s)
 end
 
+print(help)
+
+local env = Env()
+
+local config = Config()
+for i = 1, #arg do config.add(arg[i]) end
+config.run(env)
+
 while true do
     local line = readline(": ")
+    config.run(env) -- autoreload
     line = line:gsub("^%s+", ""):gsub("%s+$", "")
     if #line > 0 then
         local expr = calc(line)
