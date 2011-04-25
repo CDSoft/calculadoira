@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "1.3.1"
+version = "1.4.0"
 
 license = [[
 Calculadoira
@@ -37,45 +37,77 @@ help = string.gsub([[
 |     expr1, ..., exprn           |-----------------------------------|
 |---------------------------------| Operators:                        |
 | Builtin functions:              |     or xor and not                |
-|     see Lua's math module       |     < <= > >= == !=               |
+|     see help                    |     < <= > >= == !=               |
 |---------------------------------|     cond?expr:expr                |
-| Commands: ? help bye license    |     + - * / % ** | ^ & >> << ~    |
+| Commands: ? help license bye    |     + - * / % ** | ^ & >> << ~    |
 +---------------------------------------------------------------------+
 ]], "X.Y.Z", version)
 
 longhelp = [[
-Math functions (Lua module)
----------------------------
 
-See http://www.lua.org/manual/5.1/manual.html#5.6
+Constants                   Value
+=========================== ===============================================
 
-General functions:
-    abs, ceil, floor
-    exp, log, log10, log2, ln
-    fmod, int, fract (1)
-    frexp, ldexp
-    min, max,
-    pow
-    random, randomseed
-    sqr, sqrt
+huge, inf                   +oo
+nan                         Not a Number
+pi                          3.1415926535898
+e                           2.718281828459
 
-Trigonometry:
-    sin, asin, sinh
-    cos, acos, cosh
-    tan, atan, atan2, tanh
-    deg, rad
+Operators / functions       Description
+=========================== ===============================================
 
-32 bit IEEE floats:
-    float2ieee, ieee2float
++x, -x
+x + y, x - y                sum, difference
+x * y, x / y, x % y         product, division, modulo
+x ** y                      x to the power y
 
-Constants:
-    huge, inf
-    pi, e
+~x                          bitwise not
+x | y, x ^ y, x & y         bitwise or, xor, and
+x << n, x >> n              x left or right shifted by n bits
 
-(1) int and fract return modf results
+not x                       boolean not
+x or y, x xor y, x and y    boolean or, xor, and
+x < y, x <= y               comparisons
+x > y, x >= y
+x == y, x != y, x ~= y
+
+abs(x)                      the absolute value of x
+ceil(x)                     the smallest integer larger than or equal to x
+floor(x)                    the largest integer smaller than or equal to x
+mantissa(x)                 m such that x = m2e, |m| is in [0.5, 1[
+exponent(x)                 e such that x = m2e, e is an integer
+int(x)                      the integral part of x
+fract(x)                    the fractional part of x
+fmod(x, y)                  the remainder of the division of x by y
+ldexp(m, e)                 m*2**e (e should be an integer)
+pow(x, y)                   x to the power y
+
+sqr(x)                      the square of x (x**2)
+sqrt(x)                     the square root of x (x**0.5)
+
+cos(x), acos(x), cosh(x)    trigonometric functions
+sin(x), asin(x), sinh(x)
+tan(x), atan(x), tanh(x)
+atan2(y, x)                 the arc tangent of y/x (in radians)
+deg(x)                      the angle x (given in radians) in degrees
+rad(x)                      the angle x (given in degrees) in radians
+
+exp(x)                      e**x
+log(x), ln(x)               logarithm of x in base e
+log10(x), log2(x)           logarithm of x in base 10, 2
+log(x, b)                   logarithm of x in base b
+min(...), max(...)          the minimum / maximum value among its arguments
+
+random()                    random number in [0, 1[
+random(m)                   random integer in [1, m]
+random(m, n)                random integer in [m, n]
+randomseed(x)               x as the "seed" for the pseudo-random generator
+
+float2ieee(x)               the IEEE 754 representation of x
+ieee2float(n)               the float value of the IEEE 754 integer value n
 
 Display modes
--------------
+=============
 
 hex, oct and bin commands change the display mode.
 When enabled, the integer result is displayed in
@@ -85,9 +117,9 @@ ieee mode shows the IEEE coding of a 32 bit float.
 str mode show the ASCII representation of 1 to 4 chars.
 
 Blocks
-------
+======
 
-A bloc is made of several expressions separated by `,`.
+A block is made of several expressions separated by `,` or ` `.
 The value of the block is the value of the last expression.
 
 e.g. x=1, y=2, x+y defines x=1, y=2 and returns 3
@@ -102,7 +134,7 @@ Local definitions can be functions.
 e.g. fact(n) = (f(n,p)=(n==1)?p:f(n-1,n*p), f(n,1))
 
 Operator precedence
--------------------
+===================
 
 From highest to lowest precedence:
 
@@ -123,7 +155,7 @@ Assignement                 x = y
 Blocks                      expr1, ..., exprn
 
 Credits
--------
+=======
 
 Calculadoira: http://www.cdsoft.fr/calculadoira
 BonaLuna    : http://www.cdsoft.fr/bl
@@ -464,13 +496,14 @@ builtins = {
         ["deg"] = B(math.deg),
         ["exp"] = B(math.exp),
         ["floor"] = B(math.floor),
-        ["frexp"] = B(math.frexp),
+        ["mantissa"] = B(function(x) local m, e = math.frexp(x) return m end),
+        ["exponent"] = B(function(x) local m, e = math.frexp(x) return e end),
         ["log"] = B(math.log),
         ["ln"] = B(math.log),
         ["log10"] = B(function(x) return math.log(x, 10) end),
         ["log2"] = B(function(x) return math.log(x, 2) end),
-        ["int"] = B(function(x) local i, f = math.modf(x); return i end),
-        ["fract"] = B(function(x) local i, f = math.modf(x); return f end),
+        ["int"] = B(function(x) local i, f = math.modf(x) return i end),
+        ["fract"] = B(function(x) local i, f = math.modf(x) return f end),
         ["rad"] = B(math.rad),
         ["random"] = B(math.random),
         ["randomseed"] = B(math.randomseed),
@@ -735,7 +768,7 @@ do
             S -> block
 
             block -> stat sblock
-            sblock -> ',' stat sblock | null
+            sblock -> ',?' stat sblock | null
 
             stat -> proto '=' ternary
             stat -> ternary
@@ -800,7 +833,7 @@ do
 
     local sblock = Rule()
     block(Seq({stat, sblock}, xf))
-    sblock(Seq({T(",", _B_), stat, sblock}, _fyg))
+    sblock(Seq({T(",?", _B_), stat, sblock}, _fyg))
     sblock(null)
 
     stat(Alt{
@@ -905,33 +938,25 @@ function ConfigFile(name)
             return
         end
         print("loading "..name)
-        repeat
-            local expr = ""
-            local line
-            repeat
-                line = f:read "*l"
-                if line then expr = expr..line:gsub("\\%s*$", "") end
-            until not line or not line:match("\\%s*$")
-            if not expr:match("^%s*%-%-") and not expr:match("^%s*$") then
-                expr = calc(expr)
-                if not expr then
-                    print("!", "syntax error")
-                else
-                    local ok, val = expr.evaluate(env)
-                    if not ok then
-                        print("!", val)
-                    end
-                end
+        local expr = f:read "*a"
+        f:close()
+        expr = calc(expr:gsub("[;#][^\r\n]*", ""))
+        if not expr then
+            print("!", "syntax error")
+        else
+            local ok, val = expr.evaluate(env)
+            if not ok then
+                print("!", val)
             end
-        until not line
+        end
     end
     return self
 end
 
-function Config()
+function Config(...)
     local self = {}
     local configs = {}
-    function self.add(name)
+    for i, name in ipairs(...) do
         table.insert(configs, ConfigFile(name))
     end
     function self.run(env)
@@ -989,8 +1014,7 @@ print(help)
 
 local env = Env()
 
-local config = Config()
-for i = 1, #arg do config.add(arg[i]) end
+local config = Config(arg)
 config.run(env)
 
 while true do

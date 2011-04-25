@@ -21,13 +21,14 @@
 
 calculadoira=%A_AppData%\calculadoira
 FileCreateDir, %calculadoira%
-FileInstall, bl.exe, %calculadoira%\bl.exe, 0
+FileInstall, bl.exe, %calculadoira%\bl.exe, 1
 FileInstall, calculadoira.lua, %calculadoira%\calculadoira.lua, 1
 FileInstall, calculadoira.ini, %calculadoira%\calculadoira.ini, 0
 
 Menu, Tray, NoStandard
 Menu, Tray, Add, Calculadoira (Win+c), calculadoira
 Menu, Tray, Add, Configuration (Win+Alt+c), conformatge
+Menu, Tray, Add, CDSoft.fr, cdsoft
 Menu, Tray, Add, Exit, kill
 
 Return
@@ -38,6 +39,10 @@ calculadoira:
 
 conformatge:
     Run %calculadoira%\calculadoira.ini
+    Return
+
+cdsoft:
+    Run http://www.cdsoft.fr/calculadoira
     Return
 
 kill:
