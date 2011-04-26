@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "1.4.0"
+version = "1.5.0"
 
 license = [[
 Calculadoira
@@ -48,7 +48,7 @@ longhelp = [[
 Constants                   Value
 =========================== ===============================================
 
-huge, inf                   +oo
+inf                         +oo
 nan                         Not a Number
 pi                          3.1415926535898
 e                           2.718281828459
@@ -81,6 +81,7 @@ fract(x)                    the fractional part of x
 fmod(x, y)                  the remainder of the division of x by y
 ldexp(m, e)                 m*2**e (e should be an integer)
 pow(x, y)                   x to the power y
+min(...), max(...)          the minimum / maximum value among its arguments
 
 sqr(x)                      the square of x (x**2)
 sqrt(x)                     the square root of x (x**0.5)
@@ -96,7 +97,6 @@ exp(x)                      e**x
 log(x), ln(x)               logarithm of x in base e
 log10(x), log2(x)           logarithm of x in base 10, 2
 log(x, b)                   logarithm of x in base b
-min(...), max(...)          the minimum / maximum value among its arguments
 
 random()                    random number in [0, 1[
 random(m)                   random integer in [1, m]
@@ -312,43 +312,30 @@ end
 
 nan = ieee2float(0x7FC00000)
 
-function Number(n)
-    local self = Expr "Number"
-    local digits, val
-    local m = nil
-    digits = n:match("^0x(.*)") or n:match("^h(.*)") or n:match("(.*)h$")
-    if digits then val = tonumber(digits, 16) m="hex"
-    else
-        digits = n:match("^o(.*)") or n:match("(.*)o$")
-        if digits then val = tonumber(digits, 8) m="oct"
-        else
-            digits = n:match("^b(.*)") or n:match("(.*)b$")
-            if digits then val = tonumber(digits, 2) m="bin"
-            else val = tonumber(n)
-            end
+function Number(base, m)
+    return function(n)
+        local self = Expr "Number"
+        function self.dis()
+            return string.sub(m or "", 1, 1)..n
         end
+        function self.eval()
+            mode.set(m)
+            return tonumber(n, base)
+        end
+        return self
     end
-    function self.dis() return n end
-    function self.eval()
-        mode.set(m)
-        return val
-    end
-    return self
 end
 
 function Bool(b)
     local self = Expr "Bool"
-    local val = nil
-    if b == "true" then val = true end
-    if b == "false" then val = false end
+    local bools = {["true"]=true; ["false"]=false}
     function self.dis() return b end
-    function self.eval() return val end
+    function self.eval() return bools[b] end
     return self
 end
 
 function Str(s)
     local self = Expr "Str"
-    s = string.sub(s, 2, -2)
     local bytes = {string.byte(s, 1, #s)}
     local val = 0
     for i = 1, #bytes do val = val*256 + bytes[i] end
@@ -470,7 +457,6 @@ function And()
 end
 
 constants = {
-    huge = math.huge,
     inf = math.huge,
     nan = nan,
     pi = math.pi,
@@ -626,21 +612,42 @@ function Set(k)
 end
 
 do
+    local max_position
+
     local function parser(p)
         return function(s)
+            max_position = 0
             local i, x = p(s, 1)
-            if i == #s+1 then return x end
+            if i == #s+1 then
+                return x
+            else
+                local err
+                if max_position > #s then
+                    err = "the end"
+                else
+                    err = string.sub(s, max_position)
+                    err = err:gsub("^%s*(.-)%s*$", "%1")
+                    if #err > 10 then
+                        err = string.sub(err, 1, 10).."..."
+                    end
+                end
+                return nil, "Syntax error near "..err
+            end
         end
     end
 
     local _id = function(...) return ... end
 
-    local function T(pattern, f)
-        pattern = "^%s*("..pattern..")%s*"
+    local function T(token, f)
+        local pattern = "^%s*("..token..")%s*"
         f = f or _id
         return function(s, i)
-            local i, j, token = s:find(pattern, i)
-            if i then return j+1, f(token) end
+            local j, k, match, capture = s:find(pattern, i)
+            if j then
+                return k+1, f(capture or match)
+            else
+                max_position = math.max(max_position, i)
+            end
         end
     end
 
@@ -699,26 +706,26 @@ do
     local expr = Rule()
     local ident = T("[a-zA-Z_]%w*", Ident)
     local number = Rule()
-    number(T("b[01]+", Number))
-    number(T("[01]+b", Number))
-    number(T("o[0-7]+", Number))
-    number(T("[0-7]+o", Number))
-    number(T("h[0-9A-Fa-f]+", Number))
-    number(T("[0-9A-Fa-f]+h", Number))
-    number(T("0[xX][0-9A-Fa-f]+", Number))
-    number(T("%d+%.%d*", Number))
-    number(T("%d*%.%d+", Number))
-    number(T("%d+%.%d*[eE][-+]?%d+", Number))
-    number(T("%d*%.%d+[eE][-+]?%d+", Number))
-    number(T("%d+[eE][-+]?%d+", Number))
-    number(T("%d+", Number))
+    number(T("b([01]+)", Number(2, "bin")))
+    number(T("([01]+)b", Number(2, "bin")))
+    number(T("o([0-7]+)", Number(8, "oct")))
+    number(T("([0-7]+)o", Number(8, "oct")))
+    number(T("h([0-9A-Fa-f]+)", Number(16, "hex")))
+    number(T("([0-9A-Fa-f]+)h", Number(16, "hex")))
+    number(T("0[xX]([0-9A-Fa-f]+)", Number(16, "hex")))
+    number(T("%d+%.%d*", Number()))
+    number(T("%d*%.%d+", Number()))
+    number(T("%d+%.%d*[eE][-+]?%d+", Number()))
+    number(T("%d*%.%d+[eE][-+]?%d+", Number()))
+    number(T("%d+[eE][-+]?%d+", Number()))
+    number(T("%d+", Number()))
     local bool = Rule()
     bool(T("true", Bool))
     bool(T("false", Bool))
     bool(T("nil", Bool))
     local str = Rule()
-    str(T([["[^"][^"]?[^"]?[^"]?"]], Str))
-    str(T([['[^'][^']?[^']?[^']?']], Str))
+    str(T([["([^"][^"]?[^"]?[^"]?)"]], Str))
+    str(T([['([^'][^']?[^']?[^']?)']], Str))
 
     local addop = Alt{
         T("%+", _F_),
@@ -940,9 +947,9 @@ function ConfigFile(name)
         print("loading "..name)
         local expr = f:read "*a"
         f:close()
-        expr = calc(expr:gsub("[;#][^\r\n]*", ""))
+        expr, err = calc(expr:gsub("[;#][^\r\n]*", ""))
         if not expr then
-            print("!", "syntax error")
+            print("!", err)
         else
             local ok, val = expr.evaluate(env)
             if not ok then
@@ -953,10 +960,10 @@ function ConfigFile(name)
     return self
 end
 
-function Config(...)
+function Config(names)
     local self = {}
     local configs = {}
-    for i, name in ipairs(...) do
+    for i, name in ipairs(names) do
         table.insert(configs, ConfigFile(name))
     end
     function self.run(env)
@@ -1021,9 +1028,9 @@ while true do
     local line = readline(": ")
     config.run(env) -- autoreload
     if not line:match("^%s*$") then
-        local expr = calc(line)
+        local expr, err = calc(line)
         if not expr then
-            print("!", "syntax error")
+            print("!", err)
         else
             if __debug__ then print("debug", expr.dis()) end
             local ok, val = expr.evaluate(env)
