@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "1.5.0"
+version = "1.5.1"
 
 license = [[
 Calculadoira
@@ -25,15 +25,15 @@ along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
 help = string.gsub([[
 +---------------------------------------------------------------------+
-|      C A L C U L A D O I R A       | X.Y.Z | cdsoft.fr/calculadoira |
+|     C A L C U L A D O I R A     | v. X.Y.Z | cdsoft.fr/calculadoira |
 |---------------------------------------------------------------------|
 | Modes:                          | Numbers:                          |
 |     hex oct bin float ieee str  |     binary: b... or ...b          |
 |---------------------------------|     octal : o... or ...o          |
 | Variable and function:          |     hexa  : h... or ...h or 0x... |
 |     variable = expression       |     float : 1.2e-3                |
-|     function(x, y) = expression | Strings: "abcd" or 'abcd'         |
-| Multiple statements:            | Booleans: true or false           |
+|     function(x, y) = expression | Chars     : "abcd" or 'abcd'      |
+| Multiple statements:            | Booleans  : true or false         |
 |     expr1, ..., exprn           |-----------------------------------|
 |---------------------------------| Operators:                        |
 | Builtin functions:              |     or xor and not                |
@@ -238,6 +238,13 @@ function Expr(class)
     return self
 end
 
+function Comment(comment)
+    local self = Expr "Comment"
+    function self.dis() return comment end
+    function self.eval() return nil end
+    return self
+end
+
 function Quit()
     local self = Expr "Quit"
     function self.eval()
@@ -315,9 +322,7 @@ nan = ieee2float(0x7FC00000)
 function Number(base, m)
     return function(n)
         local self = Expr "Number"
-        function self.dis()
-            return string.sub(m or "", 1, 1)..n
-        end
+        function self.dis() return string.sub(m or "", 1, 1)..n end
         function self.eval()
             mode.set(m)
             return tonumber(n, base)
@@ -336,13 +341,10 @@ end
 
 function Str(s)
     local self = Expr "Str"
-    local bytes = {string.byte(s, 1, #s)}
-    local val = 0
-    for i = 1, #bytes do val = val*256 + bytes[i] end
     function self.dis() return string.format("'%s'", s) end
     function self.eval()
         mode.set("str", "hex")
-        return val
+        return struct.unpack(">I4", string.rep("\0", 4-#s)..s)
     end
     return self
 end
@@ -590,7 +592,8 @@ function Block(exprs)
     function self.eval(env)
         local val = nil
         for i, expr in ipairs(exprs) do
-            val = expr.eval(env)
+            local newval = expr.eval(env)
+            if newval ~= nil then val = newval end
         end
         return val
     end
@@ -843,6 +846,7 @@ do
     sblock(Seq({T(",?", _B_), stat, sblock}, _fyg))
     sblock(null)
 
+    stat(T("[;#]%s*[^\r\n]*", Comment))
     stat(Alt{
         T("dec", Set), T("hex", Set), T("oct", Set), T("bin", Set),
         T("float", Set), T("ieee", Set),
@@ -947,7 +951,7 @@ function ConfigFile(name)
         print("loading "..name)
         local expr = f:read "*a"
         f:close()
-        expr, err = calc(expr:gsub("[;#][^\r\n]*", ""))
+        expr, err = calc(expr)
         if not expr then
             print("!", err)
         else
@@ -1008,12 +1012,7 @@ end
 function str(val)
     local isnumber, val = pcall(math.floor, val)
     if not isnumber then return "" end
-    local s = ""
-    local n = val % 2^32
-    while n > 0 do
-        s = string.char(n%256)..s
-        n = bit32.rshift(n, 8)
-    end
+    local s = struct.pack(">I4", val):gsub("^%z+(.+)", "%1")
     return string.format("%q", s)
 end
 
