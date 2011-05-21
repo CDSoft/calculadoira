@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "1.5.1"
+version = "2.0.0"
 
 license = [[
 Calculadoira
@@ -998,6 +998,7 @@ function int(val, config)
     n = n % 2^32
     while (digits and nb_digits<digits) or (not digits and n ~= 0) do
         local d = n%radix
+        if not (d < radix) then return "" end -- to avoid infinite loop when n is NaN
         n = (n-d)/radix
         s = string.sub("0123456789ABCDEF", d+1, d+1)..s
         nb_digits = nb_digits + 1

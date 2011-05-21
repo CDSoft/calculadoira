@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
-AHK_URL = http://www.autohotkey.com/download/AutoHotkey.zip
-BL_URL  = http://www.cdsoft.fr/bl/bonaluna-0.6.1.tgz
+BL_URL  = http://www.cdsoft.fr/bl/bonaluna-1.0.1.tgz
 BL      = bl.exe
+GLUE    = glue.lua
 RESHACK = http://delphi.icm.edu.pl/ftp/tools/ResHack.zip
 
 all: calculadoira.exe
@@ -28,23 +28,25 @@ clean:
 	rm -rf calculadoira.exe bl.exe
 	rm -rf tmp
 
-ahk:
-	wget -c $(AHK_URL)
-	mkdir $@
-	cd $@ && unzip ../$(notdir $(AHK_URL))
-
 reshack:
 	wget -c $(RESHACK)
 	mkdir $@
 	cd $@ && unzip ../$(notdir $(RESHACK))
 
-$(BL): reshack calculadoira.ico
+$(notdir $(BL_URL)):
 	wget -c $(BL_URL)
+	
+$(BL): reshack calculadoira.ico $(notdir $(BL_URL))
 	tar xzf $(notdir $(BL_URL))
 	mv bonaluna-*/$@ $@
-	rm -rf bonaluna-*
+	rm -rf bonaluna-*/
 	wine reshack/ResHacker.exe -addoverwrite $(BL), $(BL), calculadoira.ico, ICONGROUP,APPICON,0
+	upx --best $@
 
-calculadoira.exe: calculadoira.ahk calculadoira.ico calculadoira.lua calculadoira.ini $(BL) ahk
-	 wine ahk/Compiler/Ahk2Exe.exe /in calculadoira.ahk /icon calculadoira.ico
+$(GLUE): $(notdir $(BL_URL))
+	tar xzf $(notdir $(BL_URL))
+	mv bonaluna-*/tools/$@ $@
+	rm -rf bonaluna-*/
 
+calculadoira.exe: calculadoira.lua calculadoira.ini $(BL) $(GLUE) license.lua
+	$(BL) $(GLUE) read:$(BL) lua:license.lua file:calculadoira.ini lua:calculadoira.lua write:$@
