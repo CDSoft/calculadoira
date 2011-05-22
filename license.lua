@@ -5,10 +5,7 @@ do
 
     local function key(path)
         path = path:gsub("\\", "/")
-        if not path:match("^/") then
-            path = fs.getcwd().."/"..path
-        end
-        path = path:gsub("/[^/]*$", "/")
+        path = path:gsub("[^/]*$", "")
         local f = io.open(path..keyname)
         if f then
             local name = f:read "*l"
@@ -19,7 +16,6 @@ do
             for i = 1, #name, 4 do
                 key = key + struct.unpack("<I4", name:sub(i, i+3).."\0\0\0")
             end
-            print(key)
             if key%2^32 == 0 then
                 return name
             end

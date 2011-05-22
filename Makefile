@@ -32,6 +32,7 @@ reshack:
 	wget -c $(RESHACK)
 	mkdir $@
 	cd $@ && unzip ../$(notdir $(RESHACK))
+	chmod +x reshack/ResHacker.exe
 
 $(notdir $(BL_URL)):
 	wget -c $(BL_URL)
@@ -40,13 +41,15 @@ $(BL): reshack calculadoira.ico $(notdir $(BL_URL))
 	tar xzf $(notdir $(BL_URL))
 	mv bonaluna-*/$@ $@
 	rm -rf bonaluna-*/
-	wine reshack/ResHacker.exe -addoverwrite $(BL), $(BL), calculadoira.ico, ICONGROUP,APPICON,0
+	reshack/ResHacker.exe -addoverwrite $(BL), $(BL), calculadoira.ico, ICONGROUP,APPICON,0
 	upx --best $@
+	touch $@
 
 $(GLUE): $(notdir $(BL_URL))
 	tar xzf $(notdir $(BL_URL))
 	mv bonaluna-*/tools/$@ $@
 	rm -rf bonaluna-*/
+	touch $@
 
 calculadoira.exe: calculadoira.lua calculadoira.ini $(BL) $(GLUE) license.lua
 	$(BL) $(GLUE) read:$(BL) lua:license.lua file:calculadoira.ini lua:calculadoira.lua write:$@

@@ -2,7 +2,8 @@
 
 --__debug__ = true
 
-version = "2.0.0"
+version = "2.0.1"
+default_ini = "calculadoira.ini"
 
 license = [[
 Calculadoira
@@ -40,6 +41,7 @@ help = string.gsub([[
 |     see help                    |     < <= > >= == !=               |
 |---------------------------------|     cond?expr:expr                |
 | Commands: ? help license bye    |     + - * / % ** | ^ & >> << ~    |
+|           edit                  |                                   |
 +---------------------------------------------------------------------+
 ]], "X.Y.Z", version)
 
@@ -181,6 +183,8 @@ else
     end
 end
 
+local config
+
 function pp(t, indent)
     indent = indent or ""
     if type(t) == "table" then
@@ -274,6 +278,14 @@ function License()
     local self = Expr "License"
     function self.eval()
         print(license)
+    end
+    return self
+end
+
+function Edit()
+    local self = Expr "Edit"
+    function self.eval()
+        config.edit()
     end
     return self
 end
@@ -838,6 +850,7 @@ do
         T("dec", Toggle), T("hex", Toggle), T("oct", Toggle), T("bin", Toggle),
         T("float", Toggle), T("ieee", Toggle),
         T("str", Toggle),
+        T("edit", Edit),
         block
     })
 
@@ -961,14 +974,57 @@ function ConfigFile(name)
             end
         end
     end
+    function self.edit()
+        if sys.platform == "Windows" then
+            os.execute("start "..name)
+        else
+            local function run(editor)
+                if fs.stat("/usr/bin/"..editor) then
+                    editor = "/usr/bin/"..editor
+                end
+                if fs.stat(editor) then
+                    os.execute(editor.." "..name)
+                    return true
+                end
+            end
+            local editor = os.getenv "EDITOR"
+            if editor then
+                if run(editor) then return end
+            end
+            if run "gvim" then return end
+            if run "gedit" then return end
+            if run "kedit" then return end
+            if run "xemacs" then return end
+            print "Can not find an editor"
+        end
+    end
     return self
+end
+
+function dirname(path)
+    path = path:gsub("\\", "/")
+    path = path:gsub("[^/]*$", "")
+    return path
 end
 
 function Config(names)
     local self = {}
     local configs = {}
-    for i, name in ipairs(names) do
-        table.insert(configs, ConfigFile(name))
+    local loaded = {}
+    -- default configuration file
+    for i = 0, #names do
+        local ini = dirname(names[i])..default_ini
+        if not loaded[ini] and fs.stat(ini) then
+            table.insert(configs, ConfigFile(ini))
+            loaded[ini] = true
+        end
+    end
+    -- additional configuration files
+    for i = 1, #names do
+        if not loaded[names[i]] then
+            table.insert(configs, ConfigFile(names[i]))
+            loaded[names[i]] = true
+        end
     end
     function self.run(env)
         for i = 1, #configs do
@@ -976,6 +1032,12 @@ function Config(names)
         end
         if #configs > 0 then print "" end
     end
+    function self.edit()
+        if #configs > 0 then
+            configs[1].edit()
+        end
+    end
+
     return self
 end
 
@@ -1021,7 +1083,7 @@ print(help)
 
 local env = Env()
 
-local config = Config(arg)
+config = Config(arg)
 config.run(env)
 
 while true do
