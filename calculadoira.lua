@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "2.0.1"
+version = "2.0.2"
 default_ini = "calculadoira.ini"
 
 license = [[
@@ -975,26 +975,29 @@ function ConfigFile(name)
         end
     end
     function self.edit()
+        local cmd = nil
         if sys.platform == "Windows" then
-            os.execute("start "..name)
+            cmd = string.format([[cmd /c "%s"]], name)
         else
             local function run(editor)
                 if fs.stat("/usr/bin/"..editor) then
                     editor = "/usr/bin/"..editor
                 end
                 if fs.stat(editor) then
-                    os.execute(editor.." "..name)
-                    return true
+                    return string.format([[%s "%s"]], editor, name)
                 end
             end
             local editor = os.getenv "EDITOR"
-            if editor then
-                if run(editor) then return end
-            end
-            if run "gvim" then return end
-            if run "gedit" then return end
-            if run "kedit" then return end
-            if run "xemacs" then return end
+            if editor then cmd = cmd or run(editor) end
+            cmd = cmd or run "gvim"
+            cmd = cmd or run "gedit"
+            cmd = cmd or run "kedit"
+            cmd = cmd or run "xemacs"
+        end
+        if cmd then
+            print("edit "..name)
+            os.execute(cmd)
+        else
             print "Can not find an editor"
         end
     end
@@ -1035,6 +1038,8 @@ function Config(names)
     function self.edit()
         if #configs > 0 then
             configs[1].edit()
+        else
+            print "No configuration file to edit"
         end
     end
 
