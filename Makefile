@@ -52,4 +52,9 @@ $(GLUE): $(notdir $(BL_URL))
 	touch $@
 
 calculadoira.exe: calculadoira.lua calculadoira.ini $(BL) $(GLUE) license.lua
-	$(BL) $(GLUE) read:$(BL) lua:license.lua file::/calculadoira.ini=calculadoira.ini lua:calculadoira.lua write:$@
+	$(BL) $(GLUE) read:$(BL) \
+        compile:min compress:min \
+        lua:license.lua \
+        file::/calculadoira.ini=calculadoira.ini \
+        lua:calculadoira.lua \
+        write:$@

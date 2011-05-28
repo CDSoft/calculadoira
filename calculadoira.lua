@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "2.0.3"
+version = "2.0.4"
 
 default_ini = "calculadoira.ini"
 
@@ -978,21 +978,21 @@ function ConfigFile(name)
     function self.edit()
         local cmd = nil
         if sys.platform == "Windows" then
-            cmd = string.format([[cmd /c "%s"]], name)
+            cmd = string.format([[start /b cmd /c "%s"]], name)
         else
             local function run(editor)
                 if fs.stat("/usr/bin/"..editor) then
                     editor = "/usr/bin/"..editor
                 end
                 if fs.stat(editor) then
-                    return string.format([[%s "%s"]], editor, name)
+                    return string.format([[%s "%s" &]], editor, name)
                 end
             end
             local editor = os.getenv "EDITOR"
             if editor then cmd = cmd or run(editor) end
             cmd = cmd or run "gvim"
             cmd = cmd or run "gedit"
-            cmd = cmd or run "kedit"
+            cmd = cmd or run "kate"
             cmd = cmd or run "xemacs"
         end
         if cmd then
