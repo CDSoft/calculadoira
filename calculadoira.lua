@@ -2,7 +2,8 @@
 
 --__debug__ = true
 
-version = "2.0.2"
+version = "2.0.3"
+
 default_ini = "calculadoira.ini"
 
 license = [[
@@ -1004,29 +1005,33 @@ function ConfigFile(name)
     return self
 end
 
-function dirname(path)
-    path = path:gsub("\\", "/")
-    path = path:gsub("[^/]*$", "")
-    return path
-end
-
 function Config(names)
     local self = {}
     local configs = {}
     local loaded = {}
-    -- default configuration file
-    for i = 0, #names do
-        local ini = dirname(names[i])..default_ini
-        if not loaded[ini] and fs.stat(ini) then
-            table.insert(configs, ConfigFile(ini))
-            loaded[ini] = true
+    local function register(name)
+        name = fs.absname(name)
+        if loaded[name] then return true end
+        if fs.stat(name) then
+            table.insert(configs, ConfigFile(name))
+            loaded[name] = true
+            return true
         end
+        return false
     end
-    -- additional configuration files
-    for i = 1, #names do
-        if not loaded[names[i]] then
-            table.insert(configs, ConfigFile(names[i]))
-            loaded[names[i]] = true
+    -- default configuration file loaded if no other file is specified
+    if #names == 0 then
+        register(default_ini)                                   -- current working directory
+        register(fs.dirname(names[0])..fs.sep..default_ini)     -- script directory
+        register(fs.dirname(names[-1])..fs.sep..default_ini)    -- executable directory
+    else
+        for i = 1, #names do
+            if not register(names[i])
+            and not register(fs.dirname(names[0])..fs.sep..names[i])
+            and not register(fs.dirname(names[-1])..fs.sep..names[i])
+            then
+                print("! can not find "..names[i])
+            end
         end
     end
     function self.run(env)

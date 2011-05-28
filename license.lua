@@ -4,9 +4,7 @@ do
     local keyname = "calculadoira.key"
 
     local function key(path)
-        path = path:gsub("\\", "/")
-        path = path:gsub("[^/]*$", "")
-        local f = io.open(path..keyname)
+        local f = io.open(path)
         if f then
             local name = f:read "*l"
             local key = f:read "*l"
@@ -23,12 +21,16 @@ do
     end
 
     local function check_license()
-        for i = 0, #arg do
-            local name = key(arg[i])
-            if name then
-                print("Calculadoira is registered to "..name)
-                return
+        local name = key(keyname)
+        if not name then
+            for i = -1, #arg do
+                name = key(fs.dirname(arg[i])..fs.sep..keyname)
+                if name then break end
             end
+        end
+        if name then
+            print("Calculadoira is registered to "..name)
+            return
         end
         print [[
 Calculadoira is not registered.
