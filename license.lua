@@ -14,13 +14,17 @@ do
             for i = 1, #name, 4 do
                 key = key + struct.unpack("<I4", name:sub(i, i+3).."\0\0\0")
             end
-            if key%2^32 == 0 then
+            if #name > 0 and key%2^32 == 0 then
                 return name
             end
         end
     end
 
     local function check_license()
+        if sys.platform == "Windows" then
+            os.execute 'title Checking Calculadoira registration'
+            os.execute 'color f0'
+        end
         local name = key(keyname)
         if not name then
             for i = -1, #arg do
@@ -32,6 +36,7 @@ do
             print("Calculadoira is registered to "..name)
             return
         end
+        os.execute 'color 84'
         print [[
 Calculadoira is not registered.
 
@@ -43,8 +48,8 @@ The unregistered version is fully functional
 but you have to answer this before continuing:
 ]]
         math.randomseed(os.time())
-        x = math.random(0, 10)
-        y = math.random(0, 10)
+        x = math.random(1, 10)
+        y = math.random(1, 10)
         io.write(x.." + "..y.." = ")
         z = io.read("*l")
         if tonumber(z) == x+y then
