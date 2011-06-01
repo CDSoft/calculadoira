@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "2.0.5"
+version = "2.0.6"
 
 default_ini = "calculadoira.ini"
 
@@ -1011,10 +1011,12 @@ function Config(names)
     local loaded = {}
     local function register(name)
         name = fs.absname(name)
-        if loaded[name] then return true end
-        if fs.stat(name) then
+        local st = fs.stat(name)
+        if st then
+            local key = string.format("%d-%d", st.dev, st.ino)
+            if loaded[key] then return true end
             table.insert(configs, ConfigFile(name))
-            loaded[name] = true
+            loaded[key] = true
             return true
         end
         return false

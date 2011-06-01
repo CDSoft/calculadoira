@@ -17,9 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
-BL_URL  = http://www.cdsoft.fr/bl/bonaluna-1.1.2.tgz
+BL_URL  = http://www.cdsoft.fr/bl/bonaluna-1.1.3.tgz
 BL      = bl.exe
-GLUE    = glue.lua
+PEGAR   = pegar.lua
 RESHACK = http://delphi.icm.edu.pl/ftp/tools/ResHack.zip
 
 all: calculadoira.exe
@@ -45,14 +45,14 @@ $(BL): reshack calculadoira.ico $(notdir $(BL_URL))
 	upx --best $@
 	touch $@
 
-$(GLUE): $(notdir $(BL_URL))
+$(PEGAR): $(notdir $(BL_URL))
 	tar xzf $(notdir $(BL_URL))
 	mv bonaluna-*/tools/$@ $@
 	rm -rf bonaluna-*/
 	touch $@
 
-calculadoira.exe: calculadoira.lua calculadoira.ini $(BL) $(GLUE) license.lua
-	$(BL) $(GLUE) read:$(BL) \
+calculadoira.exe: calculadoira.lua calculadoira.ini $(BL) $(PEGAR) license.lua
+	$(BL) $(PEGAR) read:$(BL) \
         compile:min compress:min \
         lua:license.lua \
         file::/calculadoira.ini=calculadoira.ini \
