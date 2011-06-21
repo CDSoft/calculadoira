@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "2.0.7"
+version = "2.0.8"
 
 default_ini = "calculadoira.ini"
 
@@ -35,14 +35,14 @@ help = string.gsub([[
 | Variable and function:          |     hexa  : h... or ...h or 0x... |
 |     variable = expression       |     float : 1.2e-3                |
 |     function(x, y) = expression | Chars     : "abcd" or 'abcd'      |
-| Multiple statements:            | Booleans  : true or false         |
-|     expr1, ..., exprn           |-----------------------------------|
-|---------------------------------| Operators:                        |
-| Builtin functions:              |     or xor and not                |
-|     see help                    |     < <= > >= == !=               |
-|---------------------------------|     cond?expr:expr                |
-| Commands: ? help license bye    |     + - * / % ** | ^ & >> << ~    |
-|           edit                  |                                   |
+| Multiple statements:            |             "<abcd" or ">abcd"    |
+|     expr1, ..., exprn           | Booleans  : true or false         |
+|---------------------------------|-----------------------------------|
+| Builtin functions:              | Operators:                        |
+|     see help                    |     or xor and not                |
+|---------------------------------|     < <= > >= == !=               |
+| Commands: ? help license bye    |     cond?expr:expr                |
+|           edit                  |     + - * / % ** | ^ & >> << ~    |
 +---------------------------------------------------------------------+
 ]], "X.Y.Z", version)
 
@@ -352,12 +352,17 @@ function Bool(b)
     return self
 end
 
-function Str(s)
+function Str(endianess, str)
     local self = Expr "Str"
-    function self.dis() return string.format("'%s'", s) end
+    if endianess == "" then endianess = ">" end
+    function self.dis() return string.format("'%s'", str) end
     function self.eval()
         mode.set("str", "hex")
-        return struct.unpack(">I4", string.rep("\0", 4-#s)..s)
+        if endianess == ">" then
+            return struct.unpack(">I4", string.rep("\0", 4-#str)..str)
+        else
+            return struct.unpack("<I4", str..string.rep("\0", 4-#str))
+        end
     end
     return self
 end
@@ -658,9 +663,9 @@ do
         local pattern = "^%s*("..token..")%s*"
         f = f or _id
         return function(s, i)
-            local j, k, match, capture = s:find(pattern, i)
+            local j, k, match, x1, x2, x3 = s:find(pattern, i)
             if j then
-                return k+1, f(capture or match)
+                return k+1, f(x1 or match, x2, x3)
             else
                 max_position = math.max(max_position, i)
             end
@@ -740,8 +745,8 @@ do
     bool(T("false", Bool))
     bool(T("nil", Bool))
     local str = Rule()
-    str(T([["([^"][^"]?[^"]?[^"]?)"]], Str))
-    str(T([['([^'][^']?[^']?[^']?)']], Str))
+    str(T([["([<>]?)([^"][^"]?[^"]?[^"]?)"]], Str))
+    str(T([['([<>]?)([^'][^']?[^']?[^']?)']], Str))
 
     local addop = Alt{
         T("%+", _F_),
