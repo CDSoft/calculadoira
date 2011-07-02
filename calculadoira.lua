@@ -2,7 +2,7 @@
 
 --__debug__ = true
 
-version = "2.0.8"
+version = "2.0.9"
 
 default_ini = "calculadoira.ini"
 
