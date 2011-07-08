@@ -1,8 +1,6 @@
 #!/usr/bin/env bl
 
---__debug__ = true
-
-version = "2.0.9"
+version = "2.1.0"
 
 default_ini = "calculadoira.ini"
 
@@ -171,34 +169,7 @@ if sys.platform == "Windows" then
     os.execute "color f0"
 end
 
-if sys.platform == "Windows" then
-    function readline(prompt)
-        io.write(prompt)
-        return io.read "*l"
-    end
-else
-    function readline(prompt)
-        local line = rl.read(prompt)
-        rl.add(line:gsub("^%s*(.-)%s*$", "%1"))
-        return line
-    end
-end
-
 local config
-
-function pp(t, indent)
-    indent = indent or ""
-    if type(t) == "table" then
-        print(indent.."{")
-        for k,v in pairs(t) do
-            print(indent.."    "..k.." =")
-            pp(v, indent.."        ")
-        end
-        print(indent.."}")
-    else
-        print(indent.."        "..tostring(t))
-    end
-end
 
 function Mode()
     local self = {}
@@ -1054,7 +1025,6 @@ function Config(names)
             print "No configuration file to edit"
         end
     end
-
     return self
 end
 
@@ -1104,14 +1074,14 @@ config = Config(arg)
 config.run(env)
 
 while true do
-    local line = readline(": ")
+    local line = rl.read(": ")
     config.run(env) -- autoreload
     if not line:match("^%s*$") then
         local expr, err = calc(line)
         if not expr then
             print("!", err)
         else
-            if __debug__ then print("debug", expr.dis()) end
+            --print("debug", expr.dis())
             local ok, val = expr.evaluate(env)
             if not ok then
                 print("!", val)
