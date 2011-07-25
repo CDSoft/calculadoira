@@ -1,6 +1,6 @@
 #!/usr/bin/env bl
 
-version = "2.1.1"
+version = "2.1.2"
 
 default_ini = "calculadoira.ini"
 
@@ -987,7 +987,7 @@ function Config(names)
     local loaded = {}
     local function register(name)
         name = fs.absname(name)
-        local st = fs.stat(name)
+        local st = fs.inode(name)
         if st then
             local key = string.format("%d-%d", st.dev, st.ino)
             if loaded[key] then return true end
