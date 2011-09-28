@@ -1,6 +1,6 @@
 #!/usr/bin/env bl
 
-version = "2.1.2"
+version = "2.1.3"
 
 default_ini = "calculadoira.ini"
 
@@ -696,7 +696,7 @@ do
     local function _B_() return function(x, y) return Block({x, y}) end end
 
     local expr = Rule()
-    local ident = T("[a-zA-Z_]%w*", Ident)
+    local ident = T("[a-zA-Z_][%w_]*", Ident)
     local number = Rule()
     number(T("b([01]+)", Number(2, "bin")))
     number(T("([01]+)b", Number(2, "bin")))
