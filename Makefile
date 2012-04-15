@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
-BL_VERSION = 2.1.2
+BL_VERSION = 2.1.4
 BL_URL     = http://www.cdsoft.fr/bl/bonaluna-$(BL_VERSION).tgz
 BL_TGZ     = bonaluna-$(BL_VERSION).tgz
 BL_SRC     = bonaluna-$(BL_VERSION)
@@ -40,7 +40,7 @@ $(BL_SRC)/$(BL): calculadoira.ico $(BL_SRC)/Makefile
 	echo 'export LIBRARIES="QLZ"'               >  $(BL_SRC)/setup
 	echo 'export ICON="../../calculadoira.ico"' >> $(BL_SRC)/setup
 	echo 'export COMPRESS="upx --brute"'        >> $(BL_SRC)/setup
-	sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh
+	#sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh
 	cd $(BL_SRC)/ && make $(notdir $@)
 
 calculadoira.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BL) license.lua Makefile

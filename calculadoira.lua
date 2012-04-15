@@ -1,6 +1,6 @@
 #!/usr/bin/env bl
 
-version = "2.1.3"
+version = "2.1.4"
 
 default_ini = "calculadoira.ini"
 
@@ -72,6 +72,9 @@ x < y, x <= y               comparisons
 x > y, x >= y
 x == y, x != y, x ~= y
 
+x!                          the factorial of x
+|x|                         the absolute value of x
+
 abs(x)                      the absolute value of x
 ceil(x)                     the smallest integer larger than or equal to x
 floor(x)                    the largest integer smaller than or equal to x
@@ -142,7 +145,9 @@ From highest to lowest precedence:
 Operator family             Syntax
 =========================== =================
 Precedence overloading      (...)
+Absolute value              |x|
 Function evaluation         f(...)
+Factorial                   x!
 Exponentiation              x**y
 Unary operators             +x, -y, ~z
 Multiplicative operators    * / % & << >>
@@ -454,6 +459,17 @@ constants = {
     e = math.exp(1),
 }
 
+local function factorial(n)
+    if n < 0 or n%1 ~= 0 then return nan end
+    if n > 170 then return math.huge end
+    local f = 1
+    for i = 1, n do
+        f = f*i
+        if f == math.huge then break end
+    end
+    return f
+end
+
 builtins = {
     [0] = {
         ["random"] = B(math.random),
@@ -462,6 +478,7 @@ builtins = {
         ["+"] = B(function(x) return x end),
         ["-"] = B(function(x) return -x end),
         ["~"] = B(function(x) mode.set("hex", "bin") return bit32.bnot(x) end),
+        ["!"] = B(factorial),
         ["not"] = B(function(x) return not x end),
         ["abs"] = B(math.abs),
         ["acos"] = B(math.acos),
@@ -691,6 +708,7 @@ do
     local function fx(f, x) return f(x) end
     local function _fy(f, y) return function(x) return f(x, y) end end
     local function _fyg(f, y, g) return function(x) return g(f(x, y)) end end
+    local function _fg(f, g) return function(x) return g(f(x)) end end
     local function _F_(f) return function(x, y) return F(f, x, y) end end
     local function F_(f) return function(x) return F(f, x) end end
     local function _B_() return function(x, y) return Block({x, y}) end end
@@ -760,6 +778,9 @@ do
         T("%-", F_),
         T("%~", F_),
     }
+    local postunop = Alt{
+        T("%!", F_),
+    }
 
     --[[ grammar:
 
@@ -795,8 +816,11 @@ do
 
             fact -> unop fact | pow
 
-            pow -> atom spow
+            pow -> post spow
             spow -> powop fact | null
+
+            post -> atom spost
+            spost -> postunop spost | null
 
             atom -> '(' block ')'
             atom -> number | bool | str | ident
@@ -817,7 +841,7 @@ do
     local null = T("", _)
     local stat, ternary, proto, eval = Rule(), Rule(), Rule(), Rule()
     local logic, orterm, andterm = Rule(), Rule(), Rule()
-    local relation, arith, term, fact, pow = Rule(), Rule(), Rule(), Rule(), Rule()
+    local relation, arith, term, fact, pow, post = Rule(), Rule(), Rule(), Rule(), Rule(), Rule()
     local atom = Rule()
 
     calc = parser(Alt{
@@ -906,15 +930,21 @@ do
     fact(pow)
 
     local spow = Rule()
-    pow(Seq({atom, spow}, xf))
+    pow(Seq({post, spow}, xf))
     spow(Seq({powop, fact}, _fy))
     spow(null)
+
+    local spost = Rule()
+    post(Seq({atom, spost}, xf))
+    spost(Seq({postunop, spost}, _fg))
+    spost(null)
 
     atom(number)
     atom(bool)
     atom(str)
     atom(ident)
     atom(Seq({T"%(", block, T"%)"}, function(_, x, _) return x end))
+    atom(Seq({T"%|", block, T"%|"}, function(_, x, _) return F("abs", x) end))
     atom(eval)
 
 end
