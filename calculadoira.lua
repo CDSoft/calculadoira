@@ -1,12 +1,12 @@
 #!/usr/bin/env bl
 
-version = "2.1.4"
+version = "2.1.5"
 
 default_ini = "calculadoira.ini"
 
 license = [[
 Calculadoira
-Copyright (C) 2011 Christophe Delord
+Copyright (C) 2011 - 2012 Christophe Delord
 http://www.cdsoft.fr/calculadoira
 
 Calculadoira is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@ help = string.gsub([[
 |     see help                    |     or xor and not                |
 |---------------------------------|     < <= > >= == !=               |
 | Commands: ? help license bye    |     cond?expr:expr                |
-|           edit                  |     + - * / % ** | ^ & >> << ~    |
+|           edit ascii            |     + - * / % ** | ^ & >> << ~    |
 +---------------------------------------------------------------------+
 ]], "X.Y.Z", version)
 
@@ -160,6 +160,13 @@ Ternary operator            x ? y : z
 Assignement                 x = y
 Blocks                      expr1, ..., exprn
 
+Other commands
+==============
+
+bye                         quit
+edit                        edit the configuration file
+ascii                       print an ASCII table
+
 Credits
 =======
 
@@ -263,6 +270,98 @@ function Edit()
     local self = Expr "Edit"
     function self.eval()
         config.edit()
+    end
+    return self
+end
+
+function Ascii()
+    local self = Expr "Ascii"
+    local special = {
+        [0x00] = "NUL '\\0'",
+        [0x01] = "SOH (start of heading)",
+        [0x02] = "STX (start of text)",
+        [0x03] = "ETX (end of text)",
+        [0x04] = "EOT (end of transmission)",
+        [0x05] = "ENQ (enquiry)",
+        [0x06] = "ACK (acknowledge)",
+        [0x07] = "BEL '\\a' (bell)",
+        [0x08] = "BS  '\\b' (backspace)",
+        [0x09] = "HT  '\\t' (horizontal tab)",
+        [0x0A] = "LF  '\\n' (new line)",
+        [0x0B] = "VT  '\\v' (vertical tab)",
+        [0x0C] = "FF  '\\f' (form feed)",
+        [0x0D] = "CR  '\\r' (carriage ret)",
+        [0x0E] = "SO  (shift out)",
+        [0x0F] = "SI  (shift in)",
+        [0x10] = "DLE (data link escape)",
+        [0x11] = "DC1 (device control 1)",
+        [0x12] = "DC2 (device control 2)",
+        [0x13] = "DC3 (device control 3)",
+        [0x14] = "DC4 (device control 4)",
+        [0x15] = "NAK (negative ack.)",
+        [0x16] = "SYN (synchronous idle)",
+        [0x17] = "ETB (end of trans. blk)",
+        [0x18] = "CAN (cancel)",
+        [0x19] = "EM  (end of medium)",
+        [0x1A] = "SUB (substitute)",
+        [0x1B] = "ESC (escape)",
+        [0x1C] = "FS  (file separator)",
+        [0x1D] = "GS  (group separator)",
+        [0x1E] = "RS  (record separator)",
+        [0x1F] = "US  (unit separator)",
+        [0x20] = "SPACE",
+    }
+    local header = string.rep(("| %-3s | %-3s | %-20s "):format("Dec", "Hex", "Character"), 2).."|"
+    local hr = header:gsub("[^|]", "-"):gsub("|", "+")
+    local fmt = "| %3d |  %02X | %-20s "
+    function self.eval()
+        local header, hr, fmt
+        header = ("| %-3s | %-3s | %-33s | %-3s | %-3s | %-9s |"):format("Dec", "Hex", "Character", "Dec", "Hex", "Character")
+        hr = header:gsub("[^|]", "-"):gsub("|", "+")
+        HR = hr:gsub("-", "=")
+        print(HR)
+        print(header)
+        print(HR)
+        -- Special characters
+        fmt = {[0]="| %3d |  %02X | %-33s ", [1]="| %3d |  %02X | %-9s "}
+        for bx = 0, 0x1F do
+            line = ""
+            for b5 = 0, 1 do
+                code = bit32.bor(bit32.lshift(b5, 5), bx)
+                char = special[code] or string.char(code)
+                line = line..fmt[b5]:format(code, code, char)
+            end
+            print(line.."|")
+        end
+        print(hr)
+        -- Normal characters (7 bits)
+        fmt = "| %03d |  %02X |  %s  "
+        for bx = 0, 0xF do
+            line = ""
+            for b654 = 4, 7 do
+                code = bit32.bor(bit32.lshift(b654, 4), bx)
+                char = special[code] or string.char(code)
+                line = line..fmt:format(code, code, char)
+            end
+            print(line.."|")
+        end
+        hr = (line.."|"):gsub("[^|]", "-"):gsub("|", "+")
+        HR = hr:gsub("-", "=")
+        print(hr)
+        -- Extended characters (8 bits)
+        for b6 = 0, 1 do
+            for bx = 0, 0xF do
+                line = ""
+                for b54 = 0, 3 do
+                    code = bit32.bor(bit32.lshift(1, 7), bit32.lshift(b6, 6), bit32.lshift(b54, 4), bx)
+                    char = special[code] or string.char(code)
+                    line = line..fmt:format(code, code, char)
+                end
+                print(line.."|")
+            end
+            if b6 == 0 then print(hr) end
+        end
+        print(HR)
     end
     return self
 end
@@ -852,6 +951,7 @@ do
         T("float", Toggle), T("ieee", Toggle),
         T("str", Toggle),
         T("edit", Edit),
+        T("ascii", Ascii),
         block
     })
 
