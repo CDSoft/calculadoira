@@ -1,6 +1,6 @@
 #!/usr/bin/env bl
 
-version = "2.1.8"
+version = "2.1.9"
 
 default_ini = "calculadoira.ini"
 
