@@ -1,5 +1,5 @@
 # Calculadoira
-# Copyright (C) 2011 - 2012 Christophe Delord
+# Copyright (C) 2011 - 2013 Christophe Delord
 # http://www.cdsoft.fr/calculadoira
 #
 # This file is part of Calculadoira.
@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
-BL_VERSION = 2.1.9
+BL_VERSION = 2.2.0
 BL_URL     = http://www.cdsoft.fr/bl/bonaluna-$(BL_VERSION).tgz
 BL_TGZ     = bonaluna-$(BL_VERSION).tgz
 BL_SRC     = bonaluna-$(BL_VERSION)

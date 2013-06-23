@@ -1,5 +1,5 @@
 -- Calculadoira
--- Copyright (C) 2011 - 2012 Christophe Delord
+-- Copyright (C) 2011 - 2013 Christophe Delord
 -- http://www.cdsoft.fr/calculadoira
 --
 -- This file is part of Calculadoira.
