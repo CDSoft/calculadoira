@@ -1,6 +1,6 @@
 #!/usr/bin/env bl
 
-version = "2.2.0"
+version = "2.2.1"
 
 default_ini = "calculadoira.ini"
 
@@ -832,8 +832,10 @@ do
     local number = Rule()
     number(T("b([01]+)", Number(2, "bin")))
     number(T("([01]+)b", Number(2, "bin")))
+    number(T("0[bB]([01]+)", Number(2, "bin")))
     number(T("o([0-7]+)", Number(8, "oct")))
     number(T("([0-7]+)o", Number(8, "oct")))
+    number(T("0[oO]([0-7]+)", Number(8, "oct")))
     number(T("h([0-9A-Fa-f]+)", Number(16, "hex")))
     number(T("([0-9A-Fa-f]+)h", Number(16, "hex")))
     number(T("0[xX]([0-9A-Fa-f]+)", Number(16, "hex")))
