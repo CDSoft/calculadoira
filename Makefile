@@ -37,7 +37,7 @@ $(BL_SRC)/Makefile: $(BL_TGZ)
 	touch $@
 	
 $(BL_SRC)/$(BL): calculadoira.ico $(BL_SRC)/Makefile
-	echo 'export LIBRARIES="QLZ"'               >  $(BL_SRC)/setup
+	echo 'export LIBRARIES="QLZ BC"'            >  $(BL_SRC)/setup
 	echo 'export ICON="../../calculadoira.ico"' >> $(BL_SRC)/setup
 	echo 'export COMPRESS="upx --brute"'        >> $(BL_SRC)/setup
 	#sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh
