@@ -1,6 +1,6 @@
 #!/usr/bin/env bl
 
-version = "2.2.1"
+version = "2.2.2"
 
 default_ini = "calculadoira.ini"
 
@@ -29,7 +29,7 @@ help = string.gsub([[
 |---------------------------------------------------------------------|
 | Modes:                          | Numbers:                          |
 |     hex oct bin float ieee str  |     binary: b... or ...b or 0b... |
-|     digits(n) bits(n)           |     octal : o... or ...o or 0o... |
+|     digits(n)                   |     octal : o... or ...o or 0o... |
 |---------------------------------|     hexa  : h... or ...h or 0x... |
 | Variable and function:          |     float : 1.2e-3                |
 |     variable = expression       | Chars     : "abcd" or 'abcd'      |
@@ -72,30 +72,30 @@ x < y, x <= y               comparisons
 x > y, x >= y
 x == y, x != y, x ~= y
 
-x!                          the factorial of x
-|x|                         the absolute value of x
+x!                          factorial of x
+|x|                         absolute value of x
 
-abs(x)                      the absolute value of x
-ceil(x)                     the smallest integer larger than or equal to x
-floor(x)                    the largest integer smaller than or equal to x
+abs(x)                      absolute value of x
+ceil(x)                     smallest integer larger than or equal to x
+floor(x)                    largest integer smaller than or equal to x
 mantissa(x)                 m such that x = m2e, |m| is in [0.5, 1[
 exponent(x)                 e such that x = m2e, e is an integer
-int(x)                      the integral part of x
-fract(x)                    the fractional part of x
-fmod(x, y)                  the remainder of the division of x by y
+int(x)                      integral part of x
+fract(x)                    fractional part of x
+fmod(x, y)                  remainder of the division of x by y
 ldexp(m, e)                 m*2**e (e should be an integer)
 pow(x, y)                   x to the power y
-min(...), max(...)          the minimum / maximum value among its arguments
+min(...), max(...)          minimum / maximum value among its arguments
 
-sqr(x)                      the square of x (x**2)
-sqrt(x)                     the square root of x (x**0.5)
+sqr(x)                      square of x (x**2)
+sqrt(x)                     square root of x (x**0.5)
 
 cos(x), acos(x), cosh(x)    trigonometric functions
 sin(x), asin(x), sinh(x)
 tan(x), atan(x), tanh(x)
-atan2(y, x)                 the arc tangent of y/x (in radians)
-deg(x)                      the angle x (given in radians) in degrees
-rad(x)                      the angle x (given in degrees) in radians
+atan2(y, x)                 arc tangent of y/x (in radians)
+deg(x)                      angle x (given in radians) in degrees
+rad(x)                      angle x (given in degrees) in radians
 
 exp(x)                      e**x
 log(x), ln(x)               logarithm of x in base e
@@ -107,21 +107,28 @@ random(m)                   random integer in [1, m]
 random(m, n)                random integer in [m, n]
 randomseed(x)               x as the "seed" for the pseudo-random generator
 
-float2ieee(x)               the IEEE 754 representation of x
-ieee2float(n)               the float value of the IEEE 754 integer value n
+float2ieee(x)               IEEE 754 representation of x (32 bits)
+ieee2float(n)               32 bit float value of the IEEE 754 integer n
+double2ieee(x)              IEEE 754 representation of x (64 bits)
+ieee2double(n)              64 bit float value of the IEEE 754 integer n
 
 Display modes
 =============
 
-hex, oct and bin commands change the display mode.
+dec, hex, oct and bin commands change the display mode.
 When enabled, the integer result is displayed in
 hexadecimal, octal and/or binary.
 float mode shows the float value of a 32 bit IEEE float.
 ieee mode shows the IEEE coding of a 32 bit float.
 str mode show the ASCII representation of 1 to 4 chars.
 
-digits changes the number of digits in big numbers.
-bits changes the number of bits for some bitwise operators.
+digits changes the number of digits after the period in big numbers.
+
+dec, hex, oct, bin can have suffixes giving the number of bits
+to be displayed (e.g. hex16 shows 16 bit results). Valid suffixes
+are 8, 16, 32, 64 and 128.
+
+float and ieee can have suffixes giving the size of floats (32 or 64).
 
 Blocks
 ======
@@ -187,14 +194,9 @@ end
 bc.digits(20)
 
 local config
-local bits = 32
-
-local function set_bits(n)
-    bits = bc.tonumber(bc.trunc(n))
-end
 
 function Mode()
-    local self = {}
+    local self = {bits=nil}
     function self.set(...)
         if not running then return end
         for _, mode in ipairs({...}) do
@@ -205,10 +207,15 @@ function Mode()
         if not running then return end
         self[mode] = not self[mode]
     end
+    function self.set_bits(bits)
+        if not running then return end
+        self.bits = bits and bc.tonumber(bc.trunc(bc.number(bits)))
+    end
     function self.clear()
         for k,v in pairs(self) do
             if v == true then self[k] = false end
         end
+        self.bits = nil
     end
     return self
 end
@@ -417,6 +424,24 @@ function ieee2float(x)
     end
 end
 
+function double2ieee(x)
+    mode.set("float", "ieee")
+    x = bc.tonumber(x)
+    if type(x) == 'number' then
+        local lo, hi = struct.unpack("I4I4", struct.pack("d", x))
+        return bc.bor(bc.lshift(bc.number(hi), bc.number(32)), bc.number(lo))
+    end
+end
+
+function ieee2double(x)
+    mode.set("float", "ieee")
+    if type(bc.tonumber(x)) == 'number' then
+        local lo = bc.band(x, bc.number(0xFFFFFFFF))
+        local hi = bc.band(bc.rshift(x, bc.number(32)), bc.number(0xFFFFFFFF))
+        return bc.number((struct.unpack("d", struct.pack("I4I4", bc.tonumber(lo), bc.tonumber(hi)))))
+    end
+end
+
 nan = ieee2float(0x7FC00000)
 
 function Number(base, m)
@@ -588,10 +613,9 @@ builtins = {
     },
     [1] = {
         ["digits"] = B(function(n) bc.digits(bc.tonumber(n)) end),
-        ["bits"] = B(set_bits),
         ["+"] = B(function(x) return x end),
         ["-"] = B(function(x) return -x end),
-        ["~"] = B(function(x) mode.set("hex") return bc.bnot(x, bits) end),
+        ["~"] = B(function(x) mode.set("hex") return bc.bnot(x) end),
         ["!"] = B(factorial),
         ["not"] = B(function(x) return not x end),
         ["abs"] = B(bc.abs),
@@ -623,6 +647,8 @@ builtins = {
         ["tanh"] = B(bc.tanh),
         ["float2ieee"] = B(float2ieee),
         ["ieee2float"] = B(ieee2float),
+        ["double2ieee"] = B(double2ieee),
+        ["ieee2double"] = B(ieee2double),
     },
     [2] = {
         ["+"] = B(function(x, y) return x + y end),
@@ -729,8 +755,15 @@ end
 
 function Set(k)
     local self = Expr "Set"
-    function self.dis() return "Set("..k..")" end
-    function self.eval(env) mode.set(k) end
+    local k, bits = k:match("(%a+)(%d*)")
+    if not bits and (k=="float" or k=="ieee") then bits = 32 end
+    function self.dis() return "Set("..k..", "..bits..")" end
+    function self.eval(env)
+        mode.set(k)
+        if bits then
+            mode.set_bits(bits)
+        end
+    end
     return self
 end
 
@@ -966,6 +999,12 @@ do
         T("license", License),
         T("dec", Toggle), T("hex", Toggle), T("oct", Toggle), T("bin", Toggle),
         T("float", Toggle), T("ieee", Toggle),
+        T("dec8", Set), T("dec16", Set), T("dec32", Set), T("dec64", Set), T("dec128", Set),
+        T("hex8", Set), T("hex16", Set), T("hex32", Set), T("hex64", Set), T("hex128", Set),
+        T("oct8", Set), T("oct16", Set), T("oct32", Set), T("oct64", Set), T("oct128", Set),
+        T("bin8", Set), T("bin16", Set), T("bin32", Set), T("bin64", Set), T("bin128", Set),
+        T("float32", Set), T("float64", Set),
+        T("ieee32", Set), T("ieee64", Set),
         T("str", Toggle),
         T("edit", Edit),
         T("ascii", Ascii),
@@ -980,7 +1019,13 @@ do
     stat(T("[;#]%s*[^\r\n]*", Comment))
     stat(Alt{
         T("dec", Set), T("hex", Set), T("oct", Set), T("bin", Set),
+        T("dec8", Set), T("dec16", Set), T("dec32", Set), T("dec64", Set), T("dec128", Set),
+        T("hex8", Set), T("hex16", Set), T("hex32", Set), T("hex64", Set), T("hex128", Set),
+        T("oct8", Set), T("oct16", Set), T("oct32", Set), T("oct64", Set), T("oct128", Set),
+        T("bin8", Set), T("bin16", Set), T("bin32", Set), T("bin64", Set), T("bin128", Set),
         T("float", Set), T("ieee", Set),
+        T("float32", Set), T("float64", Set),
+        T("ieee32", Set), T("ieee64", Set),
         T("str", Set),
     })
     stat(Seq({proto, T"=", ternary},
@@ -1234,19 +1279,29 @@ while true do
                 print("!", val)
             elseif val ~= nil then
                 print("=", bc.tostring(val))
-                --if mode.dec then print("dec", int(val)) end
-                --if mode.hex then print("hex", int(val, {radix=16, digits=8,  groups=4})) end
-                --if mode.oct then print("oct", int(val, {radix=8,  digits=nil, groups=999})) end
-                --if mode.bin then print("bin", int(val, {radix=2,  digits=32, groups=4})) end
-                --if mode.float then print("float", ieee2float(val)) end
-                --if mode.ieee then print("ieee", int(float2ieee(val), {radix=16, digits=8, groups=8, format="0x%s"})) end
-                --if mode.str then print("str", str(val)) end
-                if mode.dec then print("dec", bc.dec(val)) end
-                if mode.hex then print("hex", bc.hex(val)) end
-                if mode.oct then print("oct", bc.oct(val)) end
-                if mode.bin then print("bin", bc.bin(val)) end
-                if mode.float then print("float", ieee2float(val)) end
-                if mode.ieee then print("ieee", bc.hex(float2ieee(val))) end
+                for base in iter{"dec", "hex", "oct", "bin"} do
+                    if mode[base] then
+                        if mode.bits then
+                            print(("%s%d"):format(base, mode.bits), ("%s"):format(bc[base](val, mode.bits)))
+                        else
+                            print(base, ("%s"):format(bc[base](val)))
+                        end
+                    end
+                end
+                if mode.float then
+                    if mode.bits == 64 then
+                        print("float64", ieee2double(val))
+                    else
+                        print("float32", ieee2float(val))
+                    end
+                end
+                if mode.ieee then
+                    if mode.bits == 64 then
+                        print("ieee64", double2ieee(val))
+                    else
+                        print("ieee32", float2ieee(val))
+                    end
+                end
                 if mode.str then print("str", str(val)) end
             end
         end
