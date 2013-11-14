@@ -1,6 +1,6 @@
 #!/usr/bin/env bl
 
-version = "2.2.2"
+version = "2.2.3"
 
 default_ini = "calculadoira.ini"
 
@@ -756,11 +756,11 @@ end
 function Set(k)
     local self = Expr "Set"
     local k, bits = k:match("(%a+)(%d*)")
-    if not bits and (k=="float" or k=="ieee") then bits = 32 end
+    if (not bits or bits=="") and (k=="float" or k=="ieee") then bits = 32 end
     function self.dis() return "Set("..k..", "..bits..")" end
     function self.eval(env)
         mode.set(k)
-        if bits then
+        if bits and bits~="" then
             mode.set_bits(bits)
         end
     end
