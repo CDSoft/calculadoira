@@ -421,7 +421,7 @@ function Object(val)
 end
 
 function float2ieee(x)
-    mode.set("float", "ieee")
+    mode.set("float")
     x = bn.Float(x):tonumber()
     if type(x) == 'number' then
         return bn.Int((struct.unpack("I4", struct.pack("f", x))))
@@ -429,7 +429,7 @@ function float2ieee(x)
 end
 
 function ieee2float(x)
-    mode.set("float", "ieee")
+    mode.set("float")
     x = bn.Int(x):tonumber()
     if type(x) == 'number' then
         return bn.Float((struct.unpack("f", struct.pack("I4", x))))
@@ -437,7 +437,7 @@ function ieee2float(x)
 end
 
 function double2ieee(x)
-    mode.set("float", "ieee")
+    mode.set("float")
     x = bn.Float(x):tonumber()
     if type(x) == 'number' then
         local lo, hi = struct.unpack("I4I4", struct.pack("d", x))
@@ -446,7 +446,7 @@ function double2ieee(x)
 end
 
 function ieee2double(x)
-    mode.set("float", "ieee")
+    mode.set("float")
         local lo = bn.band(x, bn.Int(0xFFFFFFFF))
         local hi = bn.band(bn.rshift(x, 32), bn.Int(0xFFFFFFFF))
         return bn.Float((struct.unpack("d", struct.pack("I4I4", lo:tonumber(), hi:tonumber()))))
@@ -779,7 +779,7 @@ end
 function Set(k)
     local self = Expr "Set"
     local k, bits = k:match("(%a+)(%d*)")
-    if (not bits or bits=="") and (k=="float" or k=="ieee") then bits = 32 end
+    if (not bits or bits=="") and k=="float" then bits = 32 end
     function self.dis() return "Set("..k..", "..bits..")" end
     function self.eval(env)
         mode.set(k)
@@ -1022,13 +1022,12 @@ do
         T("%?", Help), T("help", LongHelp),
         T("license", License),
         T("dec", Toggle), T("hex", Toggle), T("oct", Toggle), T("bin", Toggle),
-        T("float", Toggle), T("ieee", Toggle),
+        T("float", Toggle),
         T("dec8", Set), T("dec16", Set), T("dec32", Set), T("dec64", Set), T("dec128", Set),
         T("hex8", Set), T("hex16", Set), T("hex32", Set), T("hex64", Set), T("hex128", Set),
         T("oct8", Set), T("oct16", Set), T("oct32", Set), T("oct64", Set), T("oct128", Set),
         T("bin8", Set), T("bin16", Set), T("bin32", Set), T("bin64", Set), T("bin128", Set),
         T("float32", Set), T("float64", Set),
-        T("ieee32", Set), T("ieee64", Set),
         T("str", Toggle),
         T("edit", Edit),
         T("ascii", Ascii),
@@ -1047,9 +1046,8 @@ do
         T("hex8", Set), T("hex16", Set), T("hex32", Set), T("hex64", Set), T("hex128", Set),
         T("oct8", Set), T("oct16", Set), T("oct32", Set), T("oct64", Set), T("oct128", Set),
         T("bin8", Set), T("bin16", Set), T("bin32", Set), T("bin64", Set), T("bin128", Set),
-        T("float", Set), T("ieee", Set),
+        T("float", Set),
         T("float32", Set), T("float64", Set),
-        T("ieee32", Set), T("ieee64", Set),
         T("str", Set),
     })
     stat(Seq({proto, T"=", ternary},
@@ -1263,13 +1261,13 @@ last_line = nil
 
 while true do
     local line
-    if replay then
+    if replay and last_line then
         line = last_line
-        replay = false
         print(": "..line)
     else
         line = rl.read(": ")
     end
+    replay = false
     config.run(env) -- autoreload
     if not line:match("^%s*$") then
         local expr, err = calc(line)
