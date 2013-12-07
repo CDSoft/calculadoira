@@ -446,9 +446,9 @@ end
 
 function ieee2double(x)
     mode.set("float")
-        local lo = bn.band(x, bn.Int(0xFFFFFFFF))
-        local hi = bn.band(bn.rshift(x, 32), bn.Int(0xFFFFFFFF))
-        return bn.Float((struct.unpack("d", struct.pack("I4I4", lo:tonumber(), hi:tonumber()))))
+    local lo = bn.band(x, bn.Int(0xFFFFFFFF))
+    local hi = bn.band(bn.rshift(x, 32), bn.Int(0xFFFFFFFF))
+    return bn.Float((struct.unpack("d", struct.pack("I4I4", lo:tonumber(), hi:tonumber()))))
 end
 
 nan = ieee2float(0x7FC00000)
@@ -663,7 +663,7 @@ builtins = {
         ["sin"] = B(bn.sin),
         ["sinh"] = B(bn.sinh),
         ["sqr"] = B(function(x) return x*x end),
-        ["sqrt"] = B(function(x) return bn.Float(x:tonumber()^0.5) end),
+        ["sqrt"] = B(bn.sqrt),
         ["tan"] = B(bn.tan),
         ["tanh"] = B(bn.tanh),
         ["float2ieee"] = B(float2ieee),
@@ -696,7 +696,7 @@ builtins = {
         ["atan2"] = B(bn.atan2),
         ["fmod"] = B(bn.fmod),
         ["ldexp"] = B(bn.ldexp),
-        ["log"] = B(bn.log),
+        ["log"] = B(function(x, base) return bn.log(x, base:tonumber()) end),
         ["max"] = B(bn.max),
         ["min"] = B(bn.min),
         ["pow"] = B(bn.pow),
