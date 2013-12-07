@@ -28,7 +28,7 @@ help = string.gsub([[
 |     C A L C U L A D O I R A     | v. X.Y.Z | cdsoft.fr/calculadoira |
 |---------------------------------------------------------------------|
 | Modes:                          | Numbers:                          |
-|     hex oct bin float ieee str  |     binary: b... or ...b or 0b... |
+|     hex oct bin float str       |     binary: b... or ...b or 0b... |
 |     hex8/16/32/64 ...           |     octal : o... or ...o or 0o... |
 |---------------------------------|     hexa  : h... or ...h or 0x... |
 | Variable and function:          |     float : 1.2e-3                |
@@ -122,15 +122,14 @@ Display modes
 dec, hex, oct and bin commands change the display mode.
 When enabled, the integer result is displayed in
 hexadecimal, octal and/or binary.
-float mode shows the float value of a 32 bit IEEE float.
-ieee mode shows the IEEE coding of a 32 bit float.
+float mode shows float values and their IEEE encoding.
 str mode show the ASCII representation of 1 to 4 chars.
 
 dec, hex, oct, bin can have suffixes giving the number of bits
 to be displayed (e.g. hex16 shows 16 bit results). Valid suffixes
 are 8, 16, 32, 64 and 128.
 
-float and ieee can have suffixes giving the size of floats (32 or 64).
+float can have suffixes giving the size of floats (32 or 64).
 
 Blocks
 ======
