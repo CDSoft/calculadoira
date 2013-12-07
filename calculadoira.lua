@@ -1,6 +1,6 @@
 #!/usr/bin/env bl
 
-version = "2.2.3"
+version = "2.2.4"
 
 default_ini = "calculadoira.ini"
 
@@ -29,7 +29,7 @@ help = string.gsub([[
 |---------------------------------------------------------------------|
 | Modes:                          | Numbers:                          |
 |     hex oct bin float ieee str  |     binary: b... or ...b or 0b... |
-|     digits(n)                   |     octal : o... or ...o or 0o... |
+|     hex8/16/32/64 ...           |     octal : o... or ...o or 0o... |
 |---------------------------------|     hexa  : h... or ...h or 0x... |
 | Variable and function:          |     float : 1.2e-3                |
 |     variable = expression       | Chars     : "abcd" or 'abcd'      |
@@ -74,6 +74,10 @@ x == y, x != y, x ~= y
 
 x!                          factorial of x
 |x|                         absolute value of x
+
+int(x)                      x converted to int
+float(x)                    x converted to float
+rat(x)                      x converted to rat
 
 abs(x)                      absolute value of x
 ceil(x)                     smallest integer larger than or equal to x
@@ -121,8 +125,6 @@ hexadecimal, octal and/or binary.
 float mode shows the float value of a 32 bit IEEE float.
 ieee mode shows the IEEE coding of a 32 bit float.
 str mode show the ASCII representation of 1 to 4 chars.
-
-digits changes the number of digits after the period in big numbers.
 
 dec, hex, oct, bin can have suffixes giving the number of bits
 to be displayed (e.g. hex16 shows 16 bit results). Valid suffixes
@@ -191,8 +193,6 @@ if sys.platform == "Windows" then
     os.execute "color f0"
 end
 
-bc.digits(20)
-
 local config
 
 function Mode()
@@ -206,10 +206,21 @@ function Mode()
     function self.toggle(mode)
         if not running then return end
         self[mode] = not self[mode]
+        if (mode == "dec" or mode == "hex" or mode == "oct" or mode == "bin")
+        and not self["dec"] and not self["hex"] and not self["oct"] and not self["bin"]
+        and not self["float"] then
+            self.bits = nil
+        end
+        if mode == "float" and self["float"] and (self.bits ~= 32 and self.bits ~= 64) then
+            self.bits = 32
+        end
     end
     function self.set_bits(bits)
         if not running then return end
-        self.bits = bits and bc.tonumber(bc.trunc(bc.number(bits)))
+        self.bits = bits and bn.Int(bits):tonumber()
+        if self.bits ~= 32 and self.bits ~= 64 then
+            self["float"] = false
+        end
     end
     function self.clear()
         for k,v in pairs(self) do
@@ -235,6 +246,7 @@ function Expr(class)
     self.dis = Virtual(self, "dis")
     function self.evaluate(env)
         running = true
+        --val = self.eval(env)
         local ok, val = pcall(self.eval, env)
         running = false
         if not ok then val = val:gsub(".*:%d+:", "") end
@@ -410,51 +422,60 @@ end
 
 function float2ieee(x)
     mode.set("float", "ieee")
-    x = bc.tonumber(x)
+    x = bn.Float(x):tonumber()
     if type(x) == 'number' then
-        return bc.number((struct.unpack("I4", struct.pack("f", x))))
+        return bn.Int((struct.unpack("I4", struct.pack("f", x))))
     end
 end
 
 function ieee2float(x)
     mode.set("float", "ieee")
-    x = bc.tonumber(x)
+    x = bn.Int(x):tonumber()
     if type(x) == 'number' then
-        return bc.number((struct.unpack("f", struct.pack("I4", x))))
+        return bn.Float((struct.unpack("f", struct.pack("I4", x))))
     end
 end
 
 function double2ieee(x)
     mode.set("float", "ieee")
-    x = bc.tonumber(x)
+    x = bn.Float(x):tonumber()
     if type(x) == 'number' then
         local lo, hi = struct.unpack("I4I4", struct.pack("d", x))
-        return bc.bor(bc.lshift(bc.number(hi), bc.number(32)), bc.number(lo))
+        return bn.bor(bn.lshift(bn.Int(hi), 32), bn.Int(lo))
     end
 end
 
 function ieee2double(x)
     mode.set("float", "ieee")
-    if type(bc.tonumber(x)) == 'number' then
-        local lo = bc.band(x, bc.number(0xFFFFFFFF))
-        local hi = bc.band(bc.rshift(x, bc.number(32)), bc.number(0xFFFFFFFF))
-        return bc.number((struct.unpack("d", struct.pack("I4I4", bc.tonumber(lo), bc.tonumber(hi)))))
-    end
+        local lo = bn.band(x, bn.Int(0xFFFFFFFF))
+        local hi = bn.band(bn.rshift(x, 32), bn.Int(0xFFFFFFFF))
+        return bn.Float((struct.unpack("d", struct.pack("I4I4", lo:tonumber(), hi:tonumber()))))
 end
 
 nan = ieee2float(0x7FC00000)
 
-function Number(base, m)
+function IntNumber(base, m)
     return function(n)
-        local self = Expr "Number"
+        local self = Expr "IntNumber"
         function self.dis() return string.sub(m or "", 1, 1)..n end
         function self.eval()
             mode.set(m)
             --return tonumber(n, base)
-            if base == 2 then return bc.number("0b"..n) end
-            if base == 8 then return bc.number("0o"..n) end
-            if base == 16 then return bc.number("0x"..n) end
-            return bc.number(n)
+            if base == 2 then return bn.Int("0b"..n) end
+            if base == 8 then return bn.Int("0o"..n) end
+            if base == 16 then return bn.Int("0x"..n) end
+            return bn.Int(n)
+        end
+        return self
+    end
+end
+
+function FloatNumber()
+    return function(n)
+        local self = Expr "FloatNumber"
+        function self.dis() return string.sub(m or "", 1, 1)..n end
+        function self.eval()
+            return bn.Float(n)
         end
         return self
     end
@@ -475,9 +496,9 @@ function Str(endianess, str)
     function self.eval()
         mode.set("str", "hex")
         if endianess == ">" then
-            return bc.number(struct.unpack(">I4", string.rep("\0", 4-#str)..str))
+            return bn.Int(struct.unpack(">I4", string.rep("\0", 4-#str)..str))
         else
-            return bc.number(struct.unpack("<I4", str..string.rep("\0", 4-#str)))
+            return bn.Int(struct.unpack("<I4", str..string.rep("\0", 4-#str)))
         end
     end
     return self
@@ -594,15 +615,15 @@ end
 
 constants = {
     nan = nan,          -- TODO : remplacer nan par une exception ?
-    pi = bc.number("3.14159265358979323846264338327950288419716939937510"),
-    e  = bc.number("2.71828182845904523536028747135266249775724709369996"),
+    pi = bn.pi,
+    e  = bn.e,
 }
 
 local function factorial(n)
-    n = bc.tonumber(bc.trunc(n))
-    local f = bc.number(1)
+    n = bn.Int(n):tonumber()
+    local f = bn.one
     for i = 1, n do
-        f = f*i
+        f = f*bn.Int(i)
     end
     return f
 end
@@ -612,39 +633,40 @@ builtins = {
         ["random"] = B(math.random),
     },
     [1] = {
-        ["digits"] = B(function(n) bc.digits(bc.tonumber(n)) end),
         ["+"] = B(function(x) return x end),
         ["-"] = B(function(x) return -x end),
-        ["~"] = B(function(x) mode.set("hex") return bc.bnot(x) end),
+        ["~"] = B(function(x) mode.set("hex") return bn.bnot(x) end),
         ["!"] = B(factorial),
         ["not"] = B(function(x) return not x end),
-        ["abs"] = B(bc.abs),
-        ["acos"] = B(bc.acos),
-        ["asin"] = B(bc.asin),
-        ["atan"] = B(bc.atan),
-        ["ceil"] = B(bc.ceil),
-        ["cos"] = B(bc.cos),
-        ["cosh"] = B(bc.cosh),
-        ["deg"] = B(bc.deg),
-        ["exp"] = B(bc.exp),
-        ["floor"] = B(bc.floor),
-        ["mantissa"] = B(function(x) local m, e = bc.frexp(x) return m end),
-        ["exponent"] = B(function(x) local m, e = bc.frexp(x) return e end),
-        ["log"] = B(bc.log),
-        ["ln"] = B(bc.log),
-        ["log10"] = B(function(x) return bc.log(x, 10) end),
-        ["log2"] = B(function(x) return bc.log(x, 2) end),
-        ["int"] = B(function(x) local i, f = bc.modf(x) return i end),
-        ["fract"] = B(function(x) local i, f = bc.modf(x) return f end),
-        ["rad"] = B(bc.rad),
-        ["random"] = B(bc.random),
-        ["randomseed"] = B(bc.randomseed),
-        ["sin"] = B(bc.sin),
-        ["sinh"] = B(bc.sinh),
-        ["sqr"] = B(function(x) return x^2 end),
-        ["sqrt"] = B(bc.sqrt),
-        ["tan"] = B(bc.tan),
-        ["tanh"] = B(bc.tanh),
+        ["abs"] = B(bn.abs),
+        ["acos"] = B(bn.acos),
+        ["asin"] = B(bn.asin),
+        ["atan"] = B(bn.atan),
+        ["ceil"] = B(bn.ceil),
+        ["cos"] = B(bn.cos),
+        ["cosh"] = B(bn.cosh),
+        ["deg"] = B(bn.deg),
+        ["exp"] = B(bn.exp),
+        ["floor"] = B(bn.floor),
+        ["mantissa"] = B(function(x) local m, e = bn.frexp(x) return m end),
+        ["exponent"] = B(function(x) local m, e = bn.frexp(x) return e end),
+        ["log"] = B(bn.log),
+        ["ln"] = B(bn.log),
+        ["log10"] = B(function(x) return bn.log(x, bn.Float(10)) end),
+        ["log2"] = B(function(x) return bn.log(x, bn.Float(2)) end),
+        ["int"] = B(function(x) return bn.Int(x) end),
+        ["rat"] = B(function(x) return bn.Rat(x) end),
+        ["float"] = B(function(x) return bn.Float(x) end),
+        ["fract"] = B(function(x) local i, f = bn.modf(x) return f end),
+        ["rad"] = B(bn.rad),
+        ["random"] = B(bn.random),
+        ["randomseed"] = B(bn.randomseed),
+        ["sin"] = B(bn.sin),
+        ["sinh"] = B(bn.sinh),
+        ["sqr"] = B(function(x) return x*x end),
+        ["sqrt"] = B(function(x) return bn.Float(x:tonumber()^0.5) end),
+        ["tan"] = B(bn.tan),
+        ["tanh"] = B(bn.tanh),
         ["float2ieee"] = B(float2ieee),
         ["ieee2float"] = B(ieee2float),
         ["double2ieee"] = B(double2ieee),
@@ -653,14 +675,14 @@ builtins = {
     [2] = {
         ["+"] = B(function(x, y) return x + y end),
         ["-"] = B(function(x, y) return x - y end),
-        ["|"] = B(function(x, y) mode.set("hex") return bc.bor(x, y) end),
-        ["^"] = B(function(x, y) mode.set("hex") return bc.bxor(x, y) end),
+        ["|"] = B(function(x, y) mode.set("hex") return bn.bor(x, y) end),
+        ["^"] = B(function(x, y) mode.set("hex") return bn.bxor(x, y) end),
         ["*"] = B(function(x, y) return x * y end),
         ["/"] = B(function(x, y) return x / y end),
         ["%"] = B(function(x, y) return x % y end),
-        ["&"] = B(function(x, y) mode.set("hex") return bc.band(x, y) end),
-        ["<<"] = B(function(x, y) mode.set("hex") return bc.lshift(x, y) end),
-        [">>"] = B(function(x, y) mode.set("hex") return bc.rshift(x, y) end),
+        ["&"] = B(function(x, y) mode.set("hex") return bn.band(x, y) end),
+        ["<<"] = B(function(x, y) mode.set("hex") return bn.lshift(x, y:tonumber()) end),
+        [">>"] = B(function(x, y) mode.set("hex") return bn.rshift(x, y:tonumber()) end),
         ["**"] = B(function(x, y) return x ^ y end),
         ["or"] = Or(),
         ["xor"] = B(function(x, y) return x and not y or y and not x end),
@@ -672,14 +694,15 @@ builtins = {
         ["=="] = B(function(x, y) return x == y end),
         ["!="] = B(function(x, y) return x ~= y end),
         ["~="] = B(function(x, y) return x ~= y end),
-        ["atan2"] = B(bc.atan2),
-        ["fmod"] = B(bc.fmod),
-        ["ldexp"] = B(bc.ldexp),
-        ["log"] = B(bc.log),
-        ["max"] = B(bc.max),
-        ["min"] = B(bc.min),
-        ["pow"] = B(bc.pow),
-        ["random"] = B(bc.random),
+        ["atan2"] = B(bn.atan2),
+        ["fmod"] = B(bn.fmod),
+        ["ldexp"] = B(bn.ldexp),
+        ["log"] = B(bn.log),
+        ["max"] = B(bn.max),
+        ["min"] = B(bn.min),
+        ["pow"] = B(bn.pow),
+        ["random"] = B(bn.random),
+        ["rat"] = B(function(x, eps) return x:toRat(eps:tonumber()) end),
     },
 }
 for i = 3, 10 do
@@ -749,7 +772,7 @@ end
 function Toggle(k)
     local self = Expr "Toggle"
     function self.dis() return "Toggle("..k..")" end
-    function self.eval(env) mode.toggle(k) end
+    function self.eval(env) mode.toggle(k) replay = true end
     return self
 end
 
@@ -763,6 +786,7 @@ function Set(k)
         if bits and bits~="" then
             mode.set_bits(bits)
         end
+        replay = true
     end
     return self
 end
@@ -863,21 +887,21 @@ do
     local expr = Rule()
     local ident = T("[a-zA-Z_][%w_]*", Ident)
     local number = Rule()
-    number(T("b([01]+)", Number(2, "bin")))
-    number(T("([01]+)b", Number(2, "bin")))
-    number(T("0[bB]([01]+)", Number(2, "bin")))
-    number(T("o([0-7]+)", Number(8, "oct")))
-    number(T("([0-7]+)o", Number(8, "oct")))
-    number(T("0[oO]([0-7]+)", Number(8, "oct")))
-    number(T("h([0-9A-Fa-f]+)", Number(16, "hex")))
-    number(T("([0-9A-Fa-f]+)h", Number(16, "hex")))
-    number(T("0[xX]([0-9A-Fa-f]+)", Number(16, "hex")))
-    number(T("%d+%.%d*", Number()))
-    number(T("%d*%.%d+", Number()))
-    number(T("%d+%.%d*[eE][-+]?%d+", Number()))
-    number(T("%d*%.%d+[eE][-+]?%d+", Number()))
-    number(T("%d+[eE][-+]?%d+", Number()))
-    number(T("%d+", Number()))
+    number(T("b([01]+)", IntNumber(2, "bin")))
+    number(T("([01]+)b", IntNumber(2, "bin")))
+    number(T("0[bB]([01]+)", IntNumber(2, "bin")))
+    number(T("o([0-7]+)", IntNumber(8, "oct")))
+    number(T("([0-7]+)o", IntNumber(8, "oct")))
+    number(T("0[oO]([0-7]+)", IntNumber(8, "oct")))
+    number(T("h([0-9A-Fa-f]+)", IntNumber(16, "hex")))
+    number(T("([0-9A-Fa-f]+)h", IntNumber(16, "hex")))
+    number(T("0[xX]([0-9A-Fa-f]+)", IntNumber(16, "hex")))
+    number(T("%d+%.%d*", FloatNumber()))
+    number(T("%d*%.%d+", FloatNumber()))
+    number(T("%d+%.%d*[eE][-+]?%d+", FloatNumber()))
+    number(T("%d*%.%d+[eE][-+]?%d+", FloatNumber()))
+    number(T("%d+[eE][-+]?%d+", FloatNumber()))
+    number(T("%d+", IntNumber()))
     local bool = Rule()
     bool(T("true", Bool))
     bool(T("false", Bool))
@@ -1220,39 +1244,8 @@ function Config(names)
     return self
 end
 
-function int(val, config)
-    config = config or {}
-    local radix = config.radix or 10
-    local digits = config.digits or nil
-    local groups = config.groups or 3
-    local format = config.format or "%s"
-    local isnumber, val = pcall(math.floor, val)
-    if not isnumber then return "" end
-    local s = ""
-    local n
-    if radix == 10 and val < 0 then
-        n = math.abs(val)
-    else
-        n = val
-    end
-    local nb_digits = 0
-    n = n % 2^32
-    while (digits and nb_digits<digits) or (not digits and n ~= 0) do
-        local d = n%radix
-        if not (d < radix) then return "" end -- to avoid infinite loop when n is NaN
-        n = (n-d)/radix
-        s = string.sub("0123456789ABCDEF", d+1, d+1)..s
-        nb_digits = nb_digits + 1
-        if nb_digits % groups == 0 then s = " "..s end
-    end
-    s = string.gsub(s, "^ ", "")
-    if s == "" then s = "0" end
-    if radix == 10 and val < 0 then s = "-"..s end
-    return string.format(format, s)
-end
-
 function str(val)
-    local isnumber, val = pcall(math.floor, bc.tonumber(val % 2^32))
+    local isnumber, val = pcall(math.floor, (val % bn.Int(2^32)):tonumber())
     if not isnumber then return "" end
     local s = struct.pack(">I4", val):gsub("^%z+(.+)", "%1")
     return string.format("%q", s)
@@ -1265,46 +1258,68 @@ local env = Env()
 config = Config(arg)
 config.run(env)
 
+replay = false
+last_line = nil
+
 while true do
-    local line = rl.read(": ")
+    local line
+    if replay then
+        line = last_line
+        replay = false
+        print(": "..line)
+    else
+        line = rl.read(": ")
+    end
     config.run(env) -- autoreload
     if not line:match("^%s*$") then
         local expr, err = calc(line)
         if not expr then
             print("!", err)
+            print ""
         else
             --print("debug", expr.dis())
             local ok, val = expr.evaluate(env)
             if not ok then
                 print("!", val)
+                print ""
             elseif val ~= nil then
-                print("=", bc.tostring(val))
-                for base in iter{"dec", "hex", "oct", "bin"} do
-                    if mode[base] then
-                        if mode.bits then
-                            print(("%s%d"):format(base, mode.bits), ("%s"):format(bc[base](val, mode.bits)))
-                        else
-                            print(base, ("%s"):format(bc[base](val)))
+                last_line = line
+                print("=", val)
+                if type(val) == "table" then
+                    if val.isInt then
+                        for base in iter{"dec", "hex", "oct", "bin"} do
+                            if mode[base] then
+                                print(base..(mode.bits or ""), bn[base](val, mode.bits))
+                            end
                         end
                     end
-                end
-                if mode.float then
-                    if mode.bits == 64 then
-                        print("float64", ieee2double(val))
-                    else
-                        print("float32", ieee2float(val))
+                    if val.isRat then
+                        print("~", val:tonumber())
                     end
-                end
-                if mode.ieee then
-                    if mode.bits == 64 then
-                        print("ieee64", double2ieee(val))
-                    else
-                        print("ieee32", float2ieee(val))
+                    if mode.float then
+                        local int, float
+                        if val.isInt then
+                            int = val
+                            if mode.bits == 64 then
+                                float = ieee2double(val)
+                            else
+                                float = ieee2float(val)
+                            end
+                        else
+                            if mode.bits == 64 then
+                                int = double2ieee(val)
+                                float = ieee2double(int)
+                            else
+                                int = float2ieee(val)
+                                float = ieee2float(int)
+                            end
+                        end
+                        print("IEEE", ("%s <=> %s"):format(bn.hex(int, mode.bits), float))
                     end
+                    if mode.str and val.isInt then print("str", str(val)) end
                 end
-                if mode.str then print("str", str(val)) end
+                print ""
             end
         end
     end
-    print ""
 end
