@@ -1,12 +1,12 @@
 #!/usr/bin/env bl
 
-version = "2.2.4"
+version = "2.2.5"
 
 default_ini = "calculadoira.ini"
 
 license = [[
 Calculadoira
-Copyright (C) 2011 - 2013 Christophe Delord
+Copyright (C) 2011 - 2014 Christophe Delord
 http://www.cdsoft.fr/calculadoira
 
 Calculadoira is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ help = string.gsub([[
 |     hex oct bin float str       |     binary: b... or ...b or 0b... |
 |     hex8/16/32/64 ...           |     octal : o... or ...o or 0o... |
 |---------------------------------|     hexa  : h... or ...h or 0x... |
-| Variable and function:          |     float : 1.2e-3                |
+| Variables and functions:        |     float : 1.2e-3                |
 |     variable = expression       | Chars     : "abcd" or 'abcd'      |
 |     function(x, y) = expression |             "<abcd" or ">abcd"    |
 | Multiple statements:            | Booleans  : true or false         |
@@ -171,8 +171,8 @@ Ternary operator            x ? y : z
 Assignement                 x = y
 Blocks                      expr1, ..., exprn
 
-Other commands
-==============
+Other commands              Description
+=========================== ===========================
 
 bye                         quit
 edit                        edit the configuration file

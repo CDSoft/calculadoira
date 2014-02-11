@@ -1,5 +1,5 @@
 -- Calculadoira
--- Copyright (C) 2011 - 2013 Christophe Delord
+-- Copyright (C) 2011 - 2014 Christophe Delord
 -- http://www.cdsoft.fr/calculadoira
 --
 -- This file is part of Calculadoira.
@@ -51,25 +51,54 @@ do
         os.execute 'color 84'
         print [[
 Calculadoira is not registered.
+This is a demonstration version.
 
 If you find Calculadoira useful,
 please visit http://cdsoft.fr/calculadoira
 to receive a keyfile.
 
-The unregistered version is fully functional
+The unregistered demo version is fully functional
 but you have to answer this before continuing:
 ]]
         math.randomseed(os.time())
-        x = math.random(1, 10)
-        y = math.random(1, 10)
-        io.write(x.." + "..y.." = ")
-        z = io.read "*l"
-        if tonumber(z) == x+y then
-            print "Ok, let's try Calculadoira."
-        else
-            print "Wrong answer, try again later..."
-            os.exit(1)
+        for n = 1, 10 do
+            for i = 1, 30 do
+                x = math.random(1, 10)
+                io.write("\r"..x.." ")
+                io.flush()
+                ps.sleep(0.01)
+            end
+            for i = 1, 30 do
+                op = math.random(1, 3)
+                op = string.sub("+-*", op, op)
+                io.write("\r"..x.." "..op.." ")
+                io.flush()
+                ps.sleep(0.01)
+            end
+            for i = 1, 30 do
+                y = math.random(1, 10)
+                io.write("\r"..x.." "..op.." "..y.." ")
+                io.flush()
+                ps.sleep(0.01)
+            end
+            io.write("= ")
+            z = io.read "*l"
+            if (op == "+" and tonumber(z) == x+y)
+            or (op == "-" and tonumber(z) == x-y)
+            or (op == "*" and tonumber(z) == x*y)
+            then
+                if n == 1 then
+                    print "You're pretty smart, let's try Calculadoira."
+                else
+                    print "It seems to be a bit hard for you... You really need Calculadoira ;-)"
+                end
+                return
+            elseif n < 10 then
+                print "Are you kidding? Try again..."
+            end
         end
+        print "You look tired. Have some rest and try again later."
+        io.read "*l"
     end
 
     check_license()
