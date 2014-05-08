@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "2.2.6"
+version = "2.2.7"
 
 default_ini = "calculadoira.ini"
 
@@ -830,6 +830,21 @@ do
         end
     end
 
+    local function Tneglookahead(token, lookahead, f)
+        local pattern = "^%s*("..token..")"
+        local lookahead = "^"..lookahead
+        f = f or _id
+        return function(s, i)
+            local j, k, match, x1, x2, x3 = s:find(pattern, i)
+            if j and not s:find(lookahead, k+1) then
+                j, k = s:find("^%s*", k+1)
+                return k+1, f(x1 or match, x2, x3)
+            else
+                max_position = math.max(max_position, i)
+            end
+        end
+    end
+
     local function Seq(ps, f)
         f = f or _id
         return function(s, i)
@@ -951,7 +966,7 @@ do
         T("%~", F_),
     }
     local postunop = Alt{
-        T("%!", F_),
+        Tneglookahead("%!", "%=", F_),
     }
 
     --[[ grammar:
