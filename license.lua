@@ -99,6 +99,7 @@ but you have to answer this before continuing:
         end
         print "You look tired. Have some rest and try again later."
         io.read "*l"
+        os.exit()
     end
 
     check_license()

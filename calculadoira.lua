@@ -1,9 +1,5 @@
 #!/usr/bin/env bl
 
-version = "2.2.5"
-
-default_ini = "calculadoira.ini"
-
 license = [[
 Calculadoira
 Copyright (C) 2011 - 2014 Christophe Delord
@@ -22,6 +18,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
+
+version = "2.2.6"
+
+default_ini = "calculadoira.ini"
 
 help = string.gsub([[
 +---------------------------------------------------------------------+

@@ -17,13 +17,21 @@
 # You should have received a copy of the GNU General Public License
 # along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
-BL_VERSION = 2.4.3
+BL_VERSION = 2.4.7
 BL_URL     = http://www.cdsoft.fr/bl/bonaluna-$(BL_VERSION).tgz
 BL_TGZ     = bonaluna-$(BL_VERSION).tgz
 BL_SRC     = bonaluna-$(BL_VERSION)
 BL         = bl.exe
 
 all: calculadoira.exe
+
+UNAME = $(shell uname)
+ifneq "$(findstring Linux,$(UNAME))" ""
+WINE = wine
+else
+WINE =
+endif
+
 
 clean:
 	rm -rf calculadoira.exe $(BL_SRC)
@@ -44,8 +52,7 @@ $(BL_SRC)/$(BL): calculadoira.ico $(BL_SRC)/Makefile
 	cd $(BL_SRC)/ && make $(notdir $@)
 
 calculadoira.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BL) license.lua Makefile
-	wine $(BL_SRC)/$(BL) $(BL_SRC)/tools/pegar.lua read:$(BL_SRC)/$(BL) \
-        compile:min compress:min \
+	$(WINE) $(BL_SRC)/$(BL) $(BL_SRC)/tools/pegar.lua \
         lua:license.lua \
         file::/calculadoira.ini=calculadoira.ini \
         lua:calculadoira.lua \
