@@ -19,16 +19,14 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "2.2.7"
+version = "2.2.8"
 
-default_ini = "calculadoira.ini"
-
-help = string.gsub([[
+help = ([[
 +---------------------------------------------------------------------+
 |     C A L C U L A D O I R A     | v. X.Y.Z | cdsoft.fr/calculadoira |
 |---------------------------------------------------------------------|
 | Modes:                          | Numbers:                          |
-|     hex oct bin float str       |     binary: b... or ...b or 0b... |
+|     hex oct bin float str reset |     binary: b... or ...b or 0b... |
 |     hex8/16/32/64 ...           |     octal : o... or ...o or 0o... |
 |---------------------------------|     hexa  : h... or ...h or 0x... |
 | Variables and functions:        |     float : 1.2e-3                |
@@ -43,7 +41,9 @@ help = string.gsub([[
 | Commands: ? help license bye    |     + - * / % ** | ^ & >> << ~    |
 |           edit ascii            |                                   |
 +---------------------------------------------------------------------+
-]], "X.Y.Z", version)
+]]):gsub("X.Y.Z", version)
+
+default_ini = "calculadoira.ini"
 
 longhelp = [[
 
@@ -119,17 +119,19 @@ ieee2double(n)              64 bit float value of the IEEE 754 integer n
 Display modes
 =============
 
-dec, hex, oct and bin commands change the display mode.
+dec, hex, oct, bin and str commands change the display mode.
 When enabled, the integer result is displayed in
-hexadecimal, octal and/or binary.
+hexadecimal, octal, binary and/or as a string.
 float mode shows float values and their IEEE encoding.
-str mode show the ASCII representation of 1 to 4 chars.
+str mode show the ASCII representation of 1 upto 4 chars.
 
 dec, hex, oct, bin can have suffixes giving the number of bits
 to be displayed (e.g. hex16 shows 16 bit results). Valid suffixes
 are 8, 16, 32, 64 and 128.
 
 float can have suffixes giving the size of floats (32 or 64).
+
+The reset command reset the display mode.
 
 Blocks
 ======
@@ -263,42 +265,31 @@ end
 
 function Quit()
     local self = Expr "Quit"
-    function self.eval()
-        os.exit()
-    end
+    function self.eval() os.exit() end
     return self
 end
 
 function Help()
     local self = Expr "Help"
-    function self.eval()
-        print(help)
-    end
+    function self.eval() print(help) end
     return self
 end
 
 function LongHelp()
     local self = Expr "LongHelp"
-    function self.eval()
-        print(help)
-        print(longhelp)
-    end
+    function self.eval() print(help) print(longhelp) end
     return self
 end
 
 function License()
     local self = Expr "License"
-    function self.eval()
-        print(license)
-    end
+    function self.eval() print(license) end
     return self
 end
 
 function Edit()
     local self = Expr "Edit"
-    function self.eval()
-        config.edit()
-    end
+    function self.eval() config.edit() end
     return self
 end
 
@@ -397,15 +388,9 @@ end
 function Env(up)
     local self = {}
     local vars = {}
-    function self.set(name, value)
-        vars[name] = Object(value)
-    end
-    function self.get(name)
-        return vars[name] or (up and up.get(name))
-    end
-    function self.push()
-        return Env(self)
-    end
+    function self.set(name, value) vars[name] = Object(value) end
+    function self.get(name) return vars[name] or (up and up.get(name)) end
+    function self.push() return Env(self) end
     return self
 end
 
@@ -459,7 +444,6 @@ function IntNumber(base, m)
         function self.dis() return string.sub(m or "", 1, 1)..n end
         function self.eval()
             mode.set(m)
-            --return tonumber(n, base)
             if base == 2 then return bn.Int("0b"..n) end
             if base == 8 then return bn.Int("0o"..n) end
             if base == 16 then return bn.Int("0x"..n) end
@@ -473,9 +457,7 @@ function FloatNumber()
     return function(n)
         local self = Expr "FloatNumber"
         function self.dis() return string.sub(m or "", 1, 1)..n end
-        function self.eval()
-            return bn.Float(n)
-        end
+        function self.eval() return bn.Float(n) end
         return self
     end
 end
@@ -509,13 +491,9 @@ function Ident(name)
     function self.dis() return name end
     function self.eval(env)
         local val = env.get(name)
-        if val then
-            return val.eval(env)
-        end
+        if val then return val.eval(env) end
         val = constants[name]
-        if val then
-            return val
-        end
+        if val then return val end
         error("Unknown identifier: "..name)
     end
     return self
@@ -572,13 +550,7 @@ end
 function Ternary(cond, iftrue, iffalse)
     local self = Expr "Ternary"
     function self.dis() return cond.dis().."?"..iftrue.dis()..":"..iffalse.dis() end
-    function self.eval(env)
-        if cond.eval(env) then
-            return iftrue.eval(env)
-        else
-            return iffalse.eval(env)
-        end
-    end
+    function self.eval(env) return (cond.eval(env) and iftrue or iffalse).eval(env) end
     return self
 end
 
@@ -598,17 +570,13 @@ end
 
 function Or()
     local self = {}
-    function self.call(env, x, y)
-        return x.eval(env) or y.eval(env)
-    end
+    function self.call(env, x, y) return x.eval(env) or y.eval(env) end
     return self
 end
 
 function And()
     local self = {}
-    function self.call(env, x, y)
-        return x.eval(env) and y.eval(env)
-    end
+    function self.call(env, x, y) return x.eval(env) and y.eval(env) end
     return self
 end
 
@@ -621,9 +589,7 @@ constants = {
 local function factorial(n)
     n = bn.Int(n):tonumber()
     local f = bn.one
-    for i = 1, n do
-        f = f*bn.Int(i)
-    end
+    for i = 1, n do f = f*bn.Int(i) end
     return f
 end
 
@@ -782,11 +748,16 @@ function Set(k)
     function self.dis() return "Set("..k..", "..bits..")" end
     function self.eval(env)
         mode.set(k)
-        if bits and bits~="" then
-            mode.set_bits(bits)
-        end
+        if bits and bits~="" then mode.set_bits(bits) end
         replay = true
     end
+    return self
+end
+
+function Reset()
+    local self = Expr "Reset"
+    function self.dis() return "Reset()" end
+    function self.eval(env) mode.clear() replay = true end
     return self
 end
 
@@ -806,20 +777,16 @@ do
                 else
                     err = string.sub(s, max_position)
                     err = err:gsub("^%s*(.-)%s*$", "%1")
-                    if #err > 10 then
-                        err = string.sub(err, 1, 10).."..."
-                    end
+                    if #err > 10 then err = string.sub(err, 1, 10).."..." end
                 end
                 return nil, "Syntax error near "..err
             end
         end
     end
 
-    local _id = function(...) return ... end
-
     local function T(token, f)
         local pattern = "^%s*("..token..")%s*"
-        f = f or _id
+        f = f or identity
         return function(s, i)
             local j, k, match, x1, x2, x3 = s:find(pattern, i)
             if j then
@@ -833,7 +800,7 @@ do
     local function Tneglookahead(token, lookahead, f)
         local pattern = "^%s*("..token..")"
         local lookahead = "^"..lookahead
-        f = f or _id
+        f = f or identity
         return function(s, i)
             local j, k, match, x1, x2, x3 = s:find(pattern, i)
             if j and not s:find(lookahead, k+1) then
@@ -846,7 +813,7 @@ do
     end
 
     local function Seq(ps, f)
-        f = f or _id
+        f = f or identity
         return function(s, i)
             local t = {}
             for _, p in ipairs(ps) do
@@ -860,14 +827,12 @@ do
     end
 
     local function Alt(ps, f)
-        f = f or _id
+        f = f or identity
         return function(s, i)
             local imax, xmax = 0, nil
             for _, p in ipairs(ps) do
                 local j, x = p(s, i)
-                if j and j > imax then
-                    imax, xmax = j, x
-                end
+                if j and j > imax then imax, xmax = j, x end
             end
             if imax > 0 then
                 return imax, f(xmax)
@@ -924,50 +889,15 @@ do
     str(T([["([<>]?)([^"][^"]?[^"]?[^"]?)"]], Str))
     str(T([['([<>]?)([^'][^']?[^']?[^']?)']], Str))
 
-    local addop = Alt{
-        T("%+", _F_),
-        T("%-", _F_),
-        T("%|", _F_),
-        T("%^", _F_),
-    }
-    local mulop = Alt{
-        T("%*", _F_),
-        T("%/", _F_),
-        T("%%", _F_),
-        T("%&", _F_),
-        T("<<", _F_),
-        T(">>", _F_),
-    }
-    local powop = Alt{
-        T("%*%*", _F_),
-    }
-    local orop = Alt{
-        T("or", _F_),
-        T("xor", _F_),
-    }
-    local andop = Alt{
-        T("and", _F_),
-    }
-    local notop = Alt{
-        T("not", F_),
-    }
-    local relop = Alt{
-        T("<", _F_),
-        T(">", _F_),
-        T("<=", _F_),
-        T(">=", _F_),
-        T("==", _F_),
-        T("!=", _F_),
-        T("~=", _F_),
-    }
-    local unop = Alt{
-        T("%+", F_),
-        T("%-", F_),
-        T("%~", F_),
-    }
-    local postunop = Alt{
-        Tneglookahead("%!", "%=", F_),
-    }
+    local addop = Alt{T("%+", _F_), T("%-", _F_), T("%|", _F_), T("%^", _F_), }
+    local mulop = Alt{T("%*", _F_), T("%/", _F_), T("%%", _F_), T("%&", _F_), T("<<", _F_), T(">>", _F_), }
+    local powop = Alt{T("%*%*", _F_), }
+    local orop = Alt{T("or", _F_), T("xor", _F_), }
+    local andop = Alt{T("and", _F_), }
+    local notop = Alt{T("not", F_), }
+    local relop = Alt{T("<", _F_), T(">", _F_), T("<=", _F_), T(">=", _F_), T("==", _F_), T("!=", _F_), T("~=", _F_), }
+    local unop = Alt{T("%+", F_), T("%-", F_), T("%~", F_), }
+    local postunop = Alt{Tneglookahead("%!", "%=", F_), }
 
     --[[ grammar:
 
@@ -1043,6 +973,7 @@ do
         T("bin8", Set), T("bin16", Set), T("bin32", Set), T("bin64", Set), T("bin128", Set),
         T("float32", Set), T("float64", Set),
         T("str", Toggle),
+        T("reset", Reset),
         T("edit", Edit),
         T("ascii", Ascii),
         block
@@ -1063,11 +994,10 @@ do
         T("float", Set),
         T("float32", Set), T("float64", Set),
         T("str", Set),
+        T("reset", Reset),
     })
     stat(Seq({proto, T"=", ternary},
-        function(f, _, expr)
-            return Assign(f.name, Function(f.args, expr))
-        end
+        function(f, _, expr) return Assign(f.name, Function(f.args, expr)) end
     ))
     stat(ternary)
 
@@ -1185,15 +1115,18 @@ function ConfigFile(name)
             cmd = string.format([[start /b cmd /c "%s"]], name)
         else
             local function run(editor)
-                if fs.stat("/usr/bin/"..editor) then
-                    editor = "/usr/bin/"..editor
+                for path in os.getenv("PATH"):gsplit(":") do
+                    if fs.stat(path..fs.sep..editor) then
+                        editor = path..fs.sep..editor
+                        break
+                    end
                 end
                 if fs.stat(editor) then
                     return string.format([[%s "%s" &]], editor, name)
                 end
             end
             local editor = os.getenv "EDITOR"
-            if editor then cmd = cmd or run(editor) end
+            cmd = editor and run(editor)
             cmd = cmd or run "gvim"
             cmd = cmd or run "gedit"
             cmd = cmd or run "kate"
@@ -1295,6 +1228,7 @@ while true do
                 print("!", val)
                 print ""
             elseif val ~= nil then
+                replay = false
                 last_line = line
                 print("=", val)
                 if type(val) == "table" then

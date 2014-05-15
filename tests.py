@@ -26,7 +26,10 @@ class Calc:
             line = self.p.stdout.readline()
             if line.startswith("="):
                 v = line[1:].strip().replace(" ", "")
-                return self.evalint(v), self.evalfloat(v)
+                if '/' in v:
+                    return "rat", self.evalfloat(v)
+                else:
+                    return "int", self.evalint(v)
             if line.startswith("!"):
                 return [line[1:].strip()]*2
 
@@ -53,9 +56,9 @@ class Calc:
             evfloat = self.evalfloat(expr)
         except ZeroDivisionError:
             evint = evfloat = "Division by zero"
-        vint, vfloat = self(expr)
-        print "%s (%s)"%(vfloat, vint)
-        if str(vfloat) != str(evfloat) and vint != evint:
+        vtype, v = self(expr)
+        print "%s (%s)"%(v, vtype)
+        if (v == 'int' and v != evint) or (v == 'rat' and str(v) != str(evfloat)):
             self.nberr += 1
             print "Error: %s is not %s (%s)"%(expr, evfloat, evint)
 
@@ -67,15 +70,15 @@ class Calc:
 
 calc = Calc()
 
-for a in [0, 1, 15, 20, 21, 43, 123456789]:
+for a in [0, 1, 15, 20, 21, 43, 511, 512, 123456789, 987654321]:
     for sa in [-1, 1]:
-        for b in [0, 1, 15, 20, 21, 43, 23456789]:
+        for b in [0, 1, 15, 20, 21, 43, 511, 512, 23456789, 987654321]:
             for sb in [-1, 1]:
                 for op in "+ - * / % ** | & ^ >> << ~ < <= > >= == !=".split():
                     if op == '%' and sb == -1: continue
                     if op == '**' and b > 100: continue
                     if op in ["|", "&", "^", "<<", ">>"] and (sa == -1 or sb == -1): continue
-                    if op in ["<<", ">>"] and b > 100: continue
+                    if op in ["<<", ">>"] and b > 1000: continue
                     if op in ["+", "-"]:
                         calc.test("%s %s"%(op, a*sa))
                         calc.test("%s %s"%(op, b*sb))
@@ -84,5 +87,14 @@ for a in [0, 1, 15, 20, 21, 43, 123456789]:
                         calc.test("%s %s"%(op, b*sb))
                     else:
                         calc.test("%s %s %s"%(a*sa, op, b*sb))
+
+for a in ["false", "true"]:
+    for b in ["false", "true"]:
+        for op in "not or and".split():
+            if op in ["not"]:
+                calc.test("%s %s"%(op, a))
+                calc.test("%s %s"%(op, b))
+            else:
+                calc.test("%s %s %s"%(a, op, b))
 
 calc.summary()
