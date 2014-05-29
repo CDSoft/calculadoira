@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "2.2.8"
+version = "2.2.9"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -188,11 +188,6 @@ BonaLuna    : http://www.cdsoft.fr/bl
 
 "Calculadoira" means "Calculator" in Occitan.
 ]]
-
-if sys.platform == "Windows" then
-    os.execute "title Calculadoira"
-    os.execute "color f0"
-end
 
 local config
 
@@ -1151,9 +1146,10 @@ function Config(names)
         local st = fs.inode(name)
         if st then
             local key = string.format("%d-%f", st.dev, st.ino)
-            if loaded[key] then return true end
+            if loaded[key] or loaded[name] then return true end
             table.insert(configs, ConfigFile(name))
             loaded[key] = true
+			loaded[name] = true
             return true
         end
         return false
