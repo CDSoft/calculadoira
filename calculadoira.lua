@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "2.2.9"
+version = "2.3.0"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -51,6 +51,7 @@ Constants                   Value
 =========================== ===============================================
 
 nan                         Not a Number
+inf                         Infinite
 pi                          3.1415926535898...
 e                           2.718281828459...
 
@@ -188,6 +189,12 @@ BonaLuna    : http://www.cdsoft.fr/bl
 
 "Calculadoira" means "Calculator" in Occitan.
 ]]
+
+if sys.platform == 'Windows' then
+    os.execute 'title Calculadoira'
+    os.execute 'cls'
+    os.execute 'color f0'
+end
 
 local config
 
@@ -432,6 +439,7 @@ function ieee2double(x)
 end
 
 nan = ieee2float(0x7FC00000)
+inf = ieee2float(0x7F800000)
 
 function IntNumber(base, m)
     return function(n)
@@ -542,10 +550,20 @@ function Args(...)
     return self
 end
 
+function cnum(x)
+    assert(type(x) == 'table', "numeric expression expected")
+    return x
+end
+
+function cbool(x)
+    assert(type(x) == 'boolean', "boolean expression expected")
+    return x
+end
+
 function Ternary(cond, iftrue, iffalse)
     local self = Expr "Ternary"
     function self.dis() return cond.dis().."?"..iftrue.dis()..":"..iffalse.dis() end
-    function self.eval(env) return (cond.eval(env) and iftrue or iffalse).eval(env) end
+    function self.eval(env) return (cbool(cond.eval(env)) and iftrue or iffalse).eval(env) end
     return self
 end
 
@@ -554,29 +572,25 @@ function B(f)
     function self.call(env, ...)
         local xs = {}
         for i, x in ipairs({...}) do
-            x = x.eval(env)
+            x = self.check(x.eval(env))
             if x == nil then x = nan end
             table.insert(xs, x)
         end
         return f(table.unpack(xs))
     end
+    self.check = cnum
     return self
 end
 
-function Or()
-    local self = {}
-    function self.call(env, x, y) return x.eval(env) or y.eval(env) end
-    return self
-end
-
-function And()
-    local self = {}
-    function self.call(env, x, y) return x.eval(env) and y.eval(env) end
+function Bbool(f)
+    local self = B(f)
+    self.check = cbool
     return self
 end
 
 constants = {
     nan = nan,          -- TODO : remplacer nan par une exception ?
+    inf = inf,
     pi = bn.pi,
     e  = bn.e,
 }
@@ -597,7 +611,7 @@ builtins = {
         ["-"] = B(function(x) return -x end),
         ["~"] = B(function(x) mode.set("hex") return bn.bnot(x) end),
         ["!"] = B(factorial),
-        ["not"] = B(function(x) return not x end),
+        ["not"] = Bbool(function(x) return not x end),
         ["abs"] = B(bn.abs),
         ["acos"] = B(bn.acos),
         ["asin"] = B(bn.asin),
@@ -644,9 +658,9 @@ builtins = {
         ["<<"] = B(function(x, y) mode.set("hex") return bn.lshift(x, y:tonumber()) end),
         [">>"] = B(function(x, y) mode.set("hex") return bn.rshift(x, y:tonumber()) end),
         ["**"] = B(function(x, y) return x ^ y end),
-        ["or"] = Or(),
-        ["xor"] = B(function(x, y) return x and not y or y and not x end),
-        ["and"] = And(),
+        ["or"] = Bbool(function(x, y) return x or y end),
+        ["xor"] = Bbool(function(x, y) return x and not y or y and not x end),
+        ["and"] = Bbool(function(x, y) return x and y end),
         ["<"] = B(function(x, y) return x < y end),
         ["<="] = B(function(x, y) return x <= y end),
         [">"] = B(function(x, y) return x > y end),
@@ -861,25 +875,25 @@ do
     local expr = Rule()
     local ident = T("[a-zA-Z_][%w_]*", Ident)
     local number = Rule()
-    number(T("b([01]+)", IntNumber(2, "bin")))
-    number(T("([01]+)b", IntNumber(2, "bin")))
-    number(T("0[bB]([01]+)", IntNumber(2, "bin")))
-    number(T("o([0-7]+)", IntNumber(8, "oct")))
-    number(T("([0-7]+)o", IntNumber(8, "oct")))
-    number(T("0[oO]([0-7]+)", IntNumber(8, "oct")))
-    number(T("h([0-9A-Fa-f]+)", IntNumber(16, "hex")))
-    number(T("([0-9A-Fa-f]+)h", IntNumber(16, "hex")))
-    number(T("0[xX]([0-9A-Fa-f]+)", IntNumber(16, "hex")))
-    number(T("%d+%.%d*", FloatNumber()))
-    number(T("%d*%.%d+", FloatNumber()))
-    number(T("%d+%.%d*[eE][-+]?%d+", FloatNumber()))
-    number(T("%d*%.%d+[eE][-+]?%d+", FloatNumber()))
-    number(T("%d+[eE][-+]?%d+", FloatNumber()))
-    number(T("%d+", IntNumber()))
+    number(T("b([ 01]+)", IntNumber(2, "bin")))
+    number(T("([ 01]+)b", IntNumber(2, "bin")))
+    number(T("0[bB]([ 01]+)", IntNumber(2, "bin")))
+    number(T("o([ 0-7]+)", IntNumber(8, "oct")))
+    number(T("([ 0-7]+)o", IntNumber(8, "oct")))
+    number(T("0[oO]([ 0-7]+)", IntNumber(8, "oct")))
+    number(T("h([ 0-9A-Fa-f]+)", IntNumber(16, "hex")))
+    number(T("([ 0-9A-Fa-f]+)h", IntNumber(16, "hex")))
+    number(T("0[xX]([ 0-9A-Fa-f]+)", IntNumber(16, "hex")))
+    number(T("%d[%d ]*%.[%d ]*", FloatNumber()))
+    number(T("[%d ]*%.[%d ]*%d", FloatNumber()))
+    number(T("%d[%d ]*%.[%d ]*[eE] *[-+]?[%d ]*%d", FloatNumber()))
+    number(T("[%d ]*%.[%d ]*%d[%d ]*[eE] *[-+]?[%d ]*%d", FloatNumber()))
+    number(T("%d[%d ]*[eE] *[-+]? *[%d ]*%d", FloatNumber()))
+    number(T("%d[ %d]*", IntNumber()))
     local bool = Rule()
     bool(T("true", Bool))
     bool(T("false", Bool))
-    bool(T("nil", Bool))
+    --bool(T("nil", Bool))
     local str = Rule()
     str(T([["([<>]?)([^"][^"]?[^"]?[^"]?)"]], Str))
     str(T([['([<>]?)([^'][^']?[^']?[^']?)']], Str))
@@ -1149,7 +1163,7 @@ function Config(names)
             if loaded[key] or loaded[name] then return true end
             table.insert(configs, ConfigFile(name))
             loaded[key] = true
-			loaded[name] = true
+            loaded[name] = true
             return true
         end
         return false
