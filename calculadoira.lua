@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "2.3.0"
+version = "2.3.1"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -189,12 +189,6 @@ BonaLuna    : http://www.cdsoft.fr/bl
 
 "Calculadoira" means "Calculator" in Occitan.
 ]]
-
-if sys.platform == 'Windows' then
-    os.execute 'title Calculadoira'
-    os.execute 'cls'
-    os.execute 'color f0'
-end
 
 local config
 
@@ -626,8 +620,8 @@ builtins = {
         ["exponent"] = B(function(x) local m, e = bn.frexp(x) return e end),
         ["log"] = B(bn.log),
         ["ln"] = B(bn.log),
-        ["log10"] = B(function(x) return bn.log(x, bn.Float(10)) end),
-        ["log2"] = B(function(x) return bn.log(x, bn.Float(2)) end),
+        ["log10"] = B(function(x) return bn.log(x, 10) end),
+        ["log2"] = B(function(x) return bn.log(x, 2) end),
         ["int"] = B(function(x) return bn.Int(x) end),
         ["rat"] = B(function(x) return bn.Rat(x) end),
         ["float"] = B(function(x) return bn.Float(x) end),
@@ -875,21 +869,21 @@ do
     local expr = Rule()
     local ident = T("[a-zA-Z_][%w_]*", Ident)
     local number = Rule()
-    number(T("b([ 01]+)", IntNumber(2, "bin")))
-    number(T("([ 01]+)b", IntNumber(2, "bin")))
-    number(T("0[bB]([ 01]+)", IntNumber(2, "bin")))
-    number(T("o([ 0-7]+)", IntNumber(8, "oct")))
-    number(T("([ 0-7]+)o", IntNumber(8, "oct")))
-    number(T("0[oO]([ 0-7]+)", IntNumber(8, "oct")))
-    number(T("h([ 0-9A-Fa-f]+)", IntNumber(16, "hex")))
-    number(T("([ 0-9A-Fa-f]+)h", IntNumber(16, "hex")))
-    number(T("0[xX]([ 0-9A-Fa-f]+)", IntNumber(16, "hex")))
-    number(T("%d[%d ]*%.[%d ]*", FloatNumber()))
-    number(T("[%d ]*%.[%d ]*%d", FloatNumber()))
-    number(T("%d[%d ]*%.[%d ]*[eE] *[-+]?[%d ]*%d", FloatNumber()))
-    number(T("[%d ]*%.[%d ]*%d[%d ]*[eE] *[-+]?[%d ]*%d", FloatNumber()))
-    number(T("%d[%d ]*[eE] *[-+]? *[%d ]*%d", FloatNumber()))
-    number(T("%d[ %d]*", IntNumber()))
+    number(T("b([_01]+)", IntNumber(2, "bin")))
+    number(T("([_01]+)b", IntNumber(2, "bin")))
+    number(T("0[bB]([_01]+)", IntNumber(2, "bin")))
+    number(T("o([_0-7]+)", IntNumber(8, "oct")))
+    number(T("([_0-7]+)o", IntNumber(8, "oct")))
+    number(T("0[oO]([_0-7]+)", IntNumber(8, "oct")))
+    number(T("h([_0-9A-Fa-f]+)", IntNumber(16, "hex")))
+    number(T("([_0-9A-Fa-f]+)h", IntNumber(16, "hex")))
+    number(T("0[xX]([_0-9A-Fa-f]+)", IntNumber(16, "hex")))
+    number(T("%d[_%d]*%.[_%d]*", FloatNumber()))
+    number(T("[_%d]*%.[_%d]*%d", FloatNumber()))
+    number(T("%d[_%d]*%.[_%d]*[eE]_*[-+]?[_%d]*%d", FloatNumber()))
+    number(T("[_%d]*%.[_%d]*%d[_%d]*[eE]_*[-+]?[_%d]*%d", FloatNumber()))
+    number(T("%d[_%d]*[eE]_*[-+]?_*[_%d]*%d", FloatNumber()))
+    number(T("%d[_%d]*", IntNumber()))
     local bool = Rule()
     bool(T("true", Bool))
     bool(T("false", Bool))

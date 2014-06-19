@@ -25,7 +25,7 @@ class Calc:
         while True:
             line = self.p.stdout.readline()
             if line.startswith("="):
-                v = line[1:].strip().replace(" ", "")
+                v = line[1:].strip().replace("_", "")
                 if '/' in v:
                     return "rat", self.evalfloat(v)
                 else:
