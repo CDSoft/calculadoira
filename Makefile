@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
-BL_VERSION = 2.4.10
+BL_VERSION = 3.0.0-alpha
 BL_URL     = http://www.cdsoft.fr/bl/bonaluna-$(BL_VERSION).tgz
 BL_TGZ     = bonaluna-$(BL_VERSION).tgz
 BL_SRC     = bonaluna-$(BL_VERSION)
@@ -31,7 +31,6 @@ WINE = wine
 else
 WINE =
 endif
-
 
 clean:
 	rm -rf calculadoira*.exe $(BL_SRC)
@@ -64,3 +63,17 @@ calculadoira.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BL) Makefile
         file::/calculadoira.ini=calculadoira.ini \
         lua:calculadoira.lua \
         write:$@
+
+calculadoira.png: Makefile
+	convert -size 64x64 xc:white \
+		-fill black -stroke black -strokewidth 0 \
+		-draw "rectangle 28,8 35,55" \
+		-draw "rectangle 8,28 55,35" \
+		$@
+
+calculadoira.ico: calculadoira.png
+	convert $< \
+		-bordercolor white -border 0 \
+		\( -clone 0 -resize 32x32 \) \
+		-delete 0 -alpha off -colors 2 \
+		$@

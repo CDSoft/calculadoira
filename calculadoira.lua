@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "2.3.1"
+version = "3.0.0"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -50,17 +50,18 @@ longhelp = [[
 Constants                   Value
 =========================== ===============================================
 
-nan                         Not a Number
-inf                         Infinite
-pi                          3.1415926535898...
-e                           2.718281828459...
+nan, NaN                    Not a Number
+inf, Inf                    Infinite
+pi                          3.1415926535898
+e                           2.718281828459
 
 Operators / functions       Description
 =========================== ===============================================
 
 +x, -x
 x + y, x - y                sum, difference
-x * y, x / y, x % y         product, division, modulo
+x * y, x / y, x % y         product, division
+x // y, x % y               integral division, modulo
 x ** y                      x to the power y
 
 ~x                          bitwise not
@@ -83,6 +84,8 @@ rat(x)                      x converted to rat
 abs(x)                      absolute value of x
 ceil(x)                     smallest integer larger than or equal to x
 floor(x)                    largest integer smaller than or equal to x
+round(x)                    round to the nearest integer
+trunc(x)                    tround toward zero
 mantissa(x)                 m such that x = m2e, |m| is in [0.5, 1[
 exponent(x)                 e such that x = m2e, e is an integer
 int(x)                      integral part of x
@@ -94,17 +97,22 @@ min(...), max(...)          minimum / maximum value among its arguments
 
 sqr(x)                      square of x (x**2)
 sqrt(x)                     square root of x (x**0.5)
+cbrt(x)                     cubic root of x (x**(1/3))
 
 cos(x), acos(x), cosh(x)    trigonometric functions
 sin(x), asin(x), sinh(x)
 tan(x), atan(x), tanh(x)
-atan2(y, x)                 arc tangent of y/x (in radians)
+atan(y, x), atan2(y, x)     arc tangent of y/x (in radians)
 deg(x)                      angle x (given in radians) in degrees
 rad(x)                      angle x (given in degrees) in radians
 
 exp(x)                      e**x
+exp2(x)                     2**x
+expm1(x)                    e**x - 1
 log(x), ln(x)               logarithm of x in base e
 log10(x), log2(x)           logarithm of x in base 10, 2
+log1p(x)                    log(1 + x)
+logb(x)                     log2(|x|)
 log(x, b)                   logarithm of x in base b
 
 random()                    random number in [0, 1[
@@ -116,6 +124,26 @@ float2ieee(x)               IEEE 754 representation of x (32 bits)
 ieee2float(n)               32 bit float value of the IEEE 754 integer n
 double2ieee(x)              IEEE 754 representation of x (64 bits)
 ieee2double(n)              64 bit float value of the IEEE 754 integer n
+
+erf(x)                      error function
+erfc(x)                     complementary error function
+gamma(x)                    gamma function
+j0(x), j1(x), jn(x)         ???
+lgamma(x)                   log-gamma function
+y0(x), y1(x), yn(x)         ???
+
+isfinite(x)                 true if x is finite
+isinf(x)                    true if x is infinite
+isnan(x)                    true if x is not a number
+
+copysign(x, y)              sign(y) * |x|
+fdim(x, y)                  x - y if x>y, 0 otherwise
+hypot(x, y)                 sqrt(x**2 + y**2)
+nextafter(x, y)             next float after x in the directory of y
+remainder(x, y)             remainder of x/y
+scalbn(x, n)                x * 2**n
+
+fma(x, y, z)                x*y + z
 
 Display modes
 =============
@@ -243,7 +271,6 @@ function Expr(class)
     self.dis = Virtual(self, "dis")
     function self.evaluate(env)
         running = true
-        --val = self.eval(env)
         local ok, val = pcall(self.eval, env)
         running = false
         if not ok then val = val:gsub(".*:%d+:", "") end
@@ -583,8 +610,8 @@ function Bbool(f)
 end
 
 constants = {
-    nan = nan,          -- TODO : remplacer nan par une exception ?
-    inf = inf,
+    nan = nan, NaN = nan,
+    inf = inf, Inf = inf,
     pi = bn.pi,
     e  = bn.e,
 }
@@ -608,33 +635,58 @@ builtins = {
         ["not"] = Bbool(function(x) return not x end),
         ["abs"] = B(bn.abs),
         ["acos"] = B(bn.acos),
+        ["acosh"] = B(bn.acosh),
         ["asin"] = B(bn.asin),
+        ["asinh"] = B(bn.asinh),
         ["atan"] = B(bn.atan),
+        ["atanh"] = B(bn.atanh),
         ["ceil"] = B(bn.ceil),
         ["cos"] = B(bn.cos),
         ["cosh"] = B(bn.cosh),
         ["deg"] = B(bn.deg),
+        ["erf"] = B(bn.erf),
+        ["erfc"] = B(bn.erfc),
         ["exp"] = B(bn.exp),
+        ["exp2"] = B(bn.exp2),
+        ["expm1"] = B(bn.expm1),
         ["floor"] = B(bn.floor),
         ["mantissa"] = B(function(x) local m, e = bn.frexp(x) return m end),
         ["exponent"] = B(function(x) local m, e = bn.frexp(x) return e end),
+        ["gamma"] = B(bn.gamma),
+        ["isfinite"] = Bbool(bn.isfinite),
+        ["isinf"] = Bbool(bn.isinf),
+        ["isnan"] = Bbool(bn.isnan),
+        ["isnormal"] = Bbool(bn.isnormal),
+        ["j0"] = B(bn.j0),
+        ["j1"] = B(bn.j1),
+        ["jn"] = B(bn.jn),
+        ["lgamma"] = B(bn.lgamma),
         ["log"] = B(bn.log),
         ["ln"] = B(bn.log),
-        ["log10"] = B(function(x) return bn.log(x, 10) end),
-        ["log2"] = B(function(x) return bn.log(x, 2) end),
+        ["log10"] = B(function(x) return bn.log10(x) end),
+        ["log1p"] = B(function(x) return bn.log1p(x) end),
+        ["log2"] = B(function(x) return bn.log2(x) end),
+        ["logb"] = B(function(x) return bn.logb(x) end),
         ["int"] = B(function(x) return bn.Int(x) end),
         ["rat"] = B(function(x) return bn.Rat(x) end),
         ["float"] = B(function(x) return bn.Float(x) end),
         ["fract"] = B(function(x) local i, f = bn.modf(x) return f end),
+        ["nearbyint"] = B(bn.nearbyint),
         ["rad"] = B(bn.rad),
         ["random"] = B(bn.random),
         ["randomseed"] = B(bn.randomseed),
+        ["round"] = B(bn.round),
         ["sin"] = B(bn.sin),
         ["sinh"] = B(bn.sinh),
         ["sqr"] = B(function(x) return x*x end),
         ["sqrt"] = B(bn.sqrt),
+        ["cbrt"] = B(bn.cbrt),
         ["tan"] = B(bn.tan),
         ["tanh"] = B(bn.tanh),
+        ["trunc"] = B(bn.trunc),
+        ["y0"] = B(bn.y0),
+        ["y1"] = B(bn.y1),
+        ["yn"] = B(bn.yn),
         ["float2ieee"] = B(float2ieee),
         ["ieee2float"] = B(ieee2float),
         ["double2ieee"] = B(double2ieee),
@@ -647,6 +699,7 @@ builtins = {
         ["^"] = B(function(x, y) mode.set("hex") return bn.bxor(x, y) end),
         ["*"] = B(function(x, y) return x * y end),
         ["/"] = B(function(x, y) return x / y end),
+        --["//"] = B(function(x, y) return x // y end),
         ["%"] = B(function(x, y) return x % y end),
         ["&"] = B(function(x, y) mode.set("hex") return bn.band(x, y) end),
         ["<<"] = B(function(x, y) mode.set("hex") return bn.lshift(x, y:tonumber()) end),
@@ -662,22 +715,31 @@ builtins = {
         ["=="] = B(function(x, y) return x == y end),
         ["!="] = B(function(x, y) return x ~= y end),
         ["~="] = B(function(x, y) return x ~= y end),
+        ["atan"] = B(bn.atan2),
         ["atan2"] = B(bn.atan2),
+        ["copysign"] = B(bn.copysign),
+        ["fdim"] = B(bn.fdim),
         ["fmod"] = B(bn.fmod),
+        ["hypot"] = B(bn.hypot),
         ["ldexp"] = B(bn.ldexp),
         ["log"] = B(function(x, base) return bn.log(x, base:tonumber()) end),
         ["max"] = B(bn.max),
         ["min"] = B(bn.min),
+        ["nextafter"] = B(bn.nextafter),
         ["pow"] = B(bn.pow),
         ["random"] = B(bn.random),
         ["rat"] = B(function(x, eps) return x:toRat(eps:tonumber()) end),
+        ["remainder"] = B(bn.remainder),
+        ["scalbn"] = B(bn.scalbn),
+    },
+    [3] = {
+        ["fma"] = B(bn.fma),
     },
 }
 for i = 3, 10 do
-    builtins[i] = {
-        max = builtins[2].max,
-        min = builtins[2].min,
-    }
+    builtins[i] = builtins[i] or {}
+    builtins[i].max = builtins[2].max
+    builtins[i].min = builtins[2].min
 end
 
 function F(f, ...)
@@ -893,7 +955,7 @@ do
     str(T([['([<>]?)([^'][^']?[^']?[^']?)']], Str))
 
     local addop = Alt{T("%+", _F_), T("%-", _F_), T("%|", _F_), T("%^", _F_), }
-    local mulop = Alt{T("%*", _F_), T("%/", _F_), T("%%", _F_), T("%&", _F_), T("<<", _F_), T(">>", _F_), }
+    local mulop = Alt{T("%*", _F_), T("%/", _F_), T("%/%/", _F_), T("%%", _F_), T("%&", _F_), T("<<", _F_), T(">>", _F_), }
     local powop = Alt{T("%*%*", _F_), }
     local orop = Alt{T("or", _F_), T("xor", _F_), }
     local andop = Alt{T("and", _F_), }
@@ -1200,6 +1262,16 @@ function str(val)
     return string.format("%q", s)
 end
 
+function pp(val)
+    if type(val) == "table" and val.isFloat then
+        if val == inf then return "Inf" end
+        if val == -inf then return "-Inf" end
+        val = val:tonumber()
+        if val ~= val then return "NaN" end
+    end
+    return val
+end
+
 print(help)
 
 local env = Env()
@@ -1234,7 +1306,7 @@ while true do
             elseif val ~= nil then
                 replay = false
                 last_line = line
-                print("=", val)
+                print("=", pp(val))
                 if type(val) == "table" then
                     if val.isInt then
                         for base in iter{"dec", "hex", "oct", "bin"} do
@@ -1264,7 +1336,7 @@ while true do
                                 float = ieee2float(int)
                             end
                         end
-                        print("IEEE", ("%s <=> %s"):format(bn.hex(int, mode.bits), float))
+                        print("IEEE", ("%s <=> %s"):format(pp(float), bn.hex(int, mode.bits)))
                     end
                     if mode.str and val.isInt then print("str", str(val)) end
                 end
