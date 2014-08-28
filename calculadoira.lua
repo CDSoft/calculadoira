@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.0"
+version = "3.0.1"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -369,7 +369,7 @@ function Ascii()
         for bx = 0, 0x1F do
             line = ""
             for b5 = 0, 1 do
-                code = bit32.bor(bit32.lshift(b5, 5), bx)
+                code = (b5<<5) | bx
                 char = special[code] or string.char(code)
                 line = line..fmt[b5]:format(code, code, char)
             end
@@ -381,7 +381,7 @@ function Ascii()
         for bx = 0, 0xF do
             line = ""
             for b654 = 4, 7 do
-                code = bit32.bor(bit32.lshift(b654, 4), bx)
+                code = (b654<<4) | bx
                 char = special[code] or string.char(code)
                 line = line..fmt:format(code, code, char)
             end
@@ -395,7 +395,7 @@ function Ascii()
             for bx = 0, 0xF do
                 line = ""
                 for b54 = 0, 3 do
-                    code = bit32.bor(bit32.lshift(1, 7), bit32.lshift(b6, 6), bit32.lshift(b54, 4), bx)
+                    code = (1<<7) | (b6<<6) | (b54<<4) | bx
                     char = special[code] or string.char(code)
                     line = line..fmt:format(code, code, char)
                 end
@@ -699,7 +699,7 @@ builtins = {
         ["^"] = B(function(x, y) mode.set("hex") return bn.bxor(x, y) end),
         ["*"] = B(function(x, y) return x * y end),
         ["/"] = B(function(x, y) return x / y end),
-        --["//"] = B(function(x, y) return x // y end),
+        ["//"] = B(function(x, y) return x // y end),
         ["%"] = B(function(x, y) return x % y end),
         ["&"] = B(function(x, y) mode.set("hex") return bn.band(x, y) end),
         ["<<"] = B(function(x, y) mode.set("hex") return bn.lshift(x, y:tonumber()) end),

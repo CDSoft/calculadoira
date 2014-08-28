@@ -74,7 +74,7 @@ for a in [0, 1, 15, 20, 21, 43, 511, 512, 123456789, 987654321]:
     for sa in [-1, 1]:
         for b in [0, 1, 15, 20, 21, 43, 511, 512, 23456789, 987654321]:
             for sb in [-1, 1]:
-                for op in "+ - * / % ** | & ^ >> << ~ < <= > >= == !=".split():
+                for op in "+ - * / // % ** | & ^ >> << ~ < <= > >= == !=".split():
                     if op == '%' and sb == -1: continue
                     if op == '**' and b > 100: continue
                     if op in ["|", "&", "^", "<<", ">>"] and (sa == -1 or sb == -1): continue
