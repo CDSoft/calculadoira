@@ -19,16 +19,16 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.1"
+version = "3.0.2"
 
 help = ([[
 +---------------------------------------------------------------------+
 |     C A L C U L A D O I R A     | v. X.Y.Z | cdsoft.fr/calculadoira |
 |---------------------------------------------------------------------|
 | Modes:                          | Numbers:                          |
-|     hex oct bin float str reset |     binary: b... or ...b or 0b... |
-|     hex8/16/32/64 ...           |     octal : o... or ...o or 0o... |
-|---------------------------------|     hexa  : h... or ...h or 0x... |
+|     hex oct bin float str reset |     binary: 0b...                 |
+|     hex8/16/32/64 ...           |     octal : 0o...                 |
+|---------------------------------|     hexa  : 0x...                 |
 | Variables and functions:        |     float : 1.2e-3                |
 |     variable = expression       | Chars     : "abcd" or 'abcd'      |
 |     function(x, y) = expression |             "<abcd" or ">abcd"    |
@@ -242,7 +242,7 @@ function Mode()
     end
     function self.set_bits(bits)
         if not running then return end
-        self.bits = bits and bn.Int(bits):tonumber()
+        self.bits = bits and math.tointeger(bn.Int(bits):tonumber())
         if self.bits ~= 32 and self.bits ~= 64 then
             self["float"] = false
         end
@@ -931,14 +931,8 @@ do
     local expr = Rule()
     local ident = T("[a-zA-Z_][%w_]*", Ident)
     local number = Rule()
-    number(T("b([_01]+)", IntNumber(2, "bin")))
-    number(T("([_01]+)b", IntNumber(2, "bin")))
     number(T("0[bB]([_01]+)", IntNumber(2, "bin")))
-    number(T("o([_0-7]+)", IntNumber(8, "oct")))
-    number(T("([_0-7]+)o", IntNumber(8, "oct")))
     number(T("0[oO]([_0-7]+)", IntNumber(8, "oct")))
-    number(T("h([_0-9A-Fa-f]+)", IntNumber(16, "hex")))
-    number(T("([_0-9A-Fa-f]+)h", IntNumber(16, "hex")))
     number(T("0[xX]([_0-9A-Fa-f]+)", IntNumber(16, "hex")))
     number(T("%d[_%d]*%.[_%d]*", FloatNumber()))
     number(T("[_%d]*%.[_%d]*%d", FloatNumber()))
@@ -949,7 +943,6 @@ do
     local bool = Rule()
     bool(T("true", Bool))
     bool(T("false", Bool))
-    --bool(T("nil", Bool))
     local str = Rule()
     str(T([["([<>]?)([^"][^"]?[^"]?[^"]?)"]], Str))
     str(T([['([<>]?)([^'][^']?[^']?[^']?)']], Str))
