@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.2"
+version = "3.0.3"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -30,16 +30,16 @@ help = ([[
 |     hex8/16/32/64 ...           |     octal : 0o...                 |
 |---------------------------------|     hexa  : 0x...                 |
 | Variables and functions:        |     float : 1.2e-3                |
-|     variable = expression       | Chars     : "abcd" or 'abcd'      |
-|     function(x, y) = expression |             "<abcd" or ">abcd"    |
-| Multiple statements:            | Booleans  : true or false         |
-|     expr1, ..., exprn           |-----------------------------------|
-|---------------------------------| Operators:                        |
-| Builtin functions:              |     or xor and not                |
-|     see help                    |     < <= > >= == !=               |
-|---------------------------------|     cond?expr:expr                |
-| Commands: ? help license bye    |     + - * / % ** | ^ & >> << ~    |
-|           edit ascii            |                                   |
+|     variable = expression       |     sep "_", sep " ", sep ""      |
+|     function(x, y) = expression | Chars     : "abcd" or 'abcd'      |
+| Multiple statements:            |             "<abcd" or ">abcd"    |
+|     expr1, ..., exprn           | Booleans  : true or false         |
+|---------------------------------|-----------------------------------|
+| Builtin functions:              | Operators:                        |
+|     see help                    |     or xor and not                |
+|---------------------------------|     < <= > >= == !=               |
+| Commands: ? help license bye    |     cond?expr:expr                |
+|           edit ascii            |     + - * / % ** | ^ & >> << ~    |                                  |
 +---------------------------------------------------------------------+
 ]]):gsub("X.Y.Z", version)
 
@@ -161,6 +161,13 @@ are 8, 16, 32, 64 and 128.
 float can have suffixes giving the size of floats (32 or 64).
 
 The reset command reset the display mode.
+
+The sep command set the digit separator. valid separators are:
+- sep "": no separator
+- sep " ": digits separated with space
+- sep "_": digits separated with an underscore
+
+Note: the space separator cannot be used to enter numbers.
 
 Blocks
 ======
@@ -826,6 +833,13 @@ function Reset()
     return self
 end
 
+function Sep(s)
+    local self = Expr "Sep"
+    function self.dis() return "Sep("..s..")" end
+    function self.eval(env) bn.sep(s) replay = true end
+    return self
+end
+
 do
     local max_position
 
@@ -1023,6 +1037,8 @@ do
         T("bye", Quit), T("exit", Quit), T("quit", Quit),
         T("%?", Help), T("help", LongHelp),
         T("license", License),
+        Seq({T"sep", T"'([ _]?)'"}, function(_, s) return Sep(s) end),
+        Seq({T"sep", T'"([ _]?)"'}, function(_, s) return Sep(s) end),
         T("dec", Toggle), T("hex", Toggle), T("oct", Toggle), T("bin", Toggle),
         T("float", Toggle),
         T("dec8", Set), T("dec16", Set), T("dec32", Set), T("dec64", Set), T("dec128", Set),
