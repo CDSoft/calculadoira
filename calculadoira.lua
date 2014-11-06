@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.3"
+version = "3.0.4"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -39,7 +39,7 @@ help = ([[
 |     see help                    |     or xor and not                |
 |---------------------------------|     < <= > >= == !=               |
 | Commands: ? help license bye    |     cond?expr:expr                |
-|           edit ascii            |     + - * / % ** | ^ & >> << ~    |                                  |
+|           edit ascii            |     + - * / % ** | ^ & >> << ~    |
 +---------------------------------------------------------------------+
 ]]):gsub("X.Y.Z", version)
 
@@ -833,7 +833,7 @@ function Reset()
     return self
 end
 
-function Sep(s)
+function Sep(_, s)
     local self = Expr "Sep"
     function self.dis() return "Sep("..s..")" end
     function self.eval(env) bn.sep(s) replay = true end
@@ -1037,8 +1037,8 @@ do
         T("bye", Quit), T("exit", Quit), T("quit", Quit),
         T("%?", Help), T("help", LongHelp),
         T("license", License),
-        Seq({T"sep", T"'([ _]?)'"}, function(_, s) return Sep(s) end),
-        Seq({T"sep", T'"([ _]?)"'}, function(_, s) return Sep(s) end),
+        Seq({T"sep", T"'([ _]?)'"}, Sep),
+        Seq({T"sep", T'"([ _]?)"'}, Sep),
         T("dec", Toggle), T("hex", Toggle), T("oct", Toggle), T("bin", Toggle),
         T("float", Toggle),
         T("dec8", Set), T("dec16", Set), T("dec32", Set), T("dec64", Set), T("dec128", Set),
@@ -1060,6 +1060,8 @@ do
 
     stat(T("[;#]%s*[^\r\n]*", Comment))
     stat(Alt{
+        Seq({T"sep", T"'([ _]?)'"}, Sep),
+        Seq({T"sep", T'"([ _]?)"'}, Sep),
         T("dec", Set), T("hex", Set), T("oct", Set), T("bin", Set),
         T("dec8", Set), T("dec16", Set), T("dec32", Set), T("dec64", Set), T("dec128", Set),
         T("hex8", Set), T("hex16", Set), T("hex32", Set), T("hex64", Set), T("hex128", Set),
