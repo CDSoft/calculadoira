@@ -2,7 +2,7 @@
 
 license = [[
 Calculadoira
-Copyright (C) 2011 - 2014 Christophe Delord
+Copyright (C) 2011 - 2015 Christophe Delord
 http://www.cdsoft.fr/calculadoira
 
 Calculadoira is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.4"
+version = "3.0.5"
 
 help = ([[
 +---------------------------------------------------------------------+
