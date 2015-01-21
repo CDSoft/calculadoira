@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.5"
+version = "3.0.6"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -436,34 +436,38 @@ end
 
 function float2ieee(x)
     mode.set("float")
+    mode.set_bits(32)
     x = bn.Float(x):tonumber()
     if type(x) == 'number' then
-        return bn.Int((struct.unpack("I4", struct.pack("f", x))))
+        return bn.Int((string.unpack("I4", string.pack("f", x))))
     end
 end
 
 function ieee2float(x)
     mode.set("float")
+    mode.set_bits(32)
     x = bn.Int(x):tonumber()
     if type(x) == 'number' then
-        return bn.Float((struct.unpack("f", struct.pack("I4", x))))
+        return bn.Float((string.unpack("f", string.pack("I4", x))))
     end
 end
 
 function double2ieee(x)
     mode.set("float")
+    mode.set_bits(64)
     x = bn.Float(x):tonumber()
     if type(x) == 'number' then
-        local lo, hi = struct.unpack("I4I4", struct.pack("d", x))
+        local lo, hi = string.unpack("I4I4", string.pack("d", x))
         return bn.bor(bn.lshift(bn.Int(hi), 32), bn.Int(lo))
     end
 end
 
 function ieee2double(x)
     mode.set("float")
+    mode.set_bits(64)
     local lo = bn.band(x, bn.Int(0xFFFFFFFF))
     local hi = bn.band(bn.rshift(x, 32), bn.Int(0xFFFFFFFF))
-    return bn.Float((struct.unpack("d", struct.pack("I4I4", lo:tonumber(), hi:tonumber()))))
+    return bn.Float((string.unpack("d", string.pack("I4I4", lo:tonumber(), hi:tonumber()))))
 end
 
 nan = ieee2float(0x7FC00000)
@@ -508,9 +512,9 @@ function Str(endianess, str)
     function self.eval()
         mode.set("str", "hex")
         if endianess == ">" then
-            return bn.Int(struct.unpack(">I4", string.rep("\0", 4-#str)..str))
+            return bn.Int(string.unpack(">I4", string.rep("\0", 4-#str)..str))
         else
-            return bn.Int(struct.unpack("<I4", str..string.rep("\0", 4-#str)))
+            return bn.Int(string.unpack("<I4", str..string.rep("\0", 4-#str)))
         end
     end
     return self
@@ -1269,7 +1273,7 @@ end
 function str(val)
     local isnumber, val = pcall(math.floor, (val % bn.Int(2^32)):tonumber())
     if not isnumber then return "" end
-    local s = struct.pack(">I4", val):gsub("^%z+(.+)", "%1")
+    local s = string.pack(">I4", val):gsub("^%z+(.+)", "%1")
     return string.format("%q", s)
 end
 
