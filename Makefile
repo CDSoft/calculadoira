@@ -21,20 +21,50 @@ BL_VERSION = 3.0.5
 BL_URL     = http://www.cdsoft.fr/bl/bonaluna-$(BL_VERSION).tgz
 BL_TGZ     = bonaluna-$(BL_VERSION).tgz
 BL_SRC     = bonaluna-$(BL_VERSION)
-BL         = bl.exe
+BLWIN      = bl.exe
+BL         = bl
 
-all: calculadoira-demo.exe calculadoira.exe
+help:
+	@sed '/BL_VERSION/,$$d' Makefile
+	@echo "make linux : builds calculadoira for Linux"
+	@echo "make win   : builds calculadoira.exe for Windows"
+	@echo "make demo  : builds calculadoira.exe for Windows (demonstration version)"
+	@echo "make all   : builds calculadoira on all platforms"
+	@echo "make test  : tests calculadoira on Linux"
+
+all: linux demo win
+
+linux: calculadoira
+
+demo: calculadoira-demo.exe
+	
+win: calculadoira.exe
 
 UNAME = $(shell uname)
 ifneq "$(findstring Linux,$(UNAME))" ""
+
 WINE = wine
+test: tests.txt
+tests: tests.txt
+tests.txt: linux demo win tests.py
+	@echo "Running tests"
+	@rm -f $@.err $@
+	tests.py ./calculadoira > $@.err
+	@mv $@.err $@
+
 else
+
 WINE =
+test tests:
+	@echo "The test suite runs under Linux only..."
+
 endif
 
 clean:
-	rm -rf calculadoira*.exe $(BL_SRC)
-	rm -rf tmp
+	rm -rf $(BL_TGZ) $(BL_SRC)
+	rm -f calculadoira*.exe calculadoira
+	rm -f calculadoira.ico calculadoira.png
+	rm -f tests.txt
 
 $(BL_TGZ):
 	wget -c $(BL_URL)
@@ -46,20 +76,33 @@ $(BL_SRC)/Makefile: $(BL_TGZ)
 $(BL_SRC)/$(BL): calculadoira.ico $(BL_SRC)/Makefile
 	echo 'export LIBRARIES="QLZ BN"'            >  $(BL_SRC)/setup
 	echo 'export ICON="../../calculadoira.ico"' >> $(BL_SRC)/setup
+	#echo 'export COMPRESS="upx --brute"'        >> $(BL_SRC)/setup
+	#sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh
+	cd $(BL_SRC)/ && make $(notdir $@)
+
+$(BL_SRC)/$(BLWIN): calculadoira.ico $(BL_SRC)/Makefile
+	echo 'export LIBRARIES="QLZ BN"'            >  $(BL_SRC)/setup
+	echo 'export ICON="../../calculadoira.ico"' >> $(BL_SRC)/setup
 	echo 'export COMPRESS="upx --brute"'        >> $(BL_SRC)/setup
 	#sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh
 	cd $(BL_SRC)/ && make $(notdir $@)
 
-calculadoira-demo.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BL) trial.lua Makefile
-	$(WINE) $(BL_SRC)/$(BL) $(BL_SRC)/tools/pegar.lua \
+calculadoira-demo.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BLWIN) trial.lua Makefile
+	$(WINE) $(BL_SRC)/$(BLWIN) $(BL_SRC)/tools/pegar.lua \
         lua:trial.lua \
         file::/calculadoira.ini=calculadoira.ini \
         lua:calculadoira.lua \
         write:$@
 
-calculadoira.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BL) Makefile
-	$(WINE) $(BL_SRC)/$(BL) $(BL_SRC)/tools/pegar.lua \
+calculadoira.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BLWIN) Makefile
+	$(WINE) $(BL_SRC)/$(BLWIN) $(BL_SRC)/tools/pegar.lua \
         lua:pro.lua \
+        file::/calculadoira.ini=calculadoira.ini \
+        lua:calculadoira.lua \
+        write:$@
+
+calculadoira: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BL) Makefile
+	$(BL_SRC)/$(BL) $(BL_SRC)/tools/pegar.lua \
         file::/calculadoira.ini=calculadoira.ini \
         lua:calculadoira.lua \
         write:$@

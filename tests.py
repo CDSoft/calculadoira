@@ -11,8 +11,8 @@ import atexit
 
 class Calc:
 
-    def __init__(self):
-        self.p = subprocess.Popen("bl calculadoira.lua", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE);
+    def __init__(self, exe):
+        self.p = subprocess.Popen(exe, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE);
         atexit.register(self.close)
         self.nbtests = 0
         self.nberr = 0
@@ -67,8 +67,9 @@ class Calc:
             print "%d tests: all pass"%self.nbtests
         else:
             print "%d tests: %d errors"%(self.nbtests, self.nberr)
+            sys.exit(1)
 
-calc = Calc()
+calc = Calc(sys.argv[1])
 
 for a in [0, 1, 15, 20, 21, 43, 511, 512, 123456789, 987654321]:
     for sa in [-1, 1]:

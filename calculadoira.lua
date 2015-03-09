@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.7"
+version = "3.0.8"
 
 help = ([[
 +---------------------------------------------------------------------+
