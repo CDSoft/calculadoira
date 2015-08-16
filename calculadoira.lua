@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.8"
+version = "3.0.9"
 
 help = ([[
 +---------------------------------------------------------------------+
@@ -128,9 +128,7 @@ ieee2double(n)              64 bit float value of the IEEE 754 integer n
 erf(x)                      error function
 erfc(x)                     complementary error function
 gamma(x)                    gamma function
-j0(x), j1(x), jn(x)         ???
 lgamma(x)                   log-gamma function
-y0(x), y1(x), yn(x)         ???
 
 isfinite(x)                 true if x is finite
 isinf(x)                    true if x is infinite
@@ -668,9 +666,6 @@ builtins = {
         ["isinf"] = Bbool(bn.isinf),
         ["isnan"] = Bbool(bn.isnan),
         ["isnormal"] = Bbool(bn.isnormal),
-        ["j0"] = B(bn.j0),
-        ["j1"] = B(bn.j1),
-        ["jn"] = B(bn.jn),
         ["lgamma"] = B(bn.lgamma),
         ["log"] = B(bn.log),
         ["ln"] = B(bn.log),
@@ -695,9 +690,6 @@ builtins = {
         ["tan"] = B(bn.tan),
         ["tanh"] = B(bn.tanh),
         ["trunc"] = B(bn.trunc),
-        ["y0"] = B(bn.y0),
-        ["y1"] = B(bn.y1),
-        ["yn"] = B(bn.yn),
         ["float2ieee"] = B(float2ieee),
         ["ieee2float"] = B(ieee2float),
         ["double2ieee"] = B(double2ieee),
