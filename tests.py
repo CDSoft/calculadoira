@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """ Regression tests for Calculadoira
 """
@@ -21,16 +21,16 @@ class Calc:
         self.p.stdin.write("bye\n")
 
     def __call__(self, input):
-        self.p.stdin.write(input+"\n")
+        self.p.stdin.write(str.encode(input+"\n"))
         while True:
             line = self.p.stdout.readline()
-            if line.startswith("="):
+            if line.startswith(b"="):
                 v = line[1:].strip().replace("_", "")
                 if '/' in v:
                     return "rat", self.evalfloat(v)
                 else:
                     return "int", self.evalint(v)
-            if line.startswith("!"):
+            if line.startswith(b"!"):
                 return [line[1:].strip()]*2
 
     def evalfloat(self, expr):
@@ -49,7 +49,7 @@ class Calc:
 
     def test(self, expr):
         self.nbtests += 1
-        print "test %d: %s ="%(self.nbtests, expr),
+        print("test %d: %s ="%(self.nbtests, expr), end='')
         sys.stdout.flush()
         try:
             evint = self.evalint(expr)
@@ -57,16 +57,16 @@ class Calc:
         except ZeroDivisionError:
             evint = evfloat = "Division by zero"
         vtype, v = self(expr)
-        print "%s (%s)"%(v, vtype)
+        print("%s (%s)"%(v, vtype))
         if (v == 'int' and v != evint) or (v == 'rat' and str(v) != str(evfloat)):
             self.nberr += 1
-            print "Error: %s is not %s (%s)"%(expr, evfloat, evint)
+            print("Error: %s is not %s (%s)"%(expr, evfloat, evint))
 
     def summary(self):
         if self.nberr == 0:
-            print "%d tests: all pass"%self.nbtests
+            print("%d tests: all pass"%self.nbtests)
         else:
-            print "%d tests: %d errors"%(self.nbtests, self.nberr)
+            print("%d tests: %d errors"%(self.nbtests, self.nberr))
             sys.exit(1)
 
 calc = Calc(sys.argv[1])

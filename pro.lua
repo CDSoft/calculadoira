@@ -1,6 +1,6 @@
 -- Calculadoira
--- Copyright (C) 2011 - 2015 Christophe Delord
--- http://www.cdsoft.fr/calculadoira
+-- Copyright (C) 2011 - 2020 Christophe Delord
+-- http://cdelord.fr/calculadoira
 --
 -- This file is part of Calculadoira.
 --

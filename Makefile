@@ -1,6 +1,6 @@
 # Calculadoira
-# Copyright (C) 2011 - 2015 Christophe Delord
-# http://www.cdsoft.fr/calculadoira
+# Copyright (C) 2011 - 2020 Christophe Delord
+# http://cdelord.fr/calculadoira
 #
 # This file is part of Calculadoira.
 #
@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
-BL_VERSION = 3.0.6
-BL_URL     = http://www.cdsoft.fr/bl/bonaluna-$(BL_VERSION).tgz
+BL_VERSION = 3.0.11
+BL_URL     = http://cdelord.fr/bl/bonaluna-$(BL_VERSION).tgz
 BL_TGZ     = bonaluna-$(BL_VERSION).tgz
 BL_SRC     = bonaluna-$(BL_VERSION)
 BLWIN      = bl.exe
@@ -49,7 +49,7 @@ tests: tests.txt
 tests.txt: linux demo win tests.py
 	@echo "Running tests"
 	@rm -f $@.err $@
-	tests.py ./calculadoira > $@.err
+	./tests.py ./calculadoira > $@.err
 	@mv $@.err $@
 
 else
@@ -74,14 +74,14 @@ $(BL_SRC)/Makefile: $(BL_TGZ)
 	touch $@
 	
 $(BL_SRC)/$(BL): calculadoira.ico $(BL_SRC)/Makefile
-	echo 'export LIBRARIES="QLZ BN"'            >  $(BL_SRC)/setup
+	echo 'export LIBRARIES="LZ4 BN"'            >  $(BL_SRC)/setup
 	echo 'export ICON="../../calculadoira.ico"' >> $(BL_SRC)/setup
 	#echo 'export COMPRESS="upx --brute"'        >> $(BL_SRC)/setup
 	#sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh
 	cd $(BL_SRC)/ && make $(notdir $@)
 
 $(BL_SRC)/$(BLWIN): calculadoira.ico $(BL_SRC)/Makefile
-	echo 'export LIBRARIES="QLZ BN"'            >  $(BL_SRC)/setup
+	echo 'export LIBRARIES="LZ4 BN"'            >  $(BL_SRC)/setup
 	echo 'export ICON="../../calculadoira.ico"' >> $(BL_SRC)/setup
 	echo 'export COMPRESS="upx --brute"'        >> $(BL_SRC)/setup
 	#sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh

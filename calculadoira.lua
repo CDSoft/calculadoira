@@ -2,8 +2,8 @@
 
 license = [[
 Calculadoira
-Copyright (C) 2011 - 2015 Christophe Delord
-http://www.cdsoft.fr/calculadoira
+Copyright (C) 2011 - 2020 Christophe Delord
+http://cdelord.fr/calculadoira
 
 Calculadoira is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published
@@ -19,11 +19,11 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.0.9"
+version = "3.1.0"
 
 help = ([[
 +---------------------------------------------------------------------+
-|     C A L C U L A D O I R A     | v. X.Y.Z | cdsoft.fr/calculadoira |
+|     C A L C U L A D O I R A      v. X.Y.Z | cdelord.fr/calculadoira |
 |---------------------------------------------------------------------|
 | Modes:                          | Numbers:                          |
 |     hex oct bin float str reset |     binary: 0b...                 |
@@ -217,8 +217,8 @@ ascii                       print an ASCII table
 Credits
 =======
 
-Calculadoira: http://www.cdsoft.fr/calculadoira
-BonaLuna    : http://www.cdsoft.fr/bl
+Calculadoira: http://cdelord.fr/calculadoira
+BonaLuna    : http://cdelord.fr/bl
 
 "Calculadoira" means "Calculator" in Occitan.
 ]]
