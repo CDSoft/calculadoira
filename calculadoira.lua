@@ -1,8 +1,8 @@
-#!/usr/bin/env bl
+#!/usr/bin/env luax
 
-license = [[
+local license = [[
 Calculadoira
-Copyright (C) 2011 - 2020 Christophe Delord
+Copyright (C) 2011 - 2022 Christophe Delord
 http://cdelord.fr/calculadoira
 
 Calculadoira is free software: you can redistribute it and/or modify
@@ -19,33 +19,33 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-version = "3.1.0"
+local version = "4.0.0"
 
-help = ([[
-+---------------------------------------------------------------------+
-|     C A L C U L A D O I R A      v. X.Y.Z | cdelord.fr/calculadoira |
+local help = ([[
+*---------------------------------------------------------------------*
+|      CALCULADOIRA       v. X.Y.Z |  http://cdelord.fr/calculadoira  |
 |---------------------------------------------------------------------|
-| Modes:                          | Numbers:                          |
-|     hex oct bin float str reset |     binary: 0b...                 |
-|     hex8/16/32/64 ...           |     octal : 0o...                 |
-|---------------------------------|     hexa  : 0x...                 |
-| Variables and functions:        |     float : 1.2e-3                |
-|     variable = expression       |     sep "_", sep " ", sep ""      |
-|     function(x, y) = expression | Chars     : "abcd" or 'abcd'      |
-| Multiple statements:            |             "<abcd" or ">abcd"    |
-|     expr1, ..., exprn           | Booleans  : true or false         |
-|---------------------------------|-----------------------------------|
-| Builtin functions:              | Operators:                        |
-|     see help                    |     or xor and not                |
-|---------------------------------|     < <= > >= == !=               |
-| Commands: ? help license bye    |     cond?expr:expr                |
-|           edit ascii            |     + - * / % ** | ^ & >> << ~    |
-+---------------------------------------------------------------------+
+| Modes:                           | Numbers:                         |
+|     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
+|     hex8/16/32/64 ...            |     octal : 0o...    |  sep " "  |
+|----------------------------------|     hexa  : 0x...    |  sep "_"  |
+| Variables and functions:         |     float : 1.2e-3               |
+|     variable = expression        | Chars     : "abcd" or 'abcd'     |
+|     function(x, y) = expression  |             "<abcd" or ">abcd"   |
+| Multiple statements:             | Booleans  : true or false        |
+|     expr1, ..., exprn            |----------------------------------|
+|----------------------------------| Operators:                       |
+| Builtin functions:               |     or xor and not               |
+|     see help                     |     < <= > >= == !=              |
+|----------------------------------|     cond?expr:expr               |
+| Commands: ? help license         |     + - * / // % ** ! |x|        |
+|           bye exit quit          |     | ^ & >> << ~                |
+*---------------------------------------------------------------------*
 ]]):gsub("X.Y.Z", version)
 
-default_ini = "calculadoira.ini"
+local default_ini = "calculadoira.ini"
 
-longhelp = [[
+local longhelp = [[
 
 Constants                   Value
 =========================== ===============================================
@@ -75,7 +75,6 @@ x > y, x >= y
 x == y, x != y, x ~= y
 
 x!                          factorial of x
-|x|                         absolute value of x
 
 int(x)                      x converted to int
 float(x)                    x converted to float
@@ -192,7 +191,6 @@ From highest to lowest precedence:
 Operator family             Syntax
 =========================== =================
 Precedence overloading      (...)
-Absolute value              |x|
 Function evaluation         f(...)
 Factorial                   x!
 Exponentiation              x**y
@@ -210,20 +208,31 @@ Blocks                      expr1, ..., exprn
 Other commands              Description
 =========================== ===========================
 
-bye                         quit
-edit                        edit the configuration file
-ascii                       print an ASCII table
+bye exit quit               Quit
+?                           Help summary
+help                        Full help
+license                     Show Calculadoira license
 
 Credits
 =======
 
 Calculadoira: http://cdelord.fr/calculadoira
-BonaLuna    : http://cdelord.fr/bl
+LuaX        : http://cdelord.fr/luax
 
 "Calculadoira" means "Calculator" in Occitan.
 ]]
 
 local config
+
+local sys = require "sys"
+local fs = require "fs"
+local rl = require "rl"
+local fun = require "fun"
+local identity = fun.id
+
+local bn = require "bn"
+
+local running = false
 
 function Mode()
     local self = {bits=nil}
@@ -261,7 +270,7 @@ function Mode()
     return self
 end
 
-mode = Mode()
+local mode = Mode()
 
 function Virtual(obj, method)
     return function()
@@ -312,104 +321,6 @@ end
 function License()
     local self = Expr "License"
     function self.eval() print(license) end
-    return self
-end
-
-function Edit()
-    local self = Expr "Edit"
-    function self.eval() config.edit() end
-    return self
-end
-
-function Ascii()
-    local self = Expr "Ascii"
-    local special = {
-        [0x00] = "NUL '\\0'",
-        [0x01] = "SOH (start of heading)",
-        [0x02] = "STX (start of text)",
-        [0x03] = "ETX (end of text)",
-        [0x04] = "EOT (end of transmission)",
-        [0x05] = "ENQ (enquiry)",
-        [0x06] = "ACK (acknowledge)",
-        [0x07] = "BEL '\\a' (bell)",
-        [0x08] = "BS  '\\b' (backspace)",
-        [0x09] = "HT  '\\t' (horizontal tab)",
-        [0x0A] = "LF  '\\n' (new line)",
-        [0x0B] = "VT  '\\v' (vertical tab)",
-        [0x0C] = "FF  '\\f' (form feed)",
-        [0x0D] = "CR  '\\r' (carriage ret)",
-        [0x0E] = "SO  (shift out)",
-        [0x0F] = "SI  (shift in)",
-        [0x10] = "DLE (data link escape)",
-        [0x11] = "DC1 (device control 1)",
-        [0x12] = "DC2 (device control 2)",
-        [0x13] = "DC3 (device control 3)",
-        [0x14] = "DC4 (device control 4)",
-        [0x15] = "NAK (negative ack.)",
-        [0x16] = "SYN (synchronous idle)",
-        [0x17] = "ETB (end of trans. blk)",
-        [0x18] = "CAN (cancel)",
-        [0x19] = "EM  (end of medium)",
-        [0x1A] = "SUB (substitute)",
-        [0x1B] = "ESC (escape)",
-        [0x1C] = "FS  (file separator)",
-        [0x1D] = "GS  (group separator)",
-        [0x1E] = "RS  (record separator)",
-        [0x1F] = "US  (unit separator)",
-        [0x20] = "SPACE",
-    }
-    local header = string.rep(("| %-3s | %-3s | %-20s "):format("Dec", "Hex", "Character"), 2).."|"
-    local hr = header:gsub("[^|]", "-"):gsub("|", "+")
-    local fmt = "| %3d |  %02X | %-20s "
-    function self.eval()
-        local header, hr, fmt
-        header = ("| %-3s | %-3s | %-33s | %-3s | %-3s | %-9s |"):format("Dec", "Hex", "Character", "Dec", "Hex", "Character")
-        hr = header:gsub("[^|]", "-"):gsub("|", "+")
-        HR = hr:gsub("-", "=")
-        print(HR)
-        print(header)
-        print(HR)
-        -- Special characters
-        fmt = {[0]="| %3d |  %02X | %-33s ", [1]="| %3d |  %02X | %-9s "}
-        for bx = 0, 0x1F do
-            line = ""
-            for b5 = 0, 1 do
-                code = (b5<<5) | bx
-                char = special[code] or string.char(code)
-                line = line..fmt[b5]:format(code, code, char)
-            end
-            print(line.."|")
-        end
-        print(hr)
-        -- Normal characters (7 bits)
-        fmt = "| %03d |  %02X |  %s  "
-        for bx = 0, 0xF do
-            line = ""
-            for b654 = 4, 7 do
-                code = (b654<<4) | bx
-                char = special[code] or string.char(code)
-                line = line..fmt:format(code, code, char)
-            end
-            print(line.."|")
-        end
-        hr = (line.."|"):gsub("[^|]", "-"):gsub("|", "+")
-        HR = hr:gsub("-", "=")
-        print(hr)
-        -- Extended characters (8 bits)
-        for b6 = 0, 1 do
-            for bx = 0, 0xF do
-                line = ""
-                for b54 = 0, 3 do
-                    code = (1<<7) | (b6<<6) | (b54<<4) | bx
-                    char = special[code] or string.char(code)
-                    line = line..fmt:format(code, code, char)
-                end
-                print(line.."|")
-            end
-            if b6 == 0 then print(hr) end
-        end
-        print(HR)
-    end
     return self
 end
 
@@ -468,9 +379,6 @@ function ieee2double(x)
     return bn.Float((string.unpack("d", string.pack("I4I4", lo:tonumber(), hi:tonumber()))))
 end
 
-nan = ieee2float(0x7FC00000)
-inf = ieee2float(0x7F800000)
-
 function IntNumber(base, m)
     return function(n)
         local self = Expr "IntNumber"
@@ -526,6 +434,7 @@ function Ident(name)
         local val = env.get(name)
         if val then return val.eval(env) end
         val = constants[name]
+        if type(val) == "function" then val = val() end
         if val then return val end
         error("Unknown identifier: "..name)
     end
@@ -603,7 +512,7 @@ function B(f)
         local xs = {}
         for i, x in ipairs({...}) do
             x = self.check(x.eval(env))
-            if x == nil then x = nan end
+            if x == nil then x = constants.nan() end
             table.insert(xs, x)
         end
         return f(table.unpack(xs))
@@ -619,8 +528,13 @@ function Bbool(f)
 end
 
 constants = {
-    nan = nan, NaN = nan,
-    inf = inf, Inf = inf,
+    -- nan and inf are generating new constants each times they are used
+    -- to avoid comparisons of primitively equal values
+    -- (and let nan == nan by false as expected)
+    nan = function() return bn.Float(math.abs(0.0/0.0)) end,
+    NaN = function() return bn.Float(math.abs(0.0/0.0)) end,
+    inf = function() return bn.Float(1.0/0.0) end,
+    Inf = function() return bn.Float(1.0/0.0) end,
     pi = bn.pi,
     e  = bn.e,
 }
@@ -662,10 +576,10 @@ builtins = {
         ["mantissa"] = B(function(x) local m, e = bn.frexp(x) return m end),
         ["exponent"] = B(function(x) local m, e = bn.frexp(x) return e end),
         ["gamma"] = B(bn.gamma),
-        ["isfinite"] = Bbool(bn.isfinite),
-        ["isinf"] = Bbool(bn.isinf),
-        ["isnan"] = Bbool(bn.isnan),
-        ["isnormal"] = Bbool(bn.isnormal),
+        ["isfinite"] = B(bn.isfinite),
+        ["isinf"] = B(bn.isinf),
+        ["isnan"] = B(bn.isnan),
+        ["isnormal"] = B(bn.isnormal),
         ["lgamma"] = B(bn.lgamma),
         ["log"] = B(bn.log),
         ["ln"] = B(bn.log),
@@ -744,6 +658,8 @@ for i = 3, 10 do
     builtins[i].max = builtins[2].max
     builtins[i].min = builtins[2].min
 end
+
+local replay = false
 
 function F(f, ...)
     local self = Expr("F")
@@ -1044,8 +960,6 @@ do
         T("float32", Set), T("float64", Set),
         T("str", Toggle),
         T("reset", Reset),
-        T("edit", Edit),
-        T("ascii", Ascii),
         block
     })
 
@@ -1144,7 +1058,6 @@ do
     atom(str)
     atom(ident)
     atom(Seq({T"%(", block, T"%)"}, function(_, x, _) return x end))
-    atom(Seq({T"%|", block, T"%|"}, function(_, x, _) return F("abs", x) end))
     atom(eval)
 
 end
@@ -1181,36 +1094,6 @@ function ConfigFile(name)
             end
         end
     end
-    function self.edit()
-        local cmd = nil
-        if sys.platform == "Windows" then
-            cmd = string.format([[start /b cmd /c "%s"]], name)
-        else
-            local function run(editor)
-                for path in os.getenv("PATH"):gsplit(":") do
-                    if fs.stat(path..fs.sep..editor) then
-                        editor = path..fs.sep..editor
-                        break
-                    end
-                end
-                if fs.stat(editor) then
-                    return string.format([[%s "%s" &]], editor, name)
-                end
-            end
-            local editor = os.getenv "EDITOR"
-            cmd = editor and run(editor)
-            cmd = cmd or run "gvim"
-            cmd = cmd or run "gedit"
-            cmd = cmd or run "kate"
-            cmd = cmd or run "xemacs"
-        end
-        if cmd then
-            print("edit "..name)
-            os.execute(cmd)
-        else
-            print "Can not find an editor"
-        end
-    end
     return self
 end
 
@@ -1218,6 +1101,9 @@ function Config(names)
     local self = {}
     local configs = {}
     local loaded = {}
+    local default_ini_path = sys.os == "windows"
+        and fs.join(os.getenv "APPDATA", default_ini)
+        or fs.join(os.getenv "HOME", ".config", default_ini)
     local function register(name)
         name = fs.absname(name)
         local st = fs.inode(name)
@@ -1231,19 +1117,12 @@ function Config(names)
         end
         return false
     end
-    -- default configuration file loaded if no other file is specified
-    if #names == 0 then
-        register(default_ini)                                   -- current working directory
-        register(fs.dirname(names[0])..fs.sep..default_ini)     -- script directory
-        register(fs.dirname(names[-1])..fs.sep..default_ini)    -- executable directory
-    else
-        for i = 1, #names do
-            if not register(names[i])
-            and not register(fs.dirname(names[0])..fs.sep..names[i])
-            and not register(fs.dirname(names[-1])..fs.sep..names[i])
-            then
-                print("! can not find "..names[i])
-            end
+    register(default_ini_path)
+    for i = 1, #names do
+        if not register(names[i])
+        and not register(fs.dirname(names[0])..fs.sep..names[i])
+        then
+            print("! can not find "..names[i])
         end
     end
     function self.run(env)
@@ -1251,13 +1130,6 @@ function Config(names)
             configs[i].run(env)
         end
         if #configs > 0 then print "" end
-    end
-    function self.edit()
-        if #configs > 0 then
-            configs[1].edit()
-        else
-            print "No configuration file to edit"
-        end
     end
     return self
 end
@@ -1269,16 +1141,6 @@ function str(val)
     return string.format("%q", s)
 end
 
-function pp(val)
-    if type(val) == "table" and val.isFloat then
-        if val == inf then return "Inf" end
-        if val == -inf then return "-Inf" end
-        val = val:tonumber()
-        if val ~= val then return "NaN" end
-    end
-    return val
-end
-
 print(help)
 
 local env = Env()
@@ -1286,8 +1148,15 @@ local env = Env()
 config = Config(arg)
 config.run(env)
 
-replay = false
-last_line = nil
+local last_line = nil
+
+local function isTTY(fd)
+    if sys.os == "windows" then return true end
+    fd = tonumber(fd) or 1
+    local ok, exit, signal = os.execute(("test -t %d"):format(fd))
+    return (ok and exit == "exit") and signal == 0
+end
+local is_a_tty = isTTY(0)
 
 while true do
     local line
@@ -1296,6 +1165,8 @@ while true do
         print(": "..line)
     else
         line = rl.read(": ")
+        if not line then break end
+        if not is_a_tty then print(line) end
     end
     replay = false
     config.run(env) -- autoreload
@@ -1313,14 +1184,14 @@ while true do
             elseif val ~= nil then
                 replay = false
                 last_line = line
-                print("=", pp(val))
+                print("=", val)
                 if type(val) == "table" then
                     if val.isInt then
-                        for base in iter{"dec", "hex", "oct", "bin"} do
+                        fun.foreach({"dec", "hex", "oct", "bin"}, function(base)
                             if mode[base] then
                                 print(base..(mode.bits or ""), bn[base](val, mode.bits))
                             end
-                        end
+                        end)
                     end
                     if val.isRat then
                         print("~", val:tonumber())
@@ -1343,7 +1214,7 @@ while true do
                                 float = ieee2float(int)
                             end
                         end
-                        print("IEEE", ("%s <=> %s"):format(pp(float), bn.hex(int, mode.bits)))
+                        print("IEEE", ("%s <=> %s"):format(float, bn.hex(int, mode.bits)))
                     end
                     if mode.str and val.isInt then print("str", str(val)) end
                 end

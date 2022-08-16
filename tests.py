@@ -1,12 +1,30 @@
 #!/usr/bin/env python3
 
+# Calculadoira
+# Copyright (C) 2011-2022 Christophe Delord
+# http://cdelord.fr/calculadoira
+#
+# This file is part of Calculadoira.
+#
+# Calculadoira is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Calculadoira is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
+
 """ Regression tests for Calculadoira
 """
 
 import re
 import subprocess
 import sys
-import time
 import atexit
 
 class Calc:
@@ -18,14 +36,15 @@ class Calc:
         self.nberr = 0
 
     def close(self):
-        self.p.stdin.write("bye\n")
+        self.p.stdin.write(b"bye\n")
 
     def __call__(self, input):
         self.p.stdin.write(str.encode(input+"\n"))
+        self.p.stdin.flush()
         while True:
             line = self.p.stdout.readline()
             if line.startswith(b"="):
-                v = line[1:].strip().replace("_", "")
+                v = line[1:].decode().strip().replace("_", "")
                 if '/' in v:
                     return "rat", self.evalfloat(v)
                 else:

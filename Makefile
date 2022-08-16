@@ -1,12 +1,8 @@
-# Calculadoira
-# Copyright (C) 2011 - 2020 Christophe Delord
-# http://cdelord.fr/calculadoira
-#
 # This file is part of Calculadoira.
 #
 # Calculadoira is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # Calculadoira is distributed in the hope that it will be useful,
@@ -15,108 +11,71 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
+# along with Calculadoira.  If not, see <https://www.gnu.org/licenses/>.
+#
+# For further information about Calculadoira you can visit
+# http://cdelord.fr/calculadoira
 
-BL_VERSION = 3.0.11
-BL_URL     = http://cdelord.fr/bl/bonaluna-$(BL_VERSION).tgz
-BL_TGZ     = bonaluna-$(BL_VERSION).tgz
-BL_SRC     = bonaluna-$(BL_VERSION)
-BLWIN      = bl.exe
-BL         = bl
+INSTALL_PATH = $(HOME)/.local/bin
+BUILD = .build
 
-help:
-	@sed '/BL_VERSION/,$$d' Makefile
-	@echo "make linux : builds calculadoira for Linux"
-	@echo "make win   : builds calculadoira.exe for Windows"
-	@echo "make demo  : builds calculadoira.exe for Windows (demonstration version)"
-	@echo "make all   : builds calculadoira on all platforms"
-	@echo "make test  : tests calculadoira on Linux"
+CALCULADOIRA = $(BUILD)/calculadoira
+CALCULADOIRA_INI = ~/.config/calculadoira.ini
 
-all: linux demo win
+# avoid being polluted by user definitions
+export LUA_PATH := ./?.lua
 
-linux: calculadoira
-
-demo: calculadoira-demo.exe
-	
-win: calculadoira.exe
-
-UNAME = $(shell uname)
-ifneq "$(findstring Linux,$(UNAME))" ""
-
-WINE = wine
-test: tests.txt
-tests: tests.txt
-tests.txt: linux demo win tests.py
-	@echo "Running tests"
-	@rm -f $@.err $@
-	./tests.py ./calculadoira > $@.err
-	@mv $@.err $@
-
-else
-
-WINE =
-test tests:
-	@echo "The test suite runs under Linux only..."
-
-endif
+all: compile
+all: test
+all: doc
 
 clean:
-	rm -rf $(BL_TGZ) $(BL_SRC)
-	rm -f calculadoira*.exe calculadoira
-	rm -f calculadoira.ico calculadoira.png
-	rm -f tests.txt
+	rm -rf $(BUILD)
 
-$(BL_TGZ):
-	wget -c $(BL_URL)
+####################################################################
+# Compilation
+####################################################################
 
-$(BL_SRC)/Makefile: $(BL_TGZ)
-	tar xzf $(BL_TGZ)
-	touch $@
-	
-$(BL_SRC)/$(BL): calculadoira.ico $(BL_SRC)/Makefile
-	echo 'export LIBRARIES="LZ4 BN"'            >  $(BL_SRC)/setup
-	echo 'export ICON="../../calculadoira.ico"' >> $(BL_SRC)/setup
-	#echo 'export COMPRESS="upx --brute"'        >> $(BL_SRC)/setup
-	#sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh
-	cd $(BL_SRC)/ && make $(notdir $@)
+compile: $(CALCULADOIRA)
 
-$(BL_SRC)/$(BLWIN): calculadoira.ico $(BL_SRC)/Makefile
-	echo 'export LIBRARIES="LZ4 BN"'            >  $(BL_SRC)/setup
-	echo 'export ICON="../../calculadoira.ico"' >> $(BL_SRC)/setup
-	echo 'export COMPRESS="upx --brute"'        >> $(BL_SRC)/setup
-	#sed -i '/# Documentation and tests/,$$d' $(BL_SRC)/src/build.sh
-	cd $(BL_SRC)/ && make $(notdir $@)
+$(CALCULADOIRA): calculadoira.lua bn.lua
+	@mkdir -p $(dir $@)
+	luax -o $@ $^
 
-calculadoira-demo.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BLWIN) trial.lua Makefile
-	$(WINE) $(BL_SRC)/$(BLWIN) $(BL_SRC)/tools/pegar.lua \
-        lua:trial.lua \
-        file::/calculadoira.ini=calculadoira.ini \
-        lua:calculadoira.lua \
-        write:$@
+####################################################################
+# Installation
+####################################################################
 
-calculadoira.exe: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BLWIN) Makefile
-	$(WINE) $(BL_SRC)/$(BLWIN) $(BL_SRC)/tools/pegar.lua \
-        lua:pro.lua \
-        file::/calculadoira.ini=calculadoira.ini \
-        lua:calculadoira.lua \
-        write:$@
+.PHONY: install
 
-calculadoira: calculadoira.lua calculadoira.ini $(BL_SRC)/$(BL) Makefile
-	$(BL_SRC)/$(BL) $(BL_SRC)/tools/pegar.lua \
-        file::/calculadoira.ini=calculadoira.ini \
-        lua:calculadoira.lua \
-        write:$@
+install: $(INSTALL_PATH)/$(notdir $(CALCULADOIRA)) $(CALCULADOIRA_INI)
 
-calculadoira.png: Makefile
-	convert -size 64x64 xc:white \
-		-fill black -stroke black -strokewidth 0 \
-		-draw "rectangle 28,8 35,55" \
-		-draw "rectangle 8,28 55,35" \
-		$@
+$(INSTALL_PATH)/$(notdir $(CALCULADOIRA)): $(CALCULADOIRA)
+	@mkdir -p $(dir $@)
+	install $^ $@
 
-calculadoira.ico: calculadoira.png
-	convert $< \
-		-bordercolor white -border 0 \
-		\( -clone 0 -resize 32x32 \) \
-		-delete 0 -alpha off -colors 2 \
-		$@
+$(CALCULADOIRA_INI): calculadoira.ini
+	@mkdir -p $(dir $@)
+	test -f $(CALCULADOIRA_INI) || install $< $(CALCULADOIRA_INI)
+
+####################################################################
+# Tests
+####################################################################
+
+.PHONY: test
+
+test: $(BUILD)/tests.txt
+
+$(BUILD)/tests.txt: $(CALCULADOIRA) tests.py
+	@mkdir -p $(dir $@)
+	python3 tests.py $(CALCULADOIRA) > $@.tmp
+	mv $@.tmp $@
+
+####################################################################
+# Documentation
+####################################################################
+
+doc: README.md
+
+README.md: calculadoira.md $(CALCULADOIRA)
+	PATH=$(dir $(CALCULADOIRA)):$$PATH LANG=en panda -f markdown -t gfm $< -o $@
