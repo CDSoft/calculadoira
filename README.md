@@ -78,22 +78,10 @@ Some binaries are available here:
 | MacOS (ARM)   | [calculadoira-aarch64-macos-gnu](http://cdelord.fr/calculadoira/calculadoira-aarch64-macos-gnu)           |
 | Windows       | [calculadoira-x86_64-windows-gnu.exe](http://cdelord.fr/calculadoira/calculadoira-x86_64-windows-gnu.exe) |
 
-**Notes:**
-
-For a better user experience on Linux, it is recommended to use
-Calculadoira with [`rlwrap`](https://github.com/hanslub42/rlwrap).
-`rlwrap` will give Calculadoira nice editing features.
-
-E.g. to start Calculadoira in a terminal:
-
-``` .bash
-urxvt +sb -T Calculadoira -e rlwrap calculadoira
-```
-
 # Screenshot
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.0.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.0 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -112,7 +100,7 @@ urxvt +sb -T Calculadoira -e rlwrap calculadoira
     |           bye exit quit          |     | ^ & >> << ~                |
     *---------------------------------------------------------------------*
 
-# usage
+# Usage
 
 Calculadoira is a interactive terminal calculator. Expressions are
 entered with the keyboard, evaluated and the result is printed. The next
@@ -121,7 +109,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.0.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.0 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -152,8 +140,6 @@ A typical interactive session looks like this:
     : (x * y) ** 2
 
     =       1764
-
-    : bye
 
 # User’s manual
 
@@ -876,7 +862,7 @@ to laziness, functions can also be mutually recursive.
     : help
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.0.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.0 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |

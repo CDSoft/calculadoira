@@ -38,7 +38,7 @@ License
 =======
 
 ~~~~~~~~~~~~~~~~~~ {cmd=bash}
-(echo license; echo bye) | calculadoira | sed -e '1,/: license/d' -e '/: bye/,$d'
+echo license | calculadoira | sed -e '1,/: license/d'
 ~~~~~~~~~~~~~~~~~~
 
 Download and installation
@@ -73,26 +73,14 @@ MacOS (Intel)   [calculadoira-x86_64-macos-gnu](http://cdelord.fr/calculadoira/c
 MacOS (ARM)     [calculadoira-aarch64-macos-gnu](http://cdelord.fr/calculadoira/calculadoira-aarch64-macos-gnu)
 Windows         [calculadoira-x86_64-windows-gnu.exe](http://cdelord.fr/calculadoira/calculadoira-x86_64-windows-gnu.exe)
 
-**Notes:**
-
-For a better user experience on Linux, it is recommended to use Calculadoira
-with [`rlwrap`](https://github.com/hanslub42/rlwrap).
-`rlwrap` will give Calculadoira nice editing features.
-
-E.g. to start Calculadoira in a terminal:
-
-~~~~~ .bash
-urxvt +sb -T Calculadoira -e rlwrap calculadoira
-~~~~~
-
 Screenshot
 ==========
 
 ~~~~~~~~~~~~~~~~~~ {cmd=bash}
-echo bye | calculadoira | sed -e '/loading/,$d'
+calculadoira < /dev/null | sed -e '/loading/,$d'
 ~~~~~~~~~~~~~~~~~~
 
-usage
+Usage
 =====
 
 Calculadoira is a interactive terminal calculator.
@@ -109,14 +97,13 @@ calculadoira_full = "calculadoira < %s | expand | sed /loading/d"
 x = 21
 y = 2
 (x * y) ** 2
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 User's manual
 =============
 
 ``` meta
-calculadoira = "calculadoira < %s | expand | sed -e '1,/loading/d' -e '/: bye/,$d'"
+calculadoira = "calculadoira < %s | expand | sed -e '1,/loading/d'"
 ```
 
 ## Numbers
@@ -130,7 +117,6 @@ Integers can be decimal, hexadecimal, octal or binary numbers:
 0x24
 0o37
 0b1010
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Rational numbers
@@ -140,14 +126,12 @@ using floating point numbers.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
 1 + 2/3
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some functions don't support rational numbers and will produce floating point numbers.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
 1/2 + cos(0)
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Floating point numbers
@@ -168,7 +152,6 @@ float64
 nan
 inf
 -inf
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Automatic type conversion
@@ -181,7 +164,6 @@ to floating point numbers.
 1+2/3
 1/3+2/3
 (2/3) * 0.5
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Display mode
@@ -201,7 +183,6 @@ hex16           # 16 bit hexadecimal numbers
 oct32           # 32 bit octal numbers
 bin64           # 64 bit binary numbers
 reset           # raw decimal value only
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Calculadoira automatically activates some display modes under some circonstances:
@@ -213,7 +194,6 @@ Calculadoira automatically activates some display modes under some circonstances
 4               # only the default display mode
 0b100           # this number activates the binary display mode
 1<<10           # this operator activates the hexadecimal display mode
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Booleans
@@ -226,7 +206,6 @@ false
 true and false
 1+1 == 2
 1+1==2 ? "ok" : "bug"
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Operators
@@ -244,7 +223,6 @@ x / 5
 x // 5                  # integral division
 x % 5                   # integral remainder (Euclidean division)
 x ** 2
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Bitwise operators
@@ -257,7 +235,6 @@ bin16
 0b1100 & 0b0110         # bitwise and
 1 << 10                 # left shift
 1024 >> 1               # right shift
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Boolean operators
@@ -267,7 +244,6 @@ not true
 true or false
 true xor false
 true and false
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Comparison operators
@@ -279,7 +255,6 @@ bye
 12 >= 13
 12 == 13
 12 != 13
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Operator precedence
@@ -313,7 +288,6 @@ y = 2
 x+y
 y = 3
 x+y
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Functions
@@ -323,7 +297,6 @@ Calculadoira can also define functions.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
 f(x) = 2 * x
 f(5)
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Functions can be defined with multiple statements and be recursive.
@@ -332,7 +305,6 @@ Functions can be defined with multiple statements and be recursive.
 fib(n) = (n <= 1 ? 1 : (f1=fib(n-1), f2=fib(n-2), f1+f2))
 fib(1)
 fib(10)
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can see in the previous example that the evaluation is lazy!
@@ -343,7 +315,6 @@ isEven(n) = n == 0 ? true : isOdd(n-1)
 isOdd(n) = n == 0 ? false : isEven(n-1)
 isEven(10)
 isOdd(10)
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Builtin functions
@@ -355,7 +326,6 @@ int(pi)                     # Integral part
 float(2/3)                  # Conversion to floating point numbers
 rat(pi)                     # Rational approximation
 rat(pi, 1e-2)               # Rational approximation with a given precision
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Math
@@ -399,7 +369,6 @@ ln(x)                       # logarithm of x in base e
 log10(x)                    # logarithm of x in base 10
 log2(x)                     # logarithm of x in base 2
 log(b, x)                   # logarithm of x in base b
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### IEEE 754 representation
@@ -412,7 +381,6 @@ x = pi, n = 0x402df854
 float32
 float2ieee(x)               # IEEE 754 representation of x (32 bits)
 ieee2float(n)               # 32 bit float value of the IEEE 754 integer n
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #### 64 bit numbers
@@ -423,7 +391,6 @@ x = pi, n = 0x4005bf0a8b145769
 float64
 double2ieee(x)              # IEEE 754 representation of x (64 bits)
 ieee2double(n)              # 64 bit float value of the IEEE 754 integer n
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Specific values
@@ -435,7 +402,6 @@ isfinite(x)                 # true if x is finite
 isinf(x)                    # true if x is infinite
 isnan(x)                    # true if x is not a number
 isnormal(x)                 # true if x is a normalized number
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Other commands
@@ -451,5 +417,4 @@ Online help
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
 help
-bye
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
