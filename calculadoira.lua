@@ -227,8 +227,9 @@ local config
 local sys = require "sys"
 local fs = require "fs"
 local linenoise = require "linenoise"
-local fun = require "fun"
-local identity = fun.id
+local P = require "Prelude"
+local L = require "List"
+local identity = P.id
 
 local bn = require "bn"
 
@@ -1195,7 +1196,7 @@ while true do
                 print("=", val)
                 if type(val) == "table" then
                     if val.isInt then
-                        fun.foreach({"dec", "hex", "oct", "bin"}, function(base)
+                        L{"dec", "hex", "oct", "bin"}:map(function(base)
                             if mode[base] then
                                 print(base..(mode.bits or ""), bn[base](val, mode.bits))
                             end
