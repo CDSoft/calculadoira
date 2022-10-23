@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-local version = "4.1.0"
+local version = "4.1.1"
 
 local help = ([[
 *---------------------------------------------------------------------*
@@ -227,9 +227,8 @@ local config
 local sys = require "sys"
 local fs = require "fs"
 local linenoise = require "linenoise"
-local P = require "Prelude"
-local L = require "List"
-local identity = P.id
+local fun = require "fun"
+local identity = fun.id
 
 local bn = require "bn"
 
@@ -1196,7 +1195,7 @@ while true do
                 print("=", val)
                 if type(val) == "table" then
                     if val.isInt then
-                        L{"dec", "hex", "oct", "bin"}:map(function(base)
+                        fun{"dec", "hex", "oct", "bin"}:map(function(base)
                             if mode[base] then
                                 print(base..(mode.bits or ""), bn[base](val, mode.bits))
                             end
