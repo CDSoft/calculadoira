@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-local version = "4.1.1"
+local version = "4.1.2"
 
 local help = ([[
 *---------------------------------------------------------------------*
@@ -38,7 +38,7 @@ local help = ([[
 | Builtin functions:               |     or xor and not               |
 |     see help                     |     < <= > >= == !=              |
 |----------------------------------|     cond?expr:expr               |
-| Commands: ? help license         |     + - * / // % ** ! |x|        |
+| Commands: ? help license         |     + - * / // % ** !            |
 |           bye exit quit          |     | ^ & >> << ~                |
 *---------------------------------------------------------------------*
 ]]):gsub("X.Y.Z", version)
@@ -136,7 +136,7 @@ isnan(x)                    true if x is not a number
 copysign(x, y)              sign(y) * |x|
 fdim(x, y)                  x - y if x>y, 0 otherwise
 hypot(x, y)                 sqrt(x**2 + y**2)
-nextafter(x, y)             next float after x in the directory of y
+nextafter(x, y)             next float after x in the direction of y
 remainder(x, y)             remainder of x/y
 scalbn(x, n)                x * 2**n
 
@@ -530,7 +530,7 @@ end
 constants = {
     -- nan and inf are generating new constants each times they are used
     -- to avoid comparisons of primitively equal values
-    -- (and let nan == nan by false as expected)
+    -- (and let nan == nan be false as expected)
     nan = function() return bn.Float(math.abs(0.0/0.0)) end,
     NaN = function() return bn.Float(math.abs(0.0/0.0)) end,
     inf = function() return bn.Float(1.0/0.0) end,

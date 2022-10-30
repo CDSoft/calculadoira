@@ -81,7 +81,7 @@ Some binaries are available here:
 # Screenshot
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.1.1 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.2 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -96,7 +96,7 @@ Some binaries are available here:
     | Builtin functions:               |     or xor and not               |
     |     see help                     |     < <= > >= == !=              |
     |----------------------------------|     cond?expr:expr               |
-    | Commands: ? help license         |     + - * / // % ** ! |x|        |
+    | Commands: ? help license         |     + - * / // % ** !            |
     |           bye exit quit          |     | ^ & >> << ~                |
     *---------------------------------------------------------------------*
 
@@ -109,7 +109,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.1.1 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.2 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -124,7 +124,7 @@ A typical interactive session looks like this:
     | Builtin functions:               |     or xor and not               |
     |     see help                     |     < <= > >= == !=              |
     |----------------------------------|     cond?expr:expr               |
-    | Commands: ? help license         |     + - * / // % ** ! |x|        |
+    | Commands: ? help license         |     + - * / // % ** !            |
     |           bye exit quit          |     | ^ & >> << ~                |
     *---------------------------------------------------------------------*
 
@@ -691,7 +691,7 @@ to laziness, functions can also be mutually recursive.
 
     : acos(x)
 
-    =       -nan
+    =       nan
 
     : cosh(x)
 
@@ -703,7 +703,7 @@ to laziness, functions can also be mutually recursive.
 
     : asin(x)
 
-    =       -nan
+    =       nan
 
     : sinh(x)
 
@@ -862,7 +862,7 @@ to laziness, functions can also be mutually recursive.
     : help
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.1.1 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.2 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -877,7 +877,7 @@ to laziness, functions can also be mutually recursive.
     | Builtin functions:               |     or xor and not               |
     |     see help                     |     < <= > >= == !=              |
     |----------------------------------|     cond?expr:expr               |
-    | Commands: ? help license         |     + - * / // % ** ! |x|        |
+    | Commands: ? help license         |     + - * / // % ** !            |
     |           bye exit quit          |     | ^ & >> << ~                |
     *---------------------------------------------------------------------*
 
@@ -971,7 +971,7 @@ to laziness, functions can also be mutually recursive.
     copysign(x, y)              sign(y) * |x|
     fdim(x, y)                  x - y if x>y, 0 otherwise
     hypot(x, y)                 sqrt(x**2 + y**2)
-    nextafter(x, y)             next float after x in the directory of y
+    nextafter(x, y)             next float after x in the direction of y
     remainder(x, y)             remainder of x/y
     scalbn(x, n)                x * 2**n
 
