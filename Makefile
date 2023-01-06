@@ -25,6 +25,7 @@ CALCULADOIRA_INI = ~/.config/calculadoira.ini
 # avoid being polluted by user definitions
 export LUA_PATH := ./?.lua
 
+## Compile, test and generate the documentation
 all: compile
 all: test
 all: doc
@@ -32,15 +33,18 @@ all: doc
 clean:
 	rm -rf $(BUILD)
 
+include makex.mk
+
 ####################################################################
 # Compilation
 ####################################################################
 
+## Compile calculadoira
 compile: $(CALCULADOIRA)
 
-$(CALCULADOIRA): calculadoira.lua bn.lua
+$(CALCULADOIRA): calculadoira.lua bn.lua | $(LUAX)
 	@mkdir -p $(dir $@)
-	luax -o $@ $^
+	$(LUAX) -o $@ $^
 
 ####################################################################
 # Installation
@@ -48,6 +52,7 @@ $(CALCULADOIRA): calculadoira.lua bn.lua
 
 .PHONY: install
 
+## Install calculadoira
 install: $(INSTALL_PATH)/$(notdir $(CALCULADOIRA)) $(CALCULADOIRA_INI)
 
 $(INSTALL_PATH)/$(notdir $(CALCULADOIRA)): $(CALCULADOIRA)
@@ -64,6 +69,7 @@ $(CALCULADOIRA_INI): calculadoira.ini
 
 .PHONY: test
 
+## Run calculadoira tests
 test: $(BUILD)/tests.txt
 
 $(BUILD)/tests.txt: $(CALCULADOIRA) tests.py
@@ -75,7 +81,8 @@ $(BUILD)/tests.txt: $(CALCULADOIRA) tests.py
 # Documentation
 ####################################################################
 
+## Generate documentation (README.md)
 doc: README.md
 
-README.md: calculadoira.md $(CALCULADOIRA)
-	PATH=$(dir $(CALCULADOIRA)):$$PATH LANG=en panda -f markdown -t gfm $< -o $@
+README.md: calculadoira.md $(CALCULADOIRA) | $(PANDA)
+	PATH=$(dir $(CALCULADOIRA)):$$PATH LANG=en $(PANDA_GFM) $< -o $@
