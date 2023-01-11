@@ -51,6 +51,9 @@
 # BEAMER
 #     shortcut to panda with some default parameters
 #     to generate beamer slideshows
+# LETTER
+#     shortcut to panda with some default parameters
+#     to generate a letter
 # STACK
 #     path to the stack executable
 #     (see https://docs.haskellstack.org/en/stable/)
@@ -79,6 +82,9 @@
 
 # The project configuration variables can be defined before including
 # makex.mk.
+#
+# Makex update:
+# wget http://cdelord.fr/makex/makex.mk
 
 # MAKEX_INSTALL_PATH defines the path where tools are installed
 MAKEX_INSTALL_PATH ?= /var/tmp/makex
@@ -102,6 +108,10 @@ PANDOC_VERSION ?= 2.19.2
 # PANDOC_LATEX_TEMPLATE_VERSION is a tag or branch name in the
 # pandoc-latex-template repository
 PANDOC_LATEX_TEMPLATE_VERSION = master
+
+# PANDOC_LETTER_VERSION is a tag or branch name in the
+# pandoc-letter repository
+PANDOC_LETTER_VERSION = master
 
 # PANDA_VERSION is a tag or branch name in the Panda repository
 PANDA_VERSION ?= master
@@ -151,12 +161,12 @@ help: welcome
 	@echo ''
 	@echo 'Targets:'
 	@awk '/^[a-zA-Z\-_0-9]+:/ { \
-		helpMessage = match(lastLine, /^## (.*)/); \
-		if (helpMessage) { \
-			helpCommand = substr($$1, 0, index($$1, ":")-1); \
-			helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
-			printf "  ${TARGET_COLOR}%-$(MAKEX_HELP_TARGET_MAX_LEN)s${NORMAL} ${TEXT_COLOR}%s${NORMAL}\n", helpCommand, helpMessage; \
-		} \
+	    helpMessage = match(lastLine, /^## (.*)/); \
+	    if (helpMessage) { \
+	        helpCommand = substr($$1, 0, index($$1, ":")-1); \
+	        helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
+	        printf "  ${TARGET_COLOR}%-$(MAKEX_HELP_TARGET_MAX_LEN)s${NORMAL} ${TEXT_COLOR}%s${NORMAL}\n", helpCommand, helpMessage; \
+	    } \
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
 
@@ -191,6 +201,8 @@ MAKEX_OS := $(shell uname -s)
 LUAX_URL = https://github.com/CDSoft/luax
 LUAX = $(MAKEX_INSTALL_PATH)/luax/$(LUAX_VERSION)/luax
 
+export PATH := $(dir $(LUAX)):$(PATH)
+
 $(dir $(LUAX)):
 	@mkdir -p $@
 
@@ -198,13 +210,13 @@ $(LUAX): | $(MAKEX_CACHE) $(dir $(LUAX))
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install LuaX$(NORMAL)"
 	@test -f $(@) \
 	|| \
-	(	(	test -d $(MAKEX_CACHE)/luax \
-			&& ( cd $(MAKEX_CACHE)/luax && git pull ) \
-			|| git clone $(LUAX_URL) $(MAKEX_CACHE)/luax \
-		) \
-		&& cd $(MAKEX_CACHE)/luax \
-		&& git checkout $(LUAX_VERSION) \
-		&& make install-all PREFIX=$(realpath $(dir $@)) \
+	(   (   test -d $(MAKEX_CACHE)/luax \
+	        && ( cd $(MAKEX_CACHE)/luax && git pull ) \
+	        || git clone $(LUAX_URL) $(MAKEX_CACHE)/luax \
+	    ) \
+	    && cd $(MAKEX_CACHE)/luax \
+	    && git checkout $(LUAX_VERSION) \
+	    && make install-all PREFIX=$(realpath $(dir $@)) \
 	)
 
 makex-install: makex-install-luax
@@ -217,6 +229,8 @@ makex-install-luax: $(LUAX)
 UPP_URL = https://github.com/CDSoft/upp
 UPP = $(MAKEX_INSTALL_PATH)/upp/$(UPP_VERSION)/upp
 
+export PATH := $(dir $(UPP)):$(PATH)
+
 $(dir $(UPP)):
 	@mkdir -p $@
 
@@ -224,13 +238,13 @@ $(UPP): | $(LUAX) $(MAKEX_CACHE) $(dir $(UPP))
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install UPP$(NORMAL)"
 	@test -f $(@) \
 	|| \
-	(	(	test -d $(MAKEX_CACHE)/upp \
-			&& ( cd $(MAKEX_CACHE)/upp && git pull ) \
-			|| git clone $(UPP_URL) $(MAKEX_CACHE)/upp \
-		) \
-		&& cd $(MAKEX_CACHE)/upp \
-		&& git checkout $(UPP_VERSION) \
-		&& make install PREFIX=$(realpath $(dir $@)) \
+	(   (   test -d $(MAKEX_CACHE)/upp \
+	        && ( cd $(MAKEX_CACHE)/upp && git pull ) \
+	        || git clone $(UPP_URL) $(MAKEX_CACHE)/upp \
+	    ) \
+	    && cd $(MAKEX_CACHE)/upp \
+	    && git checkout $(UPP_VERSION) \
+	    && make install LUAX=$(LUAX) PREFIX=$(realpath $(dir $@)) \
 	)
 
 makex-install: makex-install-upp
@@ -250,13 +264,36 @@ $(PANDOC_LATEX_TEMPLATE): | $(MAKEX_CACHE) $(dir $(PANDOC_LATEX_TEMPLATE))
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc LaTeX Template$(NORMAL)"
 	@test -f $(@) \
 	|| \
-	(	(	test -d $(MAKEX_CACHE)/pandoc-latex-template \
-			&& ( cd $(MAKEX_CACHE)/pandoc-latex-template && git pull ) \
-			|| git clone $(PANDOC_LATEX_TEMPLATE_URL) $(MAKEX_CACHE)/pandoc-latex-template \
-		) \
-		&& cd $(MAKEX_CACHE)/pandoc-latex-template \
-		&& git checkout $(PANDOC_LATEX_TEMPLATE_VERSION) \
-		&& cp $(MAKEX_CACHE)/pandoc-latex-template/eisvogel.tex $@ \
+	(   (   test -d $(MAKEX_CACHE)/pandoc-latex-template \
+	        && ( cd $(MAKEX_CACHE)/pandoc-latex-template && git pull ) \
+	        || git clone $(PANDOC_LATEX_TEMPLATE_URL) $(MAKEX_CACHE)/pandoc-latex-template \
+	    ) \
+	    && cd $(MAKEX_CACHE)/pandoc-latex-template \
+	    && git checkout $(PANDOC_LATEX_TEMPLATE_VERSION) \
+	    && cp $(MAKEX_CACHE)/pandoc-latex-template/eisvogel.tex $@ \
+	)
+
+###########################################################################
+# Pandoc Letter
+###########################################################################
+
+PANDOC_LETTER_URL = https://github.com/aaronwolen/pandoc-letter.git
+PANDOC_LETTER = $(MAKEX_INSTALL_PATH)/pandoc/pandoc-letter/template-letter.tex
+
+$(dir $(PANDOC_LETTER)):
+	@mkdir -p $@
+
+$(PANDOC_LETTER): | $(MAKEX_CACHE) $(dir $(PANDOC_LETTER))
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc Letter$(NORMAL)"
+	@test -f $(@) \
+	|| \
+	(   (   test -d $(MAKEX_CACHE)/pandoc-letter \
+	        && ( cd $(MAKEX_CACHE)/pandoc-letter && git pull ) \
+	        || git clone $(PANDOC_LETTER_URL) $(MAKEX_CACHE)/pandoc-letter \
+	    ) \
+	    && cd $(MAKEX_CACHE)/pandoc-letter \
+	    && git checkout $(PANDOC_LETTER_VERSION) \
+	    && cp $(MAKEX_CACHE)/pandoc-letter/template-letter.tex $@ \
 	)
 
 ###########################################################################
@@ -290,16 +327,18 @@ endif
 PANDOC_URL = https://github.com/jgm/pandoc/releases/download/$(PANDOC_VERSION)/$(PANDOC_ARCHIVE)
 PANDOC = $(MAKEX_INSTALL_PATH)/pandoc/$(PANDOC_VERSION)/pandoc
 
+export PATH := $(dir $(PANDOC)):$(PATH)
+
 $(dir $(PANDOC)) $(MAKEX_CACHE)/pandoc:
 	@mkdir -p $@
 
-$(PANDOC): | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(PANDOC_LATEX_TEMPLATE) $(PANAM_CSS)
+$(PANDOC): | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(PANDOC_LATEX_TEMPLATE) $(PANDOC_LETTER) $(PANAM_CSS)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc$(NORMAL)"
 	@test -f $(@) \
 	|| \
-	( 	wget -c $(PANDOC_URL) -O $(MAKEX_CACHE)/pandoc/$(notdir $(PANDOC_URL)) \
-		&& tar -C $(MAKEX_CACHE)/pandoc -xzf $(MAKEX_CACHE)/pandoc/$(notdir $(PANDOC_URL)) \
-		&& cp -P $(MAKEX_CACHE)/pandoc/pandoc-$(PANDOC_VERSION)/bin/* $(dir $@) \
+	(   wget -c $(PANDOC_URL) -O $(MAKEX_CACHE)/pandoc/$(notdir $(PANDOC_URL)) \
+	    && tar -C $(MAKEX_CACHE)/pandoc -xzf $(MAKEX_CACHE)/pandoc/$(notdir $(PANDOC_URL)) \
+	    && cp -P $(MAKEX_CACHE)/pandoc/pandoc-$(PANDOC_VERSION)/bin/* $(dir $@) \
 	)
 
 makex-install: makex-install-pandoc
@@ -312,6 +351,10 @@ makex-install-pandoc: $(PANDOC)
 PANDA_URL = https://github.com/CDSoft/panda
 PANDA = $(MAKEX_INSTALL_PATH)/pandoc/$(PANDOC_VERSION)/panda/$(PANDA_VERSION)/panda
 
+export PATH := $(dir $(PANDA)):$(PATH)
+
+export PANDA_CACHE ?= $(MAKEX_CACHE)/.panda
+
 $(dir $(PANDA)):
 	@mkdir -p $@
 
@@ -319,14 +362,14 @@ $(PANDA): | $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA))
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Panda$(NORMAL)"
 	@test -f $(@) \
 	|| \
-	(	(	test -d $(MAKEX_CACHE)/panda \
-			&& ( cd $(MAKEX_CACHE)/panda && git pull ) \
-			|| git clone $(PANDA_URL) $(MAKEX_CACHE)/panda \
-		) \
-		&& cd $(MAKEX_CACHE)/panda \
-		&& git checkout $(PANDA_VERSION) \
-		&& make install-all PREFIX=$(realpath $(dir $@)) \
-		&& sed -i 's#^pandoc #$(PANDOC) #' $@ \
+	(   (   test -d $(MAKEX_CACHE)/panda \
+	        && ( cd $(MAKEX_CACHE)/panda && git pull ) \
+	        || git clone $(PANDA_URL) $(MAKEX_CACHE)/panda \
+	    ) \
+	    && cd $(MAKEX_CACHE)/panda \
+	    && git checkout $(PANDA_VERSION) \
+	    && make install-all PREFIX=$(realpath $(dir $@)) \
+	    && sed -i 's#^pandoc #$(PANDOC) #' $@ \
 	)
 
 makex-install: makex-install-panda
@@ -347,6 +390,8 @@ endif
 STACK_URL = https://github.com/commercialhaskell/stack/releases/download/v$(STACK_VERSION)/$(STACK_ARCHIVE)
 STACK = $(MAKEX_INSTALL_PATH)/stack/$(STACK_VERSION)/stack
 
+export PATH := $(dir $(STACK)):$(PATH)
+
 $(dir $(STACK)) $(MAKEX_CACHE)/stack:
 	@mkdir -p $@
 
@@ -354,9 +399,9 @@ $(STACK): | $(MAKEX_CACHE)/stack $(dir $(STACK))
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Haskell Stack$(NORMAL)"
 	@test -f $@ \
 	|| \
-	(	wget $(STACK_URL) -O $(MAKEX_CACHE)/stack/$(notdir $(STACK_URL)) \
-		&& tar -C $(MAKEX_CACHE)/stack -xzf $(MAKEX_CACHE)/stack/$(notdir $(STACK_URL)) \
-		&& cp $(MAKEX_CACHE)/stack/stack-$(STACK_VERSION)-linux-x86_64/stack $@ \
+	(   wget $(STACK_URL) -O $(MAKEX_CACHE)/stack/$(notdir $(STACK_URL)) \
+	    && tar -C $(MAKEX_CACHE)/stack -xzf $(MAKEX_CACHE)/stack/$(notdir $(STACK_URL)) \
+	    && cp $(MAKEX_CACHE)/stack/stack-$(STACK_VERSION)-linux-x86_64/stack $@ \
 	)
 
 STACK_CMD = $(STACK) --stack-root=$(dir $(STACK))/.stack --resolver=$(STACK_LTS)
@@ -382,9 +427,12 @@ PANDA_HTML += --embed-resources --standalone
 PANDA_PDF = $(PANDA)
 PANDA_PDF += --to latex
 PANDA_PDF += --template=$(PANDOC_LATEX_TEMPLATE)
-PANDA_PDF += --embed-resources --standalone
 
 BEAMER = $(PANDA)
 BEAMER += --to beamer
 BEAMER += -V theme:Madrid -V colortheme:default
-BEAMER += --embed-resources --standalone
+
+LETTER = $(PANDA)
+LETTER += --to latex
+LETTER += --template=$(PANDOC_LETTER)
+LETTRE += -V lang:en
