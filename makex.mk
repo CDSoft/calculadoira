@@ -24,7 +24,7 @@
 # makex defines some make variable that can be used to execute makex tools:
 #
 # LUAX
-#     path to the LuaX interpretor (see https://github.com/CDSoft/luax)
+#     path to the LuaX interpreter (see https://github.com/CDSoft/luax)
 # UPP
 #     path to the upp executable (see https://github.com/CDSoft/upp)
 # PANDA
@@ -54,11 +54,11 @@
 # LETTER
 #     shortcut to panda with some default parameters
 #     to generate a letter
-# STACK
-#     path to the stack executable
-#     (see https://docs.haskellstack.org/en/stable/)
-# STACK_CMD
-#     stack command that sets stack-root and resolver
+# GHCUP, GHC, CABAL, STACK
+#     path to the ghcup, ghc, cabal, stack executables
+#     (see https://www.haskell.org/ghcup/)
+# GHC_CMD, CABAL_CMD, STACK_CMD
+#     ghc, cabal and stack commands executed through ghcup
 #
 # It also adds some targets:
 #
@@ -74,8 +74,8 @@
 #     install pandoc
 # makex-install-panda
 #     install panda
-# makex-install-stack
-#     install stack
+# makex-install-ghcup
+#     install ghcup
 # help
 #     runs the `welcome` target (user defined)
 #     and lists the targets with their documentation
@@ -103,7 +103,7 @@ LUAX_VERSION ?= master
 UPP_VERSION ?= master
 
 # PANDOC_VERSION is the version number of pandoc
-PANDOC_VERSION ?= 2.19.2
+PANDOC_VERSION ?= 3.0
 
 # PANDOC_LATEX_TEMPLATE_VERSION is a tag or branch name in the
 # pandoc-latex-template repository
@@ -116,11 +116,14 @@ PANDOC_LETTER_VERSION = master
 # PANDA_VERSION is a tag or branch name in the Panda repository
 PANDA_VERSION ?= master
 
-# STACK_LTS is the Haskell stack LTS version
-STACK_LTS ?= lts-20.5
+# GHCUP_INSTALL_BASE_PREFIX is the base of ghcup
+GHCUP_INSTALL_BASE_PREFIX ?= $(MAKEX_INSTALL_PATH)/haskell
 
-# STACK_VERSION is the version of stack
-STACK_VERSION ?= 2.9.1
+# HASKELL_GHC_VERSION is the ghc version to install
+HASKELL_GHC_VERSION ?= recommended
+
+# HASKELL_CABAL_VERSION is the cabal version to install
+HASKELL_CABAL_VERSION ?= recommended
 
 #}}}
 
@@ -199,7 +202,7 @@ MAKEX_OS := $(shell uname -s)
 ###########################################################################
 
 LUAX_URL = https://github.com/CDSoft/luax
-LUAX = $(MAKEX_INSTALL_PATH)/luax/$(LUAX_VERSION)/luax
+LUAX = $(MAKEX_INSTALL_PATH)/luax/$(LUAX_VERSION)/bin/luax
 
 export PATH := $(dir $(LUAX)):$(PATH)
 
@@ -216,7 +219,7 @@ $(LUAX): | $(MAKEX_CACHE) $(dir $(LUAX))
 	    ) \
 	    && cd $(MAKEX_CACHE)/luax \
 	    && git checkout $(LUAX_VERSION) \
-	    && make install-all PREFIX=$(realpath $(dir $@)) \
+	    && make install-all PREFIX=$(realpath $(dir $@)/..) \
 	)
 
 makex-install: makex-install-luax
@@ -227,7 +230,7 @@ makex-install-luax: $(LUAX)
 ###########################################################################
 
 UPP_URL = https://github.com/CDSoft/upp
-UPP = $(MAKEX_INSTALL_PATH)/upp/$(UPP_VERSION)/upp
+UPP = $(MAKEX_INSTALL_PATH)/upp/$(UPP_VERSION)/bin/upp
 
 export PATH := $(dir $(UPP)):$(PATH)
 
@@ -244,7 +247,7 @@ $(UPP): | $(LUAX) $(MAKEX_CACHE) $(dir $(UPP))
 	    ) \
 	    && cd $(MAKEX_CACHE)/upp \
 	    && git checkout $(UPP_VERSION) \
-	    && make install LUAX=$(LUAX) PREFIX=$(realpath $(dir $@)) \
+	    && make install LUAX=$(LUAX) PREFIX=$(realpath $(dir $@)/..) \
 	)
 
 makex-install: makex-install-upp
@@ -319,9 +322,8 @@ $(PANAM_CSS): | $(MAKEX_CACHE) $(dir $(PANAM_CSS))
 ifeq ($(MAKEX_OS)-$(MAKEX_ARCH),Linux-x86_64)
 PANDOC_ARCHIVE = pandoc-$(PANDOC_VERSION)-linux-amd64.tar.gz
 endif
-
-ifeq ($(PANDOC_ARCHIVE),)
-$(error $(MAKEX_OS)-$(MAKEX_ARCH): Unknown archivecture, can not install pandoc)
+ifeq ($(MAKEX_OS)-$(MAKEX_ARCH),Linux-aarch64)
+PANDOC_ARCHIVE = pandoc-$(PANDOC_VERSION)-linux-arm64.tar.gz
 endif
 
 PANDOC_URL = https://github.com/jgm/pandoc/releases/download/$(PANDOC_VERSION)/$(PANDOC_ARCHIVE)
@@ -329,10 +331,14 @@ PANDOC = $(MAKEX_INSTALL_PATH)/pandoc/$(PANDOC_VERSION)/pandoc
 
 export PATH := $(dir $(PANDOC)):$(PATH)
 
+check_pandoc_architecture:
+	@test -n "$(PANDOC_ARCHIVE)" \
+	|| (echo "$(BG_RED)ERROR$(NORMAL)$(RED): $(MAKEX_OS)-$(MAKEX_ARCH): Unknown archivecture, can not install pandoc$(NORMAL)"; false)
+
 $(dir $(PANDOC)) $(MAKEX_CACHE)/pandoc:
 	@mkdir -p $@
 
-$(PANDOC): | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(PANDOC_LATEX_TEMPLATE) $(PANDOC_LETTER) $(PANAM_CSS)
+$(PANDOC): check_pandoc_architecture | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(PANDOC_LATEX_TEMPLATE) $(PANDOC_LETTER) $(PANAM_CSS)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc$(NORMAL)"
 	@test -f $(@) \
 	|| \
@@ -349,16 +355,16 @@ makex-install-pandoc: $(PANDOC)
 ###########################################################################
 
 PANDA_URL = https://github.com/CDSoft/panda
-PANDA = $(MAKEX_INSTALL_PATH)/pandoc/$(PANDOC_VERSION)/panda/$(PANDA_VERSION)/panda
+PANDA = $(MAKEX_INSTALL_PATH)/pandoc/$(PANDOC_VERSION)/panda/$(PANDA_VERSION)/bin/panda
 
 export PATH := $(dir $(PANDA)):$(PATH)
 
 export PANDA_CACHE ?= $(MAKEX_CACHE)/.panda
 
-$(dir $(PANDA)):
+$(dir $(PANDA)) $(PANDA_CACHE):
 	@mkdir -p $@
 
-$(PANDA): | $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA))
+$(PANDA): | $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA)) $(PANDA_CACHE)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Panda$(NORMAL)"
 	@test -f $(@) \
 	|| \
@@ -368,7 +374,7 @@ $(PANDA): | $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA))
 	    ) \
 	    && cd $(MAKEX_CACHE)/panda \
 	    && git checkout $(PANDA_VERSION) \
-	    && make install-all PREFIX=$(realpath $(dir $@)) \
+	    && make install-all PREFIX=$(realpath $(dir $@)/..) \
 	    && sed -i 's#^pandoc #$(PANDOC) #' $@ \
 	)
 
@@ -376,38 +382,37 @@ makex-install: makex-install-panda
 makex-install-panda: $(PANDA)
 
 ###########################################################################
-# Haskell Stack
+# Haskell (via GHCup)
 ###########################################################################
 
-ifeq ($(MAKEX_OS)-$(MAKEX_ARCH),Linux-x86_64)
-STACK_ARCHIVE = stack-$(STACK_VERSION)-linux-x86_64.tar.gz
-endif
+GHCUP = $(GHCUP_INSTALL_BASE_PREFIX)/.ghcup/bin/ghcup
+GHC = $(dir $(GHCUP))/ghc
+CABAL = $(dir $(GHCUP))/cabal
+STACK = $(dir $(GHCUP))/stack
 
-ifeq ($(STACK_ARCHIVE),)
-$(error $(MAKEX_OS)-$(MAKEX_ARCH): Unknown archivecture, can not install stack)
-endif
+export PATH := $(dir $(GHCUP)):$(HOME)/.cabal:$(PATH)
 
-STACK_URL = https://github.com/commercialhaskell/stack/releases/download/v$(STACK_VERSION)/$(STACK_ARCHIVE)
-STACK = $(MAKEX_INSTALL_PATH)/stack/$(STACK_VERSION)/stack
+export GHCUP_INSTALL_BASE_PREFIX
+export GHCUP_SKIP_UPDATE_CHECK=yes
 
-export PATH := $(dir $(STACK)):$(PATH)
-
-$(dir $(STACK)) $(MAKEX_CACHE)/stack:
-	@mkdir -p $@
-
-$(STACK): | $(MAKEX_CACHE)/stack $(dir $(STACK))
-	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Haskell Stack$(NORMAL)"
+$(GHCUP) $(GHC) $(CABAL) $(STACK):
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install GHCup (ghc, cabal, stack and hls)$(NORMAL)"
 	@test -f $@ \
 	|| \
-	(   wget $(STACK_URL) -O $(MAKEX_CACHE)/stack/$(notdir $(STACK_URL)) \
-	    && tar -C $(MAKEX_CACHE)/stack -xzf $(MAKEX_CACHE)/stack/$(notdir $(STACK_URL)) \
-	    && cp $(MAKEX_CACHE)/stack/stack-$(STACK_VERSION)-linux-x86_64/stack $@ \
+	(   export GHCUP_INSTALL_BASE_PREFIX="$(GHCUP_INSTALL_BASE_PREFIX)"; \
+	    export BOOTSTRAP_HASKELL_NONINTERACTIVE=yes; \
+	    export BOOTSTRAP_HASKELL_GHC_VERSION=$(HASKELL_GHC_VERSION); \
+	    export BOOTSTRAP_HASKELL_CABAL_VERSION=$(HASKELL_CABAL_VERSION); \
+	    export BOOTSTRAP_HASKELL_INSTALL_HLS=yes; \
+	    curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh \
 	)
 
-STACK_CMD = $(STACK) --stack-root=$(dir $(STACK))/.stack --resolver=$(STACK_LTS)
+GHC_CMD   = $(GHCUP) run ghc --
+CABAL_CMD = $(GHCUP) run cabal --
+STACK_CMD = $(GHCUP) run stack -- --stack-root=$(GHCUP_INSTALL_BASE_PREFIX)/.stack
 
-makex-install: makex-install-stack
-makex-install-stack: $(STACK)
+makex-install: makex-install-ghcup
+makex-install-ghcup: $(GHCUP)
 
 ###########################################################################
 # Panda shortcuts
