@@ -227,7 +227,7 @@ local config
 local sys = require "sys"
 local fs = require "fs"
 local linenoise = require "linenoise"
-local fun = require "fun"
+local fun = require "F"
 local identity = fun.id
 
 local bn = require "bn"
