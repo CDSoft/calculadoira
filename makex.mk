@@ -25,8 +25,8 @@
 #
 # LUAX
 #     path to the LuaX interpreter (see https://github.com/CDSoft/luax)
-# PLUA
-#     path to the PLua interpreter (see https://github.com/CDSoft/plua)
+# YPP, YPP_LUA, YPP_LUAX, YPP_PANDOC
+#     path to the ypp executables (see https://github.com/CDSoft/ypp)
 # UPP
 #     path to the upp executable (see https://github.com/CDSoft/upp)
 # PANDA
@@ -58,6 +58,10 @@
 #     to generate a letter
 # LSVG
 #     path to the lsvg executable (see https://github.com/CDSoft/lsvg)
+# PLANTUML
+#     path to plantuml.jar
+# DITAA
+#     path to ditaa.jar
 # GHCUP, GHC, CABAL, STACK
 #     path to the ghcup, ghc, cabal, stack executables
 #     (see https://www.haskell.org/ghcup/)
@@ -72,14 +76,18 @@
 #     install all makex tools
 # makex-install-luax
 #     install luax
-# makex-install-plua
-#     install plua
+# makex-install-ypp
+#     install ypp
 # makex-install-upp
 #     install upp
 # makex-install-pandoc
 #     install pandoc
 # makex-install-panda
 #     install panda
+# makex-install-plantuml
+#     install PlantUML
+# makex-install-ditaa
+#     install ditaa
 # makex-install-lsvg
 #     install lsvg
 # makex-install-ghcup
@@ -98,7 +106,7 @@
 MAKEX_INSTALL_PATH ?= /var/tmp/makex
 
 # MAKEX_CACHE is the path where makex tools sources are stored and built
-MAKEX_CACHE ?= /var/tmp/makex/cache
+MAKEX_CACHE ?= $(MAKEX_INSTALL_PATH)/cache
 
 # MAKEX_HELP_TARGET_MAX_LEN is the maximal size of target names
 # used to format the help message
@@ -107,25 +115,33 @@ MAKEX_HELP_TARGET_MAX_LEN ?= 20
 # LUAX_VERSION is a tag or branch name in the LuaX repository
 LUAX_VERSION ?= master
 
-# PLUA_VERSION is a tag or branch name in the LuaX repository
-PLUA_VERSION ?= master
+# YPP_VERSION is a tag or branch name in the ypp repository
+YPP_VERSION ?= master
 
 # UPP_VERSION is a tag or branch name in the upp repository
 UPP_VERSION ?= master
 
 # PANDOC_VERSION is the version number of pandoc
-PANDOC_VERSION ?= 3.1
+PANDOC_VERSION ?= 3.1.2
 
 # PANDOC_CLI_VERSION is the version number of pandoc-cli
-PANDOC_CLI_VERSION ?= 0.1
+PANDOC_CLI_VERSION ?= 0.1.1
+
+# PANDOC_DYNAMIC_LINK is "no" to download a statically linked executable
+# or "yes" to compile a dynamically linked executable with cabal
+PANDOC_DYNAMIC_LINK ?= no
 
 # PANDOC_LATEX_TEMPLATE_VERSION is a tag or branch name in the
 # pandoc-latex-template repository
-PANDOC_LATEX_TEMPLATE_VERSION = master
+PANDOC_LATEX_TEMPLATE_VERSION ?= master
 
 # PANDOC_LETTER_VERSION is a tag or branch name in the
 # pandoc-letter repository
-PANDOC_LETTER_VERSION = master
+PANDOC_LETTER_VERSION ?= master
+
+# PANAM_VERSION is a tag or branch name in the
+# pan-am repository
+PANAM_VERSION ?= master
 
 # PANDA_VERSION is a tag or branch name in the Panda repository
 PANDA_VERSION ?= master
@@ -141,6 +157,26 @@ HASKELL_GHC_VERSION ?= recommended
 
 # HASKELL_CABAL_VERSION is the cabal version to install
 HASKELL_CABAL_VERSION ?= recommended
+
+# RUSTUP_HOME is the rustup installation path
+RUSTUP_HOME ?= $(MAKEX_INSTALL_PATH)/rustup
+
+# CARGO_HOME is the cargo installation path
+CARGO_HOME ?= $(MAKEX_INSTALL_PATH)/cargo
+
+# TYPST_COMPILATION is "no" to download a precompiled executable
+# or "yes" to compile typst with cargo
+TYPST_COMPILATION ?= no
+
+# TYPST_VERSION is a tag or branch name in the
+# typst repository
+TYPST_VERSION ?= v0.3.0
+
+# PLANTUML_VERSION is the PlantUML version to install
+PLANTUML_VERSION = 1.2023.6
+
+# DITAA_VERSION is the ditaa version to install
+DITAA_VERSION = 0.11.0
 
 #}}}
 
@@ -248,6 +284,34 @@ makex-install: makex-install-ghcup
 makex-install-ghcup: $(GHCUP)
 
 ###########################################################################
+# Rust
+###########################################################################
+
+RUSTUP = $(CARGO_HOME)/bin/rustup
+RUSTC = $(CARGO_HOME)/bin/rustc
+CARGO = $(CARGO_HOME)/bin/cargo
+
+export RUSTUP_HOME
+export CARGO_HOME
+
+export PATH := $(dir $(CARGO)):$(PATH)
+
+$(RUSTUP) $(RUSTC) $(CARGO):
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Rust (rustup, rustc, cargo)$(NORMAL)"
+	@test -f $@ \
+	|| \
+	(   export CARGO_HOME="$(CARGO_HOME)"; \
+	    export RUSTUP_HOME=$(RUSTUP_HOME); \
+	    mkdir -p $(RUSTUP_HOME); \
+	    curl https://sh.rustup.rs -sSf -o $(RUSTUP_HOME)/rustup-install.sh; \
+		chmod +x  $(RUSTUP_HOME)/rustup-install.sh; \
+	    $(RUSTUP_HOME)/rustup-install.sh -y -v --no-modify-path; \
+	)
+
+makex-install: makex-install-rust
+makex-install-rust: $(CARGO)
+
+###########################################################################
 # LuaX
 ###########################################################################
 
@@ -276,33 +340,35 @@ makex-install: makex-install-luax
 makex-install-luax: $(LUAX)
 
 ###########################################################################
-# PLua
+# YPP
 ###########################################################################
 
-PLUA_URL = https://github.com/CDSoft/plua
-PLUA = $(MAKEX_INSTALL_PATH)/pandoc/$(PANDOC_VERSION)/plua/$(PLUA_VERSION)/bin/plua
-PLUAC = $(MAKEX_INSTALL_PATH)/pandoc/$(PANDOC_VERSION)/plua/$(PLUA_VERSION)/bin/pluac
+YPP_URL = https://github.com/CDSoft/ypp
+YPP = $(MAKEX_INSTALL_PATH)/ypp/$(YPP_VERSION)/bin/ypp
+YPP_LUA = $(MAKEX_INSTALL_PATH)/ypp/$(YPP_VERSION)/bin/ypp-lua
+YPP_LUAX = $(MAKEX_INSTALL_PATH)/ypp/$(YPP_VERSION)/bin/ypp-luax
+YPP_PANDOC = $(MAKEX_INSTALL_PATH)/ypp/$(YPP_VERSION)/bin/ypp-pandoc
 
-export PATH := $(dir $(PLUA)):$(PATH)
+export PATH := $(dir $(YPP)):$(PATH)
 
-$(dir $(PLUA)):
+$(dir $(YPP)):
 	@mkdir -p $@
 
-$(PLUA) $(PLUAC) &: | $(PANDOC) $(PANDA) $(MAKEX_CACHE) $(dir $(PLUA))
-	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install PLua$(NORMAL)"
+$(YPP) $(YPP_LUA) $(YPP_LUAX) $(YPP_PANDOC): | $(LUAX) $(MAKEX_CACHE) $(dir $(YPP))
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install ypp$(NORMAL)"
 	@test -f $(@) \
 	|| \
-	(   (   test -d $(MAKEX_CACHE)/plua \
-	        && ( cd $(MAKEX_CACHE)/plua && git pull ) \
-	        || git clone $(PLUA_URL) $(MAKEX_CACHE)/plua \
+	(   (   test -d $(MAKEX_CACHE)/ypp \
+	        && ( cd $(MAKEX_CACHE)/ypp && git pull ) \
+	        || git clone $(YPP_URL) $(MAKEX_CACHE)/ypp \
 	    ) \
-	    && cd $(MAKEX_CACHE)/plua \
-	    && git checkout $(PLUA_VERSION) \
+	    && cd $(MAKEX_CACHE)/ypp \
+	    && git checkout $(YPP_VERSION) \
 	    && make install PREFIX=$(realpath $(dir $@)/..) \
 	)
 
-makex-install: makex-install-plua
-makex-install-plua: $(PLUA) $(PLUAC)
+makex-install: makex-install-ypp
+makex-install-ypp: $(YPP) $(YPP_LUA) $(YPP_LUAX) $(YPP_PANDOC)
 
 ###########################################################################
 # UPP
@@ -326,7 +392,7 @@ $(UPP): | $(LUAX) $(MAKEX_CACHE) $(dir $(UPP))
 	    ) \
 	    && cd $(MAKEX_CACHE)/upp \
 	    && git checkout $(UPP_VERSION) \
-	    && make install LUAX=$(LUAX) PREFIX=$(realpath $(dir $@)/..) \
+	    && make install PREFIX=$(realpath $(dir $@)/..) \
 	)
 
 makex-install: makex-install-upp
@@ -382,7 +448,7 @@ $(PANDOC_LETTER): | $(MAKEX_CACHE) $(dir $(PANDOC_LETTER))
 # Pandoc Panam CSS
 ###########################################################################
 
-PANAM_URL = https://benjam.info/panam/styling.css
+PANAM_URL = https://github.com/CDSoft/pan-am
 PANAM_CSS = $(MAKEX_INSTALL_PATH)/pandoc/panam/styling.css
 
 $(dir $(PANAM_CSS)):
@@ -392,7 +458,14 @@ $(PANAM_CSS): | $(MAKEX_CACHE) $(dir $(PANAM_CSS))
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc Pan Am CSS$(NORMAL)"
 	@test -f $(@) \
 	|| \
-	wget -c $(PANAM_URL) -O $@
+	(   (   test -d $(MAKEX_CACHE)/pan-am \
+	        && ( cd $(MAKEX_CACHE)/pan-am && git pull ) \
+	        || git clone $(PANAM_URL) $(MAKEX_CACHE)/pan-am \
+	    ) \
+	    && cd $(MAKEX_CACHE)/pan-am \
+	    && git checkout $(PANAM_VERSION) \
+	    && cp $(MAKEX_CACHE)/pan-am/styling.css $@ \
+	)
 
 ###########################################################################
 # Pandoc
@@ -405,11 +478,39 @@ export PATH := $(dir $(PANDOC)):$(PATH)
 $(dir $(PANDOC)) $(MAKEX_CACHE)/pandoc:
 	@mkdir -p $@
 
+ifeq ($(PANDOC_DYNAMIC_LINK),no)
+
+PANDOC_URL = https://github.com/jgm/pandoc/releases/download/$(PANDOC_VERSION)/$(PANDOC_ARCHIVE)
+
+ifeq ($(MAKEX_OS)-$(MAKEX_ARCH),Linux-x86_64)
+PANDOC_ARCHIVE = pandoc-$(PANDOC_VERSION)-linux-amd64.tar.gz
+endif
+ifeq ($(MAKEX_OS)-$(MAKEX_ARCH),Linux-aarch64)
+PANDOC_ARCHIVE = pandoc-$(PANDOC_VERSION)-linux-arm64.tar.gz
+endif
+
+check_pandoc_architecture:
+	@test -n "$(PANDOC_ARCHIVE)" \
+	|| (echo "$(BG_RED)ERROR$(NORMAL)$(RED): $(MAKEX_OS)-$(MAKEX_ARCH): Unknown archivecture, can not install pandoc$(NORMAL)"; false)
+
+$(PANDOC): check_pandoc_architecture | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(PANDOC_LATEX_TEMPLATE) $(PANDOC_LETTER) $(PANAM_CSS)
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc$(NORMAL)"
+	@test -f $(@) \
+	|| \
+	( wget -c $(PANDOC_URL) -O $(MAKEX_CACHE)/pandoc/$(notdir $(PANDOC_URL)) \
+	    && tar -C $(MAKEX_CACHE)/pandoc -xzf $(MAKEX_CACHE)/pandoc/$(notdir $(PANDOC_URL)) \
+	    && cp -P $(MAKEX_CACHE)/pandoc/pandoc-$(PANDOC_VERSION)/bin/* $(dir $@) \
+	)
+
+else
+
 $(PANDOC): | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(PANDOC_LATEX_TEMPLATE) $(PANDOC_LETTER) $(PANAM_CSS) $(CABAL)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc$(NORMAL)"
 	@test -f $(@) \
 	|| \
 	$(CABAL) install pandoc-$(PANDOC_VERSION) pandoc-cli-$(PANDOC_CLI_VERSION) --install-method=copy --installdir=$(dir $@)
+
+endif
 
 makex-install: makex-install-pandoc
 makex-install-pandoc: $(PANDOC)
@@ -446,6 +547,54 @@ makex-install: makex-install-panda
 makex-install-panda: $(PANDA)
 
 ###########################################################################
+# Typst
+###########################################################################
+
+TYPST = $(MAKEX_INSTALL_PATH)/typst/$(TYPST_VERSION)/bin/typst
+
+export PATH := $(dir $(TYPST)):$(PATH)
+
+$(dir $(TYPST)) $(MAKEX_CACHE)/typst/$(TYPST_VERSION):
+	@mkdir -p $@
+
+ifeq ($(TYPST_COMPILATION),no)
+
+TYPST_URL = https://github.com/typst/typst/releases/download/$(TYPST_VERSION)/$(TYPST_ARCHIVE)
+
+ifeq ($(MAKEX_OS)-$(MAKEX_ARCH),Linux-x86_64)
+TYPST_ARCHIVE = typst-x86_64-unknown-linux-musl.tar.xz
+endif
+ifeq ($(MAKEX_OS)-$(MAKEX_ARCH),Linux-aarch64)
+TYPST_ARCHIVE = typst-aarch64-unknown-linux-musl.tar.xz
+endif
+
+check_typst_architecture:
+	@test -n "$(TYPST_ARCHIVE)" \
+	|| (echo "$(BG_RED)ERROR$(NORMAL)$(RED): $(MAKEX_OS)-$(MAKEX_ARCH): Unknown archivecture, can not install typst$(NORMAL)"; false)
+
+$(TYPST): check_typst_architecture | $(MAKEX_CACHE) $(MAKEX_CACHE)/typst/$(TYPST_VERSION) $(dir $(TYPST))
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Typst$(NORMAL)"
+	@test -f $(@) \
+	|| \
+	( wget -c $(TYPST_URL) -O $(MAKEX_CACHE)/typst/$(TYPST_VERSION)/$(notdir $(TYPST_URL)) \
+	    && tar -C $(MAKEX_CACHE)/typst/$(TYPST_VERSION) --strip-components 1 -xJf $(MAKEX_CACHE)/typst/$(TYPST_VERSION)/$(notdir $(TYPST_URL)) \
+	    && cp -P $(MAKEX_CACHE)/typst/$(TYPST_VERSION)/typst $(dir $@) \
+	)
+
+else
+
+$(TYPST): | $(MAKEX_CACHE) $(dir $(TYPST)) $(CARGO)
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Typst$(NORMAL)"
+	@test -f $(@) \
+	|| \
+	$(CARGO) install --git https://github.com/typst/typst --tag $(TYPST_VERSION) --root $(realpath $(dir $@)/..)
+
+endif
+
+makex-install: makex-install-typst
+makex-install-typst: $(TYPST)
+
+###########################################################################
 # lsvg
 ###########################################################################
 
@@ -474,6 +623,40 @@ makex-install: makex-install-lsvg
 makex-install-lsvg: $(LSVG)
 
 ###########################################################################
+# PlantUML
+###########################################################################
+
+PLANTUML_URL = https://github.com/plantuml/plantuml/releases/download/v$(PLANTUML_VERSION)/plantuml-$(PLANTUML_VERSION).jar
+PLANTUML = $(MAKEX_INSTALL_PATH)/plantuml/$(notdir $(PLANTUML_URL))
+
+$(dir $(PLANTUML)):
+	@mkdir -p $@
+
+$(PLANTUML): | $(dir $(PLANTUML))
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install PlantUML$(NORMAL)"
+	@test -f $@ || wget $(PLANTUML_URL) -O $@
+
+makex-install: makex-install-plantuml
+makex-install-plantuml: $(PLANTUML)
+
+###########################################################################
+# ditaa
+###########################################################################
+
+DITAA_URL = https://github.com/stathissideris/ditaa/releases/download/v$(DITAA_VERSION)/ditaa-$(DITAA_VERSION)-standalone.jar
+DITAA = $(MAKEX_INSTALL_PATH)/ditaa/$(notdir $(DITAA_URL))
+
+$(dir $(DITAA)):
+	@mkdir -p $@
+
+$(DITAA): | $(dir $(DITAA))
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install ditaa$(NORMAL)"
+	@test -f $@ || wget $(DITAA_URL) -O $@
+
+makex-install: makex-install-ditaa
+makex-install-ditaa: $(DITAA)
+
+###########################################################################
 # Panda shortcuts
 ###########################################################################
 
@@ -499,4 +682,5 @@ BEAMER += -V theme:Madrid -V colortheme:default
 LETTER = $(PANDA)
 LETTER += --to latex
 LETTER += --template=$(PANDOC_LETTER)
-LETTRE += -V lang:en
+LETTER += -V documentclass:letter
+LETTER += -V lang:en
