@@ -33,28 +33,31 @@
 #     path to the panda script (see https://github.com/CDSoft/panda)
 # PANDOC
 #     path to the pandoc executable (see https://pandoc.org)
-# PANDOC_LATEX_TEMPLATE
+# LATEX_TEMPLATE
 #     path to a LaTeX template
 #     (see https://github.com/Wandmalfarbe/pandoc-latex-template.git)
+# LETTER
+#     path to a LaTeX template
+#     (see https://github.com/aaronwolen/pandoc-letter.git)
 # PANAM_CSS
 #     path to a CSS file (see https://benjam.info/panam)
-# PANDA_MD
-#     shortcut to panda with some default parameters
+# PANDOC_MD, PANDA_MD
+#     shortcut to pandoc/panda with some default parameters
 #     to generate Markdown documents
-# PANDA_GFM
-#     shortcut to panda with some default parameters
+# PANDOC_GFM, PANDA_GFM
+#     shortcut to pandoc/panda with some default parameters
 #     to generate Github Markdown documents
-# PANDA_HTML
-#     shortcut to panda with some default parameters
+# PANDOC_HTML, PANDA_HTML
+#     shortcut to pandoc/panda with some default parameters
 #     to generate HTML documents
-# PANDA_PDF
-#     shortcut to panda with some default parameters
+# PANDOC_PDF, PANDA_PDF
+#     shortcut to pandoc/panda with some default parameters
 #     to generate PDF documents
-# BEAMER
-#     shortcut to panda with some default parameters
+# PANDOC_BEAMER, PANDA_BEAMER
+#     shortcut to pandoc/panda with some default parameters
 #     to generate beamer slideshows
-# LETTER
-#     shortcut to panda with some default parameters
+# PANDOC_LETTER, PANDA_LETTER
+#     shortcut to pandoc/panda with some default parameters
 #     to generate a letter
 # LSVG
 #     path to the lsvg executable (see https://github.com/CDSoft/lsvg)
@@ -62,6 +65,8 @@
 #     path to plantuml.jar
 # DITAA
 #     path to ditaa.jar
+# MERMAID
+#     path to mmdc (Mermaid)
 # GHCUP, GHC, CABAL, STACK
 #     path to the ghcup, ghc, cabal, stack executables
 #     (see https://www.haskell.org/ghcup/)
@@ -88,6 +93,8 @@
 #     install PlantUML
 # makex-install-ditaa
 #     install ditaa
+# makex-install-mermaid
+#     install mermaid
 # makex-install-lsvg
 #     install lsvg
 # makex-install-ghcup
@@ -402,19 +409,19 @@ makex-install-upp: $(UPP)
 # Pandoc LaTeX template
 ###########################################################################
 
-PANDOC_LATEX_TEMPLATE_URL = https://github.com/Wandmalfarbe/pandoc-latex-template.git
-PANDOC_LATEX_TEMPLATE = $(MAKEX_INSTALL_PATH)/pandoc/pandoc-latex-template/eisvogel.tex
+LATEX_TEMPLATE_URL = https://github.com/Wandmalfarbe/pandoc-latex-template.git
+LATEX_TEMPLATE = $(MAKEX_INSTALL_PATH)/pandoc/pandoc-latex-template/eisvogel.tex
 
-$(dir $(PANDOC_LATEX_TEMPLATE)):
+$(dir $(LATEX_TEMPLATE)):
 	@mkdir -p $@
 
-$(PANDOC_LATEX_TEMPLATE): | $(MAKEX_CACHE) $(dir $(PANDOC_LATEX_TEMPLATE))
+$(LATEX_TEMPLATE): | $(MAKEX_CACHE) $(dir $(LATEX_TEMPLATE))
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc LaTeX Template$(NORMAL)"
 	@test -f $(@) \
 	|| \
 	(   (   test -d $(MAKEX_CACHE)/pandoc-latex-template \
 	        && ( cd $(MAKEX_CACHE)/pandoc-latex-template && git pull ) \
-	        || git clone $(PANDOC_LATEX_TEMPLATE_URL) $(MAKEX_CACHE)/pandoc-latex-template \
+	        || git clone $(LATEX_TEMPLATE_URL) $(MAKEX_CACHE)/pandoc-latex-template \
 	    ) \
 	    && cd $(MAKEX_CACHE)/pandoc-latex-template \
 	    && git checkout $(PANDOC_LATEX_TEMPLATE_VERSION) \
@@ -425,19 +432,19 @@ $(PANDOC_LATEX_TEMPLATE): | $(MAKEX_CACHE) $(dir $(PANDOC_LATEX_TEMPLATE))
 # Pandoc Letter
 ###########################################################################
 
-PANDOC_LETTER_URL = https://github.com/aaronwolen/pandoc-letter.git
-PANDOC_LETTER = $(MAKEX_INSTALL_PATH)/pandoc/pandoc-letter/template-letter.tex
+LETTER_URL = https://github.com/aaronwolen/pandoc-letter.git
+LETTER = $(MAKEX_INSTALL_PATH)/pandoc/pandoc-letter/template-letter.tex
 
-$(dir $(PANDOC_LETTER)):
+$(dir $(LETTER)):
 	@mkdir -p $@
 
-$(PANDOC_LETTER): | $(MAKEX_CACHE) $(dir $(PANDOC_LETTER))
+$(LETTER): | $(MAKEX_CACHE) $(dir $(LETTER))
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc Letter$(NORMAL)"
 	@test -f $(@) \
 	|| \
 	(   (   test -d $(MAKEX_CACHE)/pandoc-letter \
 	        && ( cd $(MAKEX_CACHE)/pandoc-letter && git pull ) \
-	        || git clone $(PANDOC_LETTER_URL) $(MAKEX_CACHE)/pandoc-letter \
+	        || git clone $(LETTER_URL) $(MAKEX_CACHE)/pandoc-letter \
 	    ) \
 	    && cd $(MAKEX_CACHE)/pandoc-letter \
 	    && git checkout $(PANDOC_LETTER_VERSION) \
@@ -493,7 +500,7 @@ check_pandoc_architecture:
 	@test -n "$(PANDOC_ARCHIVE)" \
 	|| (echo "$(BG_RED)ERROR$(NORMAL)$(RED): $(MAKEX_OS)-$(MAKEX_ARCH): Unknown archivecture, can not install pandoc$(NORMAL)"; false)
 
-$(PANDOC): check_pandoc_architecture | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(PANDOC_LATEX_TEMPLATE) $(PANDOC_LETTER) $(PANAM_CSS)
+$(PANDOC): check_pandoc_architecture | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(LATEX_TEMPLATE) $(LETTER) $(PANAM_CSS)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc$(NORMAL)"
 	@test -f $(@) \
 	|| \
@@ -504,7 +511,7 @@ $(PANDOC): check_pandoc_architecture | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(di
 
 else
 
-$(PANDOC): | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(PANDOC_LATEX_TEMPLATE) $(PANDOC_LETTER) $(PANAM_CSS) $(CABAL)
+$(PANDOC): | $(MAKEX_CACHE) $(MAKEX_CACHE)/pandoc $(dir $(PANDOC)) $(LATEX_TEMPLATE) $(LETTER) $(PANAM_CSS) $(CABAL)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Pandoc$(NORMAL)"
 	@test -f $(@) \
 	|| \
@@ -529,7 +536,7 @@ export PANDA_CACHE ?= $(MAKEX_CACHE)/.panda
 $(dir $(PANDA)) $(PANDA_CACHE):
 	@mkdir -p $@
 
-$(PANDA): | $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA)) $(PANDA_CACHE)
+$(PANDA): | $(LUAX) $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA)) $(PANDA_CACHE)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Panda$(NORMAL)"
 	@test -f $(@) \
 	|| \
@@ -657,30 +664,77 @@ makex-install: makex-install-ditaa
 makex-install-ditaa: $(DITAA)
 
 ###########################################################################
+# Mermaid
+###########################################################################
+
+MERMAID_MODULE = @mermaid-js/mermaid-cli
+MERMAID_INSTALL_PATH = $(MAKEX_INSTALL_PATH)/mermaid
+MERMAID = $(MERMAID_INSTALL_PATH)/node_modules/.bin/mmdc
+
+export PATH := $(dir $(MERMAID)):$(PATH)
+
+$(MERMAID): |
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install mermaid$(NORMAL)"
+	@test -f $(@) \
+	|| \
+	(   mkdir -p $(MERMAID_INSTALL_PATH) \
+	    && cd $(MERMAID_INSTALL_PATH) \
+	    && npm install $(MERMAID_MODULE) \
+	)
+
+makex-install: makex-install-mermaid
+makex-install-mermaid: $(MERMAID)
+
+###########################################################################
 # Panda shortcuts
 ###########################################################################
+
+PANDOC_MD = $(PANDOC)
+PANDOC_MD += --to markdown
 
 PANDA_MD = $(PANDA)
 PANDA_MD += --to markdown
 
+PANDOC_GFM = $(PANDOC)
+PANDOC_GFM += --to gfm
+
 PANDA_GFM = $(PANDA)
 PANDA_GFM += --to gfm
+
+PANDOC_HTML = $(PANDOC)
+PANDOC_HTML += --to html5
+PANDOC_HTML += --css $(PANAM_CSS)
+PANDOC_HTML += --embed-resources --standalone
 
 PANDA_HTML = $(PANDA)
 PANDA_HTML += --to html5
 PANDA_HTML += --css $(PANAM_CSS)
 PANDA_HTML += --embed-resources --standalone
 
+PANDOC_PDF = $(PANDOC)
+PANDOC_PDF += --to latex
+PANDOC_PDF += --template=$(LATEX_TEMPLATE)
+
 PANDA_PDF = $(PANDA)
 PANDA_PDF += --to latex
-PANDA_PDF += --template=$(PANDOC_LATEX_TEMPLATE)
+PANDA_PDF += --template=$(LATEX_TEMPLATE)
 
-BEAMER = $(PANDA)
-BEAMER += --to beamer
-BEAMER += -V theme:Madrid -V colortheme:default
+PANDOC_BEAMER = $(PANDOC)
+PANDOC_BEAMER += --to beamer
+PANDOC_BEAMER += -V theme:Madrid -V colortheme:default
 
-LETTER = $(PANDA)
-LETTER += --to latex
-LETTER += --template=$(PANDOC_LETTER)
-LETTER += -V documentclass:letter
-LETTER += -V lang:en
+PANDA_BEAMER = $(PANDA)
+PANDA_BEAMER += --to beamer
+PANDA_BEAMER += -V theme:Madrid -V colortheme:default
+
+PANDOC_LETTER = $(PANDOC)
+PANDOC_LETTER += --to latex
+PANDOC_LETTER += --template=$(LETTER)
+PANDOC_LETTER += -V documentclass:letter
+PANDOC_LETTER += -V lang:en
+
+PANDA_LETTER = $(PANDA)
+PANDA_LETTER += --to latex
+PANDA_LETTER += --template=$(LETTER)
+PANDA_LETTER += -V documentclass:letter
+PANDA_LETTER += -V lang:en
