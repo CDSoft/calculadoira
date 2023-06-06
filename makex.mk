@@ -177,10 +177,10 @@ TYPST_COMPILATION ?= no
 
 # TYPST_VERSION is a tag or branch name in the
 # typst repository
-TYPST_VERSION ?= v0.3.0
+TYPST_VERSION ?= v0.4.0
 
 # PLANTUML_VERSION is the PlantUML version to install
-PLANTUML_VERSION = 1.2023.6
+PLANTUML_VERSION = 1.2023.8
 
 # DITAA_VERSION is the ditaa version to install
 DITAA_VERSION = 0.11.0
@@ -340,7 +340,7 @@ $(LUAX): | $(MAKEX_CACHE) $(dir $(LUAX))
 	    ) \
 	    && cd $(MAKEX_CACHE)/luax \
 	    && git checkout $(LUAX_VERSION) \
-	    && make install-all PREFIX=$(realpath $(dir $@)/..) \
+	    && make install-all -j PREFIX=$(realpath $(dir $@)/..) \
 	)
 
 makex-install: makex-install-luax
