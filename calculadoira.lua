@@ -2,7 +2,7 @@
 
 local license = [[
 Calculadoira
-Copyright (C) 2011 - 2022 Christophe Delord
+Copyright (C) 2011 - 2023 Christophe Delord
 http://cdelord.fr/calculadoira
 
 Calculadoira is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-local version = "4.1.2"
+local version = "4.1.3"
 
 local help = ([[
 *---------------------------------------------------------------------*

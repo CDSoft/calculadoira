@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Calculadoira
-# Copyright (C) 2011-2022 Christophe Delord
+# Copyright (C) 2011-2023 Christophe Delord
 # http://cdelord.fr/calculadoira
 #
 # This file is part of Calculadoira.

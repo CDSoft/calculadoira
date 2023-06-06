@@ -1,6 +1,6 @@
 <!--
 Calculadoira
-Copyright (C) 2011-2022 Christophe Delord
+Copyright (C) 2011-2023 Christophe Delord
 http://cdelord.fr/calculadoira
 &#10;This file is part of Calculadoira.
 &#10;Calculadoira is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ GitHub](https://github.com/CDSoft/calculadoira).
 
 
     Calculadoira
-    Copyright (C) 2011 - 2022 Christophe Delord
+    Copyright (C) 2011 - 2023 Christophe Delord
     http://cdelord.fr/calculadoira
 
     Calculadoira is free software: you can redistribute it and/or modify
@@ -64,20 +64,15 @@ $ git clone https://github.com/CDSoft/calculadoira && make install -C calculadoi
 
 **Binaries:**
 
-Some binaries are available here:
-
-| OS            | Calculadoira executable                                                                                   |
-|:--------------|:----------------------------------------------------------------------------------------------------------|
-| Linux         | [calculadoira-x86_64-linux-musl](http://cdelord.fr/calculadoira/calculadoira-x86_64-linux-musl)           |
-| Raspberry Pi  | [calculadoira-aarch64-linux-musl](http://cdelord.fr/calculadoira/calculadoira-aarch64-linux-musl)         |
-| MacOS (Intel) | [calculadoira-x86_64-macos-gnu](http://cdelord.fr/calculadoira/calculadoira-x86_64-macos-gnu)             |
-| MacOS (ARM)   | [calculadoira-aarch64-macos-gnu](http://cdelord.fr/calculadoira/calculadoira-aarch64-macos-gnu)           |
-| Windows       | [calculadoira-x86_64-windows-gnu.exe](http://cdelord.fr/calculadoira/calculadoira-x86_64-windows-gnu.exe) |
+In case precompiled binaries are needed (GNU/Linux, MacOS, Windows),
+some can be found at [cdelord.fr/pub](http://cdelord.fr/pub). These
+archives contain LuaX, Calculadoira as well as some other softwares more
+or less related to LuaX.
 
 # Screenshot
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.1.2 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.3 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -98,14 +93,14 @@ Some binaries are available here:
 
 # Usage
 
-Calculadoira is a interactive terminal calculator. Expressions are
+Calculadoira is an interactive terminal calculator. Expressions are
 entered with the keyboard, evaluated and the result is printed. The next
 section lists all the operators and functions provided by Calculadoira.
 
 A typical interactive session looks like this:
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.1.2 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.3 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -858,7 +853,7 @@ to laziness, functions can also be mutually recursive.
     : help
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.1.2 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.1.3 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
