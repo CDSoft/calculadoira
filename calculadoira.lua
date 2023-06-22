@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-local version = "4.1.3"
+local version = "4.2.0"
 
 local help = ([[
 *---------------------------------------------------------------------*
@@ -226,7 +226,7 @@ local config
 
 local sys = require "sys"
 local fs = require "fs"
-local linenoise = require "linenoise"
+local term = require "term"
 local fun = require "F"
 local identity = fun.id
 
@@ -1150,19 +1150,8 @@ config.run(env)
 
 local last_line = nil
 
-local function isTTY(fd)
-    if sys.os == "windows" then return true end
-    fd = tonumber(fd) or 1
-    local ok, exit, signal = os.execute(("test -t %d"):format(fd))
-    return (ok and exit == "exit") and signal == 0
-end
-local is_a_tty = isTTY(0)
-
-local history = sys.os == "windows"
-    and fs.join(os.getenv "APPDATA", "calculadoira_history")
-    or fs.join(os.getenv "HOME", ".calculadoira_history")
-
-linenoise.load(history)
+local is_a_tty = term.isatty()
+local prompt = is_a_tty and ": " or ""
 
 while true do
     local line
@@ -1170,11 +1159,9 @@ while true do
         line = last_line
         print(": "..line)
     else
-        line = linenoise.read(": ")
+        line = term.prompt(prompt)
         if not line then break end
         if not is_a_tty then print(": "..line) end
-        linenoise.add(line)
-        linenoise.save(history)
     end
     replay = false
     config.run(env) -- autoreload

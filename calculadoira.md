@@ -1,6 +1,5 @@
 % Calculadoira Manual
 % Christophe Delord
-% {{mdate}}
 
 <!--
 Calculadoira
