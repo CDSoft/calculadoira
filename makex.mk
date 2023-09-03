@@ -29,6 +29,8 @@
 #     path to the ypp executables (see https://github.com/CDSoft/ypp)
 # UPP
 #     path to the upp executable (see https://github.com/CDSoft/upp)
+# BANG
+#     path to the bang executable (see https://github.com/CDSoft/bang)
 # PANDA
 #     path to the panda script (see https://github.com/CDSoft/panda)
 # PANDOC
@@ -67,6 +69,8 @@
 #     path to ditaa.jar
 # MERMAID
 #     path to mmdc (Mermaid)
+# PENROSE (alias ROGER)
+#     path to roger (Penrose)
 # GHCUP, GHC, CABAL, STACK
 #     path to the ghcup, ghc, cabal, stack executables
 #     (see https://www.haskell.org/ghcup/)
@@ -85,6 +89,8 @@
 #     install ypp
 # makex-install-upp
 #     install upp
+# makex-install-bang
+#     install bang
 # makex-install-pandoc
 #     install pandoc
 # makex-install-panda
@@ -95,6 +101,8 @@
 #     install ditaa
 # makex-install-mermaid
 #     install mermaid
+# makex-install-penrose
+#     install penrose
 # makex-install-lsvg
 #     install lsvg
 # makex-install-ghcup
@@ -128,11 +136,14 @@ YPP_VERSION ?= master
 # UPP_VERSION is a tag or branch name in the upp repository
 UPP_VERSION ?= master
 
+# BANG_VERSION is a tag or branch name in the bang repository
+BANG_VERSION ?= master
+
 # PANDOC_VERSION is the version number of pandoc
-PANDOC_VERSION ?= 3.1.3
+PANDOC_VERSION ?= 3.1.7
 
 # PANDOC_CLI_VERSION is the version number of pandoc-cli
-PANDOC_CLI_VERSION ?= 0.1.1
+PANDOC_CLI_VERSION ?= 0.1.1.1
 
 # PANDOC_DYNAMIC_LINK is "no" to download a statically linked executable
 # or "yes" to compile a dynamically linked executable with cabal
@@ -177,10 +188,10 @@ TYPST_COMPILATION ?= no
 
 # TYPST_VERSION is a tag or branch name in the
 # typst repository
-TYPST_VERSION ?= v0.5.0
+TYPST_VERSION ?= 0.7.0
 
 # PLANTUML_VERSION is the PlantUML version to install
-PLANTUML_VERSION = 1.2023.8
+PLANTUML_VERSION = 1.2023.10
 
 # DITAA_VERSION is the ditaa version to install
 DITAA_VERSION = 0.11.0
@@ -232,6 +243,11 @@ help: welcome
 	    } \
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
+
+# Helper target to read a makex variable
+.PHONY: query
+query:
+	@echo $($(VAR))
 
 .SECONDARY:
 
@@ -340,7 +356,7 @@ $(LUAX): | $(MAKEX_CACHE) $(dir $(LUAX))
 	    ) \
 	    && cd $(MAKEX_CACHE)/luax \
 	    && git checkout $(LUAX_VERSION) \
-	    && make install-all -j PREFIX=$(realpath $(dir $@)/..) \
+	    && PREFIX=$(realpath $(dir $@)/..) ninja install \
 	)
 
 makex-install: makex-install-luax
@@ -404,6 +420,34 @@ $(UPP): | $(LUAX) $(MAKEX_CACHE) $(dir $(UPP))
 
 makex-install: makex-install-upp
 makex-install-upp: $(UPP)
+
+###########################################################################
+# Bang
+###########################################################################
+
+BANG_URL = https://github.com/CDSoft/bang
+BANG = $(MAKEX_INSTALL_PATH)/bang/$(bang_VERSION)/bin/bang
+
+export PATH := $(dir $(BANG)):$(PATH)
+
+$(dir $(BANG)):
+	@mkdir -p $@
+
+$(BANG): | $(LUAX) $(MAKEX_CACHE) $(dir $(BANG))
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Bang$(NORMAL)"
+	@test -f $(@) \
+	|| \
+	(   (   test -d $(MAKEX_CACHE)/bang \
+	        && ( cd $(MAKEX_CACHE)/bang && git pull ) \
+	        || git clone $(BANG_URL) $(MAKEX_CACHE)/bang \
+	    ) \
+	    && cd $(MAKEX_CACHE)/bang \
+	    && git checkout $(BANG_VERSION) \
+	    && ./install.sh $(realpath $(dir $@)/..) \
+	)
+
+makex-install: makex-install-bang
+makex-install-bang: $(BANG)
 
 ###########################################################################
 # Pandoc LaTeX template
@@ -536,7 +580,7 @@ export PANDA_CACHE ?= $(MAKEX_CACHE)/.panda
 $(dir $(PANDA)) $(PANDA_CACHE):
 	@mkdir -p $@
 
-$(PANDA): | $(LUAX) $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA)) $(PANDA_CACHE)
+$(PANDA): | $(LUAX) $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA)) $(PANDA_CACHE) $(PLANTUML) $(DITAA)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Panda$(NORMAL)"
 	@test -f $(@) \
 	|| \
@@ -546,7 +590,7 @@ $(PANDA): | $(LUAX) $(PANDOC) $(MAKEX_CACHE) $(dir $(PANDA)) $(PANDA_CACHE)
 	    ) \
 	    && cd $(MAKEX_CACHE)/panda \
 	    && git checkout $(PANDA_VERSION) \
-	    && make install-all PREFIX=$(realpath $(dir $@)/..) \
+	    && make install PREFIX=$(realpath $(dir $@)/..) \
 	    && sed -i 's#^pandoc #$(PANDOC) #' $@ \
 	)
 
@@ -566,7 +610,7 @@ $(dir $(TYPST)) $(MAKEX_CACHE)/typst/$(TYPST_VERSION):
 
 ifeq ($(TYPST_COMPILATION),no)
 
-TYPST_URL = https://github.com/typst/typst/releases/download/$(TYPST_VERSION)/$(TYPST_ARCHIVE)
+TYPST_URL = https://github.com/typst/typst/releases/download/v$(TYPST_VERSION)/$(TYPST_ARCHIVE)
 
 ifeq ($(MAKEX_OS)-$(MAKEX_ARCH),Linux-x86_64)
 TYPST_ARCHIVE = typst-x86_64-unknown-linux-musl.tar.xz
@@ -594,7 +638,7 @@ $(TYPST): | $(MAKEX_CACHE) $(dir $(TYPST)) $(CARGO)
 	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install Typst$(NORMAL)"
 	@test -f $(@) \
 	|| \
-	$(CARGO) install --git https://github.com/typst/typst --tag $(TYPST_VERSION) --root $(realpath $(dir $@)/..)
+	$(CARGO) install --git https://github.com/typst/typst --tag v$(TYPST_VERSION) --root $(realpath $(dir $@)/..)
 
 endif
 
@@ -684,6 +728,29 @@ $(MERMAID): |
 
 makex-install: makex-install-mermaid
 makex-install-mermaid: $(MERMAID)
+
+###########################################################################
+# Penrose
+###########################################################################
+
+PENROSE_MODULE = @penrose/roger
+PENROSE_INSTALL_PATH = $(MAKEX_INSTALL_PATH)/penrose
+PENROSE = $(PENROSE_INSTALL_PATH)/node_modules/.bin/roger
+ROGER = $(PENROSE)
+
+export PATH := $(dir $(PENROSE)):$(PATH)
+
+$(PENROSE): |
+	@echo "$(MAKEX_COLOR)[MAKEX]$(NORMAL) $(TEXT_COLOR)install penrose$(NORMAL)"
+	@test -f $(@) \
+	|| \
+	(   mkdir -p $(PENROSE_INSTALL_PATH) \
+	    && cd $(PENROSE_INSTALL_PATH) \
+	    && npm install $(PENROSE_MODULE) \
+	)
+
+makex-install: makex-install-penrose
+makex-install-penrose: $(PENROSE)
 
 ###########################################################################
 # Panda shortcuts
