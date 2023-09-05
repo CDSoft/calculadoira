@@ -57,9 +57,9 @@ GitHub](https://github.com/CDSoft/calculadoira).
 
 ``` bash
 # First install LuaX
-$ git clone https://github.com/CDSoft/luax && make install -C luax
+$ git clone https://github.com/CDSoft/luax && ninja install -C luax
 # Then Calculadoira
-$ git clone https://github.com/CDSoft/calculadoira && make install -C calculadoira
+$ git clone https://github.com/CDSoft/calculadoira && ninja install -C calculadoira
 ```
 
 **Binaries:**
