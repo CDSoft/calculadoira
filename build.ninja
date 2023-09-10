@@ -91,8 +91,8 @@ build clean: phony clean-_builddir
 # Help
 ######################################################################
 
-rule help
-  description = $in
-  command = cat $in
+rule help-de92b1a2cd1aabd3
+  description = help
+  command = echo "Calculadoira compilation, test and installation"; echo ""; echo "Targets:"; echo "  help      show this help message"; echo "  all       Compile, test and generate the documentation"; echo "  compile   Compile Calculadoira"; echo "  install   Install Calculadoira"; echo "  test      Run Calculadoira tests"; echo "  doc       Generate documentation (README.md)"; echo "  install   install Calculadoira in $PREFIX or $HOME/.local"; echo "  clean     clean generated files";
 
-build help: help build.hlp
+build help: help-de92b1a2cd1aabd3
