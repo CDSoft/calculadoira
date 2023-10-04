@@ -27,10 +27,10 @@ calculadoira = $builddir/calculadoira
 # Compilation
 ######################################################################
 
-rule _calculadoira-90a173d4d5fa294f
-  command = luax -o $out $in
+rule _calculadoira
+  command = luax -q -o $out $in
 
-build $calculadoira: _calculadoira-90a173d4d5fa294f src/bn.lua src/calculadoira.lua
+build $calculadoira: _calculadoira src/bn.lua src/calculadoira.lua
 
 ######################################################################
 # Installation
@@ -40,19 +40,19 @@ build $calculadoira: _calculadoira-90a173d4d5fa294f src/bn.lua src/calculadoira.
 # Tests
 ######################################################################
 
-rule _builddir_tests.txt-9e118ff934a9f355
+rule _builddir_tests.txt
   command = python3 $in $calculadoira > $out.tmp && mv $out.tmp $out
 
-build $builddir/tests.txt: _builddir_tests.txt-9e118ff934a9f355 test/tests.py | $calculadoira
+build $builddir/tests.txt: _builddir_tests.txt test/tests.py | $calculadoira
 
 ######################################################################
 # Documentation
 ######################################################################
 
-rule README.md-c8bc0a3c3bd138cf
+rule README.md
   command = PATH=$builddir:$$PATH LANG=en panda -t gfm $in -o $out
 
-build README.md: README.md-c8bc0a3c3bd138cf doc/calculadoira.md | $calculadoira
+build README.md: README.md doc/calculadoira.md | $calculadoira
 
 ######################################################################
 # Shortcuts
@@ -63,36 +63,38 @@ build test: phony $builddir/tests.txt
 build doc: phony README.md
 build all: phony compile test doc
 
+default all
+
 ######################################################################
 # Installation
 ######################################################################
 
-prefix = $$HOME/.local
+prefix = ~/.local
 
-rule install-bin-c927314100190b8b
+rule install-bin
   description = INSTALL $in to bin
   command = install -v -D -t $${PREFIX:-$prefix}/bin $in
 
-build install-bin: install-bin-c927314100190b8b $calculadoira
+build install-bin: install-bin $calculadoira
 build install: phony install-bin
 
 ######################################################################
 # Clean
 ######################################################################
 
-rule clean-_builddir-e7c9fd42467ee7fb
+rule clean-_builddir
   description = CLEAN $builddir
   command = rm -rf $builddir/*
 
-build clean-_builddir: clean-_builddir-e7c9fd42467ee7fb
+build clean-_builddir: clean-_builddir
 build clean: phony clean-_builddir
 
 ######################################################################
 # Help
 ######################################################################
 
-rule help-de92b1a2cd1aabd3
+rule help
   description = help
-  command = echo "Calculadoira compilation, test and installation"; echo ""; echo "Targets:"; echo "  help      show this help message"; echo "  all       Compile, test and generate the documentation"; echo "  compile   Compile Calculadoira"; echo "  install   Install Calculadoira"; echo "  test      Run Calculadoira tests"; echo "  doc       Generate documentation (README.md)"; echo "  install   install Calculadoira in $PREFIX or $HOME/.local"; echo "  clean     clean generated files";
+  command = echo "Calculadoira compilation, test and installation"; echo ""; echo "Targets:"; echo "  help      show this help message"; echo "  all       Compile, test and generate the documentation"; echo "  compile   Compile Calculadoira"; echo "  install   Install Calculadoira"; echo "  test      Run Calculadoira tests"; echo "  doc       Generate documentation (README.md)"; echo "  install   install Calculadoira in PREFIX or ~/.local"; echo "  clean     clean generated files";
 
-build help: help-de92b1a2cd1aabd3
+build help: help

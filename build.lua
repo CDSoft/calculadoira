@@ -32,7 +32,7 @@ section "Compilation"
 ---------------------------------------------------------------------
 
 build "$calculadoira" { ls "src/*.lua",
-    command = "luax -o $out $in",
+    command = "luax -q -o $out $in",
 }
 
 ---------------------------------------------------------------------
@@ -78,3 +78,4 @@ phony "test" { "$builddir/tests.txt" }
 phony "doc" { "README.md" }
 
 phony "all" { "compile", "test", "doc" }
+default "all"
