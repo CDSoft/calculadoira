@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-local version = "4.2.0"
+local version = "4.3.0"
 
 local help = ([[
 *---------------------------------------------------------------------*
@@ -1153,15 +1153,27 @@ local last_line = nil
 local is_a_tty = term.isatty()
 local prompt = is_a_tty and ": " or ""
 
+local linenoise = require "linenoise"
+local history = sys.os == "windows"
+    and os.getenv "APPDATA" / "calculadoira_history"
+    or os.getenv "HOME" / ".calculadoira_history"
+linenoise.load(history)
+
+local function hist(input)
+    linenoise.add(input)
+    linenoise.save(history)
+end
+
 while true do
     local line
     if replay and last_line then
         line = last_line
         print(": "..line)
     else
-        line = term.prompt(prompt)
+        line = linenoise.read(prompt)
         if not line then break end
         if not is_a_tty then print(": "..line) end
+        hist(line)
     end
     replay = false
     config.run(env) -- autoreload
