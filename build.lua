@@ -31,9 +31,9 @@ clean "$builddir"
 section "Compilation"
 ---------------------------------------------------------------------
 
-build "$calculadoira" { ls "src/*.lua",
-    command = "luax -q -o $out $in",
-}
+rule "luax" { command = "luax -q -o $out $in" }
+
+build "$calculadoira" { "luax", ls "src/*" }
 
 ---------------------------------------------------------------------
 section "Installation"
@@ -45,33 +45,32 @@ install "bin" "$calculadoira"
 section "Tests"
 ---------------------------------------------------------------------
 
-build "$builddir/tests.txt" { "test/tests.py",
-    command = "python3 $in $calculadoira > $out.tmp && mv $out.tmp $out",
-    implicit_in = {
-        "$calculadoira",
-    },
+rule "run_test" {
+    command = "python3 $in $calculadoira > $out",
+    implicit_in = "$calculadoira",
 }
+
+build "$builddir/tests.txt" { "run_test", "test/tests.py" }
 
 ---------------------------------------------------------------------
 section "Documentation"
 ---------------------------------------------------------------------
 
-build "README.md" { "doc/calculadoira.md",
+rule "panda" {
     command = "PATH=$builddir:$$PATH LANG=en panda -t gfm $in -o $out",
-    implicit_in = {
-        "$calculadoira",
-    },
+    implicit_in = "$calculadoira",
 }
+
+build "README.md" { "panda", "doc/calculadoira.md" }
 
 ---------------------------------------------------------------------
 section "Shortcuts"
 ---------------------------------------------------------------------
 
-help "all" "Compile, test and generate the documentation"
-help "compile" "Compile $name"
-help "install" "Install $name"
-help "test" "Run $name tests"
-help "doc" "Generate documentation (README.md)"
+help "all" "compile, test and generate the documentation"
+help "compile" "compile $name"
+help "test" "run $name tests"
+help "doc" "generate documentation (README.md)"
 
 phony "compile" "$calculadoira"
 phony "test" { "$builddir/tests.txt" }

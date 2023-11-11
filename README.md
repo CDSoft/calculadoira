@@ -28,7 +28,6 @@ GitHub](https://github.com/CDSoft/calculadoira).
 
 # License
 
-
     Calculadoira
     Copyright (C) 2011 - 2023 Christophe Delord
     http://cdelord.fr/calculadoira
@@ -72,7 +71,7 @@ or less related to LuaX.
 # Screenshot
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.3.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.4.0 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -88,7 +87,7 @@ or less related to LuaX.
     |     see help                     |     < <= > >= == !=              |
     |----------------------------------|     cond?expr:expr               |
     | Commands: ? help license         |     + - * / // % ** !            |
-    |           bye exit quit          |     | ^ & >> << ~                |
+    |           edit                   |     | ^ & >> << ~                |
     *---------------------------------------------------------------------*
 
 # Usage
@@ -100,7 +99,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.3.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.4.0 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -116,20 +115,16 @@ A typical interactive session looks like this:
     |     see help                     |     < <= > >= == !=              |
     |----------------------------------|     cond?expr:expr               |
     | Commands: ? help license         |     + - * / // % ** !            |
-    |           bye exit quit          |     | ^ & >> << ~                |
+    |           edit                   |     | ^ & >> << ~                |
     *---------------------------------------------------------------------*
 
-
     : x = 21
-
     =       21
 
     : y = 2
-
     =       2
 
     : (x * y) ** 2
-
     =       1764
 
 # User’s manual
@@ -140,24 +135,19 @@ A typical interactive session looks like this:
 
 Integers can be decimal, hexadecimal, octal or binary numbers:
 
-
     : 42
-
     =       42
 
     : 0x24
-
     =       36
     hex     0x24
 
     : 0o37
-
     =       31
     hex     0x1F
     oct     0o37
 
     : 0b1010
-
     =       10
     hex     0xA
     oct     0o12
@@ -168,18 +158,14 @@ Integers can be decimal, hexadecimal, octal or binary numbers:
 Rational numbers can be used to make *exact* computations instead of
 using floating point numbers.
 
-
     : 1 + 2/3
-
     =       5 / 3
     ~       1.6666666666667
 
 Some functions don’t support rational numbers and will produce floating
 point numbers.
 
-
     : 1/2 + cos(0)
-
     =       1.5
 
 ### Floating point numbers
@@ -190,49 +176,37 @@ floating point numbers.
 They are represented internally by 64 bit numbers but can be converted
 to 32 bit numbers as well as to their IEEE 754 representation.
 
-
     : 3.14
-
     =       3.14
 
     : 1.23e-6
-
     =       1.23e-06
 
     : e
-
     =       2.718281828459
 
     : pi
-
     =       3.1415926535898
 
     : float32
-
     : pi
-
     =       3.1415926535898
     IEEE    3.1415927410126 <=> 0x40490FDB
 
     : float64
-
     : pi
-
     =       3.1415926535898
     IEEE    3.1415926535898 <=> 0x400921FB54442D18
 
     : nan
-
     =       nan
     IEEE    nan <=> 0x7FF8000000000000
 
     : inf
-
     =       inf
     IEEE    inf <=> 0x7FF0000000000000
 
     : -inf
-
     =       -inf
     IEEE    -inf <=> 0xFFF0000000000000
 
@@ -242,18 +216,14 @@ Number types are automatically converted in a way to preserve the best
 precision. Integers are preferred to rational numbers and rational
 numbers are preferred to floating point numbers.
 
-
     : 1+2/3
-
     =       5 / 3
     ~       1.6666666666667
 
     : 1/3+2/3
-
     =       1
 
     : (2/3) * 0.5
-
     =       0.33333333333333
 
 ### Display mode
@@ -269,39 +239,29 @@ activate additional display modes by selecting:
 
 <!-- -->
 
-
     : 42424242
-
     =       42424242
 
     : dec8            # 8 bit decimal numbers
-
     : 42424242
-
     =       42424242
     dec8    178
 
     : hex16           # 16 bit hexadecimal numbers
-
     : 42424242
-
     =       42424242
     dec16   22450
     hex16   0x57B2
 
     : oct32           # 32 bit octal numbers
-
     : 42424242
-
     =       42424242
     dec32   0042424242
     hex32   0x028757B2
     oct32   0o00241653662
 
     : bin64           # 64 bit binary numbers
-
     : 42424242
-
     =       42424242
     dec64   0000000000042424242
     hex64   0x00000000028757B2
@@ -309,9 +269,7 @@ activate additional display modes by selecting:
     bin64   0b0000000000000000000000000000000000000010100001110101011110110010
 
     : reset           # raw decimal value only
-
     : 42424242
-
     =       42424242
 
 Calculadoira automatically activates some display modes under some
@@ -322,18 +280,14 @@ circonstances:
 
 <!-- -->
 
-
     : 4               # only the default display mode
-
     =       4
 
     : 0b100           # this number activates the binary display mode
-
     =       4
     bin     0b100
 
     : 1<<10           # this operator activates the hexadecimal display mode
-
     =       1024
     hex     0x400
     bin     0b10000000000
@@ -342,25 +296,19 @@ circonstances:
 
 Boolean values can be used in conditional and boolean expressions.
 
-
     : true
-
     =       true
 
     : false
-
     =       false
 
     : true and false
-
     =       false
 
     : 1+1 == 2
-
     =       true
 
     : 1+1==2 ? "ok" : "bug"
-
     =       28523
     hex     0x6F6B
     str     "ok"
@@ -369,133 +317,102 @@ Boolean values can be used in conditional and boolean expressions.
 
 ### Arithmetic operators
 
-
     : x = 13
-
     =       13
 
     : -x
-
     =       -13
 
     : +x
-
     =       13
 
     : x + 1
-
     =       14
 
     : x - 1
-
     =       12
 
     : x * 2
-
     =       26
 
     : x / 5
-
     =       13 / 5
     ~       2.6
 
     : x // 5                  # integral division
-
     =       2
 
     : x % 5                   # integral remainder (Euclidean division)
-
     =       3
 
     : x ** 2
-
     =       169
 
 ### Bitwise operators
 
-
     : bin16
-
     : ~1                      # bitwise complement
-
     =       -2
     hex16   0xFFFE
     bin16   0b1111111111111110
 
     : 1 | 4                   # bitwise or
-
     =       5
     hex16   0x0005
     bin16   0b0000000000000101
 
     : 0b1100 ^ 0b0110         # bitwise exclusive or
-
     =       10
     hex16   0x000A
     bin16   0b0000000000001010
 
     : 0b1100 & 0b0110         # bitwise and
-
     =       4
     hex16   0x0004
     bin16   0b0000000000000100
 
     : 1 << 10                 # left shift
-
     =       1024
     hex16   0x0400
     bin16   0b0000010000000000
 
     : 1024 >> 1               # right shift
-
     =       512
     hex16   0x0200
     bin16   0b0000001000000000
 
 ### Boolean operators
 
-
     : not true
-
     =       false
 
     : true or false
-
     =       true
 
     : true xor false
-
     =       true
 
     : true and false
-
     =       false
 
 ### Comparison operators
 
-
     : 12 < 13
-
     =       true
 
     : 12 <= 13
-
     =       true
 
     : 12 > 13
-
     =       false
 
     : 12 >= 13
-
     =       false
 
     : 12 == 13
-
     =       false
 
     : 12 != 13
-
     =       true
 
 ### Operator precedence
@@ -523,320 +440,237 @@ From highest to lowest precedence:
 
 Calculadoira can define and reuse variables.
 
-
     : x = 1
-
     =       1
 
     : y = 2
-
     =       2
 
     : x+y
-
     =       3
 
     : y = 3
-
     =       3
 
     : x+y
-
     =       4
 
 ## Functions
 
 Calculadoira can also define functions.
 
-
     : f(x) = 2 * x
-
     : f(5)
-
     =       10
 
 Functions can be defined with multiple statements and be recursive.
 
-
     : fib(n) = (n <= 1 ? 1 : (f1=fib(n-1), f2=fib(n-2), f1+f2))
-
     : fib(1)
-
     =       1
 
     : fib(10)
-
     =       89
 
 You can see in the previous example that the evaluation is lazy! Thanks
 to laziness, functions can also be mutually recursive.
 
-
     : isEven(n) = n == 0 ? true : isOdd(n-1)
-
     : isOdd(n) = n == 0 ? false : isEven(n-1)
-
     : isEven(10)
-
     =       true
 
     : isOdd(10)
-
     =       false
 
 ## Builtin functions
 
 ### Type conversion
 
-
     : int(pi)                     # Integral part
-
     =       3
 
     : float(2/3)                  # Conversion to floating point numbers
-
     =       0.66666666666667
 
     : rat(pi)                     # Rational approximation
-
     =       355 / 113
     ~       3.141592920354
 
     : rat(pi, 1e-2)               # Rational approximation with a given precision
-
     =       22 / 7
     ~       3.1428571428571
 
 ### Math
 
-
     : x = pi, y = e, b = 3
-
     =       3
 
     : 
-
     : abs(x)                      # absolute value of x
-
     =       3.1415926535898
 
     : ceil(x)                     # smallest integer larger than or equal to x
-
     =       4
 
     : floor(x)                    # largest integer smaller than or equal to x
-
     =       3
 
     : round(x)                    # round to the nearest integer
-
     =       3.0
 
     : trunc(x)                    # round toward zero
-
     =       3.0
 
     : mantissa(x)                 # m such that x = m2e, |m| is in [0.5, 1[
-
     =       0.78539816339745
 
     : exponent(x)                 # e such that x = m2e, e is an integer
-
     =       2
 
     : int(x)                      # integral part of x
-
     =       3
 
     : fract(x)                    # fractional part of x
-
     =       0.14159265358979
 
     : min(x, y)                   # minimum value among its arguments
-
     =       2.718281828459
 
     : max(x, y)                   # maximum value among its arguments
-
     =       3.1415926535898
 
     : 
-
     : sqr(x)                      # square of x (x**2)
-
     =       9.8696044010894
 
     : sqrt(x)                     # square root of x (x**0.5)
-
     =       1.7724538509055
 
     : cbrt(x)                     # cubic root of x (x**(1/3))
-
     =       1.4645918875615
 
     : 
-
     : cos(x)                      # trigonometric functions
-
     =       -1.0
 
     : acos(x)
-
     =       nan
 
     : cosh(x)
-
     =       11.591953275522
 
     : sin(x)
-
     =       1.2246467991474e-16
 
     : asin(x)
-
     =       nan
 
     : sinh(x)
-
     =       11.548739357258
 
     : tan(x)
-
     =       -1.2246467991474e-16
 
     : atan(x)
-
     =       1.2626272556789
 
     : tanh(x)
-
     =       0.99627207622075
 
     : atan(y, x)                  # arc tangent of y/x (in radians)
-
     =       0.71328454043905
 
     : atan2(y, x)                 # arc tangent of y/x (in radians)
-
     =       0.71328454043905
 
     : deg(x)                      # angle x (given in radians) in degrees
-
     =       180.0
 
     : rad(x)                      # angle x (given in degrees) in radians
-
     =       0.054831135561608
 
     : 
-
     : exp(x)                      # e**x
-
     =       23.140692632779
 
     : log(x)                      # logarithm of x in base e
-
     =       1.1447298858494
 
     : ln(x)                       # logarithm of x in base e
-
     =       1.1447298858494
 
     : log10(x)                    # logarithm of x in base 10
-
     =       0.49714987269413
 
     : log2(x)                     # logarithm of x in base 2
-
     =       1.6514961294723
 
     : log(b, x)                   # logarithm of x in base b
-
     =       0.95971311856939
 
 ### IEEE 754 representation
 
 #### 32 bit numbers
 
-
     : x = pi, n = 0x402df854
-
     =       1076754516
     hex     0x402DF854
 
     : 
-
     : float32
-
     : x = pi, n = 0x402df854
-
     =       1076754516
     hex32   0x402DF854
     IEEE    2.7182817459106 <=> 0x402DF854
 
     : float2ieee(x)               # IEEE 754 representation of x (32 bits)
-
     =       1078530011
     hex32   0x40490FDB
     IEEE    3.1415927410126 <=> 0x40490FDB
 
     : ieee2float(n)               # 32 bit float value of the IEEE 754 integer n
-
     =       2.7182817459106
     IEEE    2.7182817459106 <=> 0x402DF854
 
 #### 64 bit numbers
 
-
     : x = pi, n = 0x4005bf0a8b145769
-
     =       4613303445314885481
     hex     0x4005BF0A8B145769
 
     : 
-
     : float64
-
     : x = pi, n = 0x4005bf0a8b145769
-
     =       4613303445314885481
     hex64   0x4005BF0A8B145769
     IEEE    2.718281828459 <=> 0x4005BF0A8B145769
 
     : double2ieee(x)              # IEEE 754 representation of x (64 bits)
-
     =       4614256656552045848
     hex64   0x400921FB54442D18
     IEEE    3.1415926535898 <=> 0x400921FB54442D18
 
     : ieee2double(n)              # 64 bit float value of the IEEE 754 integer n
-
     =       2.718281828459
     IEEE    2.718281828459 <=> 0x4005BF0A8B145769
 
 ### Specific values
 
-
     : x = pi
-
     =       3.1415926535898
 
     : 
-
     : isfinite(x)                 # true if x is finite
-
     =       true
 
     : isinf(x)                    # true if x is infinite
-
     =       false
 
     : isnan(x)                    # true if x is not a number
-
     =       false
 
     : isnormal(x)                 # true if x is a normalized number
-
     =       true
 
 ## Other commands
@@ -849,11 +683,9 @@ to laziness, functions can also be mutually recursive.
 
 # Online help
 
-
     : help
-
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.3.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.4.0 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -869,7 +701,7 @@ to laziness, functions can also be mutually recursive.
     |     see help                     |     < <= > >= == !=              |
     |----------------------------------|     cond?expr:expr               |
     | Commands: ? help license         |     + - * / // % ** !            |
-    |           bye exit quit          |     | ^ & >> << ~                |
+    |           edit                   |     | ^ & >> << ~                |
     *---------------------------------------------------------------------*
 
 
@@ -1034,6 +866,7 @@ to laziness, functions can also be mutually recursive.
     Other commands              Description
     =========================== ===========================
 
+    edit                        Edit calculadoira.ini
     bye exit quit               Quit
     ?                           Help summary
     help                        Full help

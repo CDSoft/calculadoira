@@ -19,11 +19,20 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
-local version = "4.3.0"
+local sys = require "sys"
+local fs = require "fs"
+local term = require "term"
+local fun = require "F"
+local identity = fun.id
+local sh = require "sh"
 
-local help = ([[
+local bn = require "bn"
+
+local version = "4.4.0"
+
+local help = fun.I{v=version}[[
 *---------------------------------------------------------------------*
-|      CALCULADOIRA       v. X.Y.Z |  http://cdelord.fr/calculadoira  |
+|      CALCULADOIRA       v. $(v ) |  http://cdelord.fr/calculadoira  |
 |---------------------------------------------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -39,21 +48,21 @@ local help = ([[
 |     see help                     |     < <= > >= == !=              |
 |----------------------------------|     cond?expr:expr               |
 | Commands: ? help license         |     + - * / // % ** !            |
-|           bye exit quit          |     | ^ & >> << ~                |
+|           edit                   |     | ^ & >> << ~                |
 *---------------------------------------------------------------------*
-]]):gsub("X.Y.Z", version)
+]]
 
 local default_ini = "calculadoira.ini"
 
-local longhelp = [[
+local longhelp = fun.I{default_ini=default_ini, math=math}[[
 
 Constants                   Value
 =========================== ===============================================
 
 nan, NaN                    Not a Number
 inf, Inf                    Infinite
-pi                          3.1415926535898
-e                           2.718281828459
+pi                          $(math.pi)
+e                           $(math.exp(1))
 
 Operators / functions       Description
 =========================== ===============================================
@@ -208,6 +217,7 @@ Blocks                      expr1, ..., exprn
 Other commands              Description
 =========================== ===========================
 
+edit                        Edit $(default_ini)
 bye exit quit               Quit
 ?                           Help summary
 help                        Full help
@@ -223,14 +233,6 @@ LuaX        : http://cdelord.fr/luax
 ]]
 
 local config
-
-local sys = require "sys"
-local fs = require "fs"
-local term = require "term"
-local fun = require "F"
-local identity = fun.id
-
-local bn = require "bn"
 
 local running = false
 
@@ -303,6 +305,12 @@ end
 function Quit()
     local self = Expr "Quit"
     function self.eval() os.exit() end
+    return self
+end
+
+function Edit()
+    local self = Expr "Edit"
+    function self.eval() config.edit() end
     return self
 end
 
@@ -949,6 +957,7 @@ do
         T("bye", Quit), T("exit", Quit), T("quit", Quit),
         T("%?", Help), T("help", LongHelp),
         T("license", License),
+        T("edit", Edit),
         Seq({T"sep", T"'([ _]?)'"}, Sep),
         Seq({T"sep", T'"([ _]?)"'}, Sep),
         T("dec", Toggle), T("hex", Toggle), T("oct", Toggle), T("bin", Toggle),
@@ -1062,74 +1071,41 @@ do
 
 end
 
-function ConfigFile(name)
+function Config()
+    local ini_path = fun.case(sys.os) {
+        windows   = (os.getenv "APPDATA" or "") / default_ini,
+        otherwise = (os.getenv "HOME" or "") / ".config" / default_ini,
+    }
+    local editor = os.getenv "EDITOR" or "vi"
     local self = {}
     local mtime = 0
+    if not fs.is_file(ini_path) then
+        fs.write(ini_path, require(default_ini))
+    end
     function self.run(env)
-        local st = fs.stat(name)
+        local st = fs.stat(ini_path)
         if st == nil then
-            print("! can not find "..name)
+            -- This should not happen???
+            print("!", "Can not read "..ini_path)
             return
         end
-        if st.mtime == mtime then
-            -- file already loaded
-            return
-        end
+        if st.mtime == mtime then return end -- file already loaded
         mtime = st.mtime
-        local f = io.open(name)
-        if not f then
-            print("! can not open "..name)
-            return
-        end
-        print("loading "..name)
-        local expr = f:read "*a"
-        f:close()
-        expr, err = calc(expr)
-        if not expr then
+        local expr = fs.read(ini_path)
+        if not expr then return end
+        print("loading "..ini_path)
+        local result, err = calc(expr)
+        if not result then
             print("!", err)
         else
-            local ok, val = expr.evaluate(env)
+            local ok, val = result.evaluate(env)
             if not ok then
                 print("!", val)
             end
         end
     end
-    return self
-end
-
-function Config(names)
-    local self = {}
-    local configs = {}
-    local loaded = {}
-    local default_ini_path = sys.os == "windows"
-        and fs.join(os.getenv "APPDATA", default_ini)
-        or fs.join(os.getenv "HOME", ".config", default_ini)
-    local function register(name)
-        name = fs.absname(name)
-        local st = fs.inode(name)
-        if st then
-            local key = string.format("%d-%f", st.dev, st.ino)
-            if loaded[key] or loaded[name] then return true end
-            table.insert(configs, ConfigFile(name))
-            loaded[key] = true
-            loaded[name] = true
-            return true
-        end
-        return false
-    end
-    register(default_ini_path)
-    for i = 1, #names do
-        if not register(names[i])
-        and not register(fs.dirname(names[0])..fs.sep..names[i])
-        then
-            print("! can not find "..names[i])
-        end
-    end
-    function self.run(env)
-        for i = 1, #configs do
-            configs[i].run(env)
-        end
-        if #configs > 0 then print "" end
+    function self.edit()
+        sh.run { editor, ini_path }
     end
     return self
 end
@@ -1145,7 +1121,7 @@ print(help)
 
 local env = Env()
 
-config = Config(arg)
+config = Config()
 config.run(env)
 
 local last_line = nil
@@ -1154,9 +1130,10 @@ local is_a_tty = term.isatty()
 local prompt = is_a_tty and ": " or ""
 
 local linenoise = require "linenoise"
-local history = sys.os == "windows"
-    and os.getenv "APPDATA" / "calculadoira_history"
-    or os.getenv "HOME" / ".calculadoira_history"
+local history = fun.case(sys.os) {
+    windows   = (os.getenv "APPDATA" or "") / "calculadoira_history",
+    otherwise = (os.getenv "HOME" or "") / ".calculadoira_history",
+}
 linenoise.load(history)
 
 local function hist(input)
