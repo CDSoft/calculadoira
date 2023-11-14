@@ -28,7 +28,7 @@ local sh = require "sh"
 
 local bn = require "bn"
 
-local version = "4.4.0"
+local version = "4.4.1"
 
 local help = fun.I{v=version}[[
 *---------------------------------------------------------------------*
@@ -1074,7 +1074,7 @@ end
 function Config()
     local ini_path = fun.case(sys.os) {
         windows   = (os.getenv "APPDATA" or "") / default_ini,
-        otherwise = (os.getenv "HOME" or "") / ".config" / default_ini,
+        [fun.Nil] = (os.getenv "HOME" or "") / ".config" / default_ini,
     }
     local editor = os.getenv "EDITOR" or "vi"
     local self = {}
@@ -1132,7 +1132,7 @@ local prompt = is_a_tty and ": " or ""
 local linenoise = require "linenoise"
 local history = fun.case(sys.os) {
     windows   = (os.getenv "APPDATA" or "") / "calculadoira_history",
-    otherwise = (os.getenv "HOME" or "") / ".calculadoira_history",
+    [fun.Nil] = (os.getenv "HOME" or "") / ".calculadoira_history",
 }
 linenoise.load(history)
 

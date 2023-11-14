@@ -71,7 +71,7 @@ or less related to LuaX.
 # Screenshot
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.4.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.4.1 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -99,7 +99,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.4.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.4.1 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -685,7 +685,7 @@ to laziness, functions can also be mutually recursive.
 
     : help
     *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.4.0 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.4.1 |  http://cdelord.fr/calculadoira  |
     |---------------------------------------------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
