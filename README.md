@@ -63,10 +63,9 @@ $ git clone https://github.com/CDSoft/calculadoira && ninja install -C calculado
 
 **Binaries:**
 
-In case precompiled binaries are needed (GNU/Linux, MacOS, Windows),
-some can be found at [cdelord.fr/pub](http://cdelord.fr/pub). These
-archives contain LuaX, Calculadoira as well as some other softwares more
-or less related to LuaX.
+In case precompiled binaries are needed (GNU/Linux, MacOS, Windows), some can
+be found at [cdelord.fr/hey](http://cdelord.fr/hey). These archives contain
+calculadoira as well as some other softwares more or less related to LuaX.
 
 # Screenshot
 
