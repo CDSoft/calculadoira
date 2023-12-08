@@ -21,19 +21,19 @@ along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 
 local sys = require "sys"
 local fs = require "fs"
-local term = require "term"
+local terminal = require "term"
 local fun = require "F"
 local identity = fun.id
 local sh = require "sh"
 
 local bn = require "bn"
 
-local version = "4.4.1"
+local version = "4.4.2"
 
 local help = fun.I{v=version}[[
-*---------------------------------------------------------------------*
++---------------------------------------------------------------------+
 |      CALCULADOIRA       v. $(v ) |  http://cdelord.fr/calculadoira  |
-|---------------------------------------------------------------------|
+|----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
 |     hex8/16/32/64 ...            |     octal : 0o...    |  sep " "  |
@@ -49,7 +49,7 @@ local help = fun.I{v=version}[[
 |----------------------------------|     cond?expr:expr               |
 | Commands: ? help license         |     + - * / // % ** !            |
 |           edit                   |     | ^ & >> << ~                |
-*---------------------------------------------------------------------*
++---------------------------------------------------------------------+
 ]]
 
 local default_ini = "calculadoira.ini"
@@ -289,7 +289,10 @@ function Expr(class)
         running = true
         local ok, val = pcall(self.eval, env)
         running = false
-        if not ok then val = val:gsub(".*:%d+:", "") end
+        if not ok then
+            assert(type(val) == "string")
+            val = val:gsub(".*:%d+:", "")
+        end
         return ok, val
     end
     return self
@@ -478,7 +481,7 @@ end
 
 function Args(...)
     local self = Expr "Args"
-    for i, arg in ipairs({...}) do
+    for _, arg in ipairs({...}) do
         table.insert(self, arg)
     end
     function self.dis()
@@ -518,7 +521,7 @@ function B(f)
     local self = {}
     function self.call(env, ...)
         local xs = {}
-        for i, x in ipairs({...}) do
+        for _, x in ipairs({...}) do
             x = self.check(x.eval(env))
             if x == nil then x = constants.nan() end
             table.insert(xs, x)
@@ -581,8 +584,8 @@ builtins = {
         ["exp2"] = B(bn.exp2),
         ["expm1"] = B(bn.expm1),
         ["floor"] = B(bn.floor),
-        ["mantissa"] = B(function(x) local m, e = bn.frexp(x) return m end),
-        ["exponent"] = B(function(x) local m, e = bn.frexp(x) return e end),
+        ["mantissa"] = B(function(x) local m, _ = bn.frexp(x) return m end),
+        ["exponent"] = B(function(x) local _, e = bn.frexp(x) return e end),
         ["gamma"] = B(bn.gamma),
         ["isfinite"] = B(bn.isfinite),
         ["isinf"] = B(bn.isinf),
@@ -598,7 +601,7 @@ builtins = {
         ["int"] = B(function(x) return bn.Int(x) end),
         ["rat"] = B(function(x) return bn.Rat(x) end),
         ["float"] = B(function(x) return bn.Float(x) end),
-        ["fract"] = B(function(x) local i, f = bn.modf(x) return f end),
+        ["fract"] = B(function(x) local _, f = bn.modf(x) return f end),
         ["nearbyint"] = B(bn.nearbyint),
         ["rad"] = B(bn.rad),
         ["random"] = B(bn.random),
@@ -717,7 +720,7 @@ function Block(exprs)
     end
     function self.eval(env)
         local val = nil
-        for i, expr in ipairs(exprs) do
+        for _, expr in ipairs(exprs) do
             local newval = expr.eval(env)
             if newval ~= nil then val = newval end
         end
@@ -729,16 +732,17 @@ end
 function Toggle(k)
     local self = Expr "Toggle"
     function self.dis() return "Toggle("..k..")" end
-    function self.eval(env) mode.toggle(k) replay = true end
+    function self.eval(_) mode.toggle(k) replay = true end
     return self
 end
 
 function Set(k)
     local self = Expr "Set"
-    local k, bits = k:match("(%a+)(%d*)")
+    local bits
+    k, bits = k:match("(%a+)(%d*)")
     if (not bits or bits=="") and k=="float" then bits = 32 end
     function self.dis() return "Set("..k..", "..bits..")" end
-    function self.eval(env)
+    function self.eval(_)
         mode.set(k)
         if bits and bits~="" then mode.set_bits(bits) end
         replay = true
@@ -749,14 +753,14 @@ end
 function Reset()
     local self = Expr "Reset"
     function self.dis() return "Reset()" end
-    function self.eval(env) mode.clear() replay = true end
+    function self.eval(_) mode.clear() replay = true end
     return self
 end
 
 function Sep(_, s)
     local self = Expr "Sep"
     function self.dis() return "Sep("..s..")" end
-    function self.eval(env) bn.sep(s) replay = true end
+    function self.eval(_) bn.sep(s) replay = true end
     return self
 end
 
@@ -798,7 +802,7 @@ do
 
     local function Tneglookahead(token, lookahead, f)
         local pattern = "^%s*("..token..")"
-        local lookahead = "^"..lookahead
+        lookahead = "^"..lookahead
         f = f or identity
         return function(s, i)
             local j, k, match, x1, x2, x3 = s:find(pattern, i)
@@ -862,7 +866,6 @@ do
     local function F_(f) return function(x) return F(f, x) end end
     local function _B_() return function(x, y) return Block({x, y}) end end
 
-    local expr = Rule()
     local ident = T("[a-zA-Z_][%w_]*", Ident)
     local number = Rule()
     number(T("0[bB]([_01]+)", IntNumber(2, "bin")))
@@ -997,18 +1000,18 @@ do
     stat(ternary)
 
     local fargs, args = Rule(), Rule()
-    proto(Seq({ident, fargs}, function(name, args) return {name=name, args=args} end))
-    eval(Seq({ident, args}, function(name, args) return F(name.name, table.unpack(args)) end))
+    proto(Seq({ident, fargs}, function(name, func_args) return {name=name, args=func_args} end))
+    eval(Seq({ident, args}, function(name, func_args) return F(name.name, table.unpack(func_args)) end))
 
     local _fargs = Rule()
-    fargs(Seq({T"%(", _fargs, T"%)"}, function(a, x, b) return x end))
+    fargs(Seq({T"%(", _fargs, T"%)"}, function(_, x, _) return x end))
     fargs(T("", function() return Args() end))
     _fargs(Seq({ident, T",", _fargs}, function(x, _, xs) return Args(x, table.unpack(xs)) end))
     _fargs(Seq({ident}, function(x) return Args(x) end))
     _fargs(T("", function() return Args() end))
 
     local _args = Rule()
-    args(Seq({T"%(", _args, T"%)"}, function(a, x, b) return x end))
+    args(Seq({T"%(", _args, T"%)"}, function(_, x, _) return x end))
     args(T("", function() return Args() end))
     _args(Seq({stat, T",", _args}, function(x, _, xs) return Args(x, table.unpack(xs)) end))
     _args(Seq({stat}, function(x) return Args(x) end))
@@ -1111,7 +1114,8 @@ function Config()
 end
 
 function str(val)
-    local isnumber, val = pcall(math.floor, (val % bn.Int(2^32)):tonumber())
+    local isnumber
+    isnumber, val = pcall(math.floor, (val % bn.Int(2^32)):tonumber())
     if not isnumber then return "" end
     local s = string.pack(">I4", val):gsub("^%z+(.+)", "%1")
     return string.format("%q", s)
@@ -1126,14 +1130,14 @@ config.run(env)
 
 local last_line = nil
 
-local is_a_tty = term.isatty()
+local is_a_tty = terminal.isatty()
 local prompt = is_a_tty and ": " or ""
 
 local linenoise = require "linenoise"
 local history = fun.case(sys.os) {
-    windows   = (os.getenv "APPDATA" or "") / "calculadoira_history",
-    [fun.Nil] = (os.getenv "HOME" or "") / ".calculadoira_history",
-}
+    windows   = function() return (os.getenv "APPDATA" or "") / "calculadoira_history" end,
+    [fun.Nil] = function() return (os.getenv "HOME" or "") / ".calculadoira_history" end,
+}()
 linenoise.load(history)
 
 local function hist(input)

@@ -63,15 +63,16 @@ $ git clone https://github.com/CDSoft/calculadoira && ninja install -C calculado
 
 **Binaries:**
 
-In case precompiled binaries are needed (GNU/Linux, MacOS, Windows), some can
-be found at [cdelord.fr/hey](http://cdelord.fr/hey). These archives contain
-calculadoira as well as some other softwares more or less related to LuaX.
+In case precompiled binaries are needed (GNU/Linux, MacOS, Windows),
+some can be found at [cdelord.fr/hey](http://cdelord.fr/hey). These
+archives contain Calculadoira as well as some other softwares more or
+less related to LuaX.
 
 # Screenshot
 
-    *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.4.1 |  http://cdelord.fr/calculadoira  |
-    |---------------------------------------------------------------------|
+    +---------------------------------------------------------------------+
+    |      CALCULADOIRA       v. 4.4.2 |  http://cdelord.fr/calculadoira  |
+    |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
     |     hex8/16/32/64 ...            |     octal : 0o...    |  sep " "  |
@@ -87,7 +88,7 @@ calculadoira as well as some other softwares more or less related to LuaX.
     |----------------------------------|     cond?expr:expr               |
     | Commands: ? help license         |     + - * / // % ** !            |
     |           edit                   |     | ^ & >> << ~                |
-    *---------------------------------------------------------------------*
+    +---------------------------------------------------------------------+
 
 # Usage
 
@@ -97,9 +98,9 @@ section lists all the operators and functions provided by Calculadoira.
 
 A typical interactive session looks like this:
 
-    *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.4.1 |  http://cdelord.fr/calculadoira  |
-    |---------------------------------------------------------------------|
+    +---------------------------------------------------------------------+
+    |      CALCULADOIRA       v. 4.4.2 |  http://cdelord.fr/calculadoira  |
+    |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
     |     hex8/16/32/64 ...            |     octal : 0o...    |  sep " "  |
@@ -115,7 +116,7 @@ A typical interactive session looks like this:
     |----------------------------------|     cond?expr:expr               |
     | Commands: ? help license         |     + - * / // % ** !            |
     |           edit                   |     | ^ & >> << ~                |
-    *---------------------------------------------------------------------*
+    +---------------------------------------------------------------------+
 
     : x = 21
     =       21
@@ -683,9 +684,9 @@ to laziness, functions can also be mutually recursive.
 # Online help
 
     : help
-    *---------------------------------------------------------------------*
-    |      CALCULADOIRA       v. 4.4.1 |  http://cdelord.fr/calculadoira  |
-    |---------------------------------------------------------------------|
+    +---------------------------------------------------------------------+
+    |      CALCULADOIRA       v. 4.4.2 |  http://cdelord.fr/calculadoira  |
+    |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
     |     hex8/16/32/64 ...            |     octal : 0o...    |  sep " "  |
@@ -701,7 +702,7 @@ to laziness, functions can also be mutually recursive.
     |----------------------------------|     cond?expr:expr               |
     | Commands: ? help license         |     + - * / // % ** !            |
     |           edit                   |     | ^ & >> << ~                |
-    *---------------------------------------------------------------------*
+    +---------------------------------------------------------------------+
 
 
     Constants                   Value

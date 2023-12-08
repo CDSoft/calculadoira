@@ -22,9 +22,6 @@ along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 local bn = {}
 
 local mathx = require "mathx"
-for name, func in pairs(mathx) do
-    math[name] = math[name] or func
-end
 
 do
 
@@ -32,13 +29,13 @@ do
     local int, int_copy, int_trim, int_tostring, int_tonumber
     local int_abscmp, int_cmp, int_iszero, int_isone
     local int_neg, int_abs
-    local int_add, int_sub, int_mul, int_divmod
+    local int_add, int_sub, int_mul, int_divmod, int_div, int_mod
     local int_pow
     local int_zero, int_one, int_two
     local int_gcd
 
     local RADIX = 10000000
-    local RADIX_LEN = math.floor(math.log10(RADIX))
+    local RADIX_LEN = math.floor(mathx.log10(RADIX))
 
     local _sep = nil
 
@@ -144,11 +141,11 @@ do
             if s == "" then s = "0" end
         else
             local prefix = base_prefix[base]
-            local bitsperdigits = math.log2(base)
+            local bitsperdigits = mathx.log2(base)
             local bn_base = int(base)
             if bits then
-                _, n = int_divmod(n, int_pow(int_two, int(bits)))
-                for i = 1, bits, bitsperdigits do
+                n = int_mod(n, int_pow(int_two, int(bits)))
+                for _ = 1, bits, bitsperdigits do
                     local d
                     n, d = int_divmod(n, bn_base)
                     d = int_tonumber(d)
@@ -338,6 +335,16 @@ do
         return q, r
     end
 
+    int_div = function(a, b)
+        local q, _ = int_divmod(a, b)
+        return q
+    end
+
+    int_mod = function(a, b)
+        local _, r = int_divmod(a, b)
+        return r
+    end
+
     int_pow = function(a, b)
         assert(b.sign > 0)
         if #b == 0 then return int_one end
@@ -361,14 +368,13 @@ do
         a = int_abs(a)
         b = int_abs(b)
         while true do
-            local q
             local order = int_cmp(a, b)
             if order == 0 then return a end
             if order > 0 then
-                q, a = int_divmod(a, b)
+                a = int_mod(a, b)
                 if int_iszero(a) then return b end
             else
-                q, b = int_divmod(b, a)
+                b = int_mod(b, a)
                 if int_iszero(b) then return a end
             end
         end
@@ -410,6 +416,16 @@ do
         end
     end
 
+    function bn.div(a, b)
+        local q, _ = bn.divmod(a, b)
+        return q
+    end
+
+    function bn.mod(a, b)
+        local _, r = bn.divmod(a, b)
+        return r
+    end
+
     function bn.powmod(a, b, m)
         assert(a.isInt and b.isInt and b.sign >= 0 and m.isInt)
         local result = bn.one
@@ -440,7 +456,7 @@ do
 
     function mt.toInt(n)
         if n.isInt then return n end
-        if n.isRat then local q, r = int_divmod(n.num, n.den) return bn.Int(q) end
+        if n.isRat then local q = int_div(n.num, n.den) return bn.Int(q) end
         if n.isFloat then return bn.Int(n.n) end
     end
 
@@ -463,9 +479,9 @@ do
                 end
                 r = num / den
             end
-            r = bn.Rat(num, den)
-            if n.n < 0 then r = -r end
-            return r
+            local rat = bn.Rat(num, den)
+            if n.n < 0 then rat = -rat end
+            return rat
         end
     end
 
@@ -532,12 +548,12 @@ do
     end
 
     function mt.__idiv(a, b)
-        local q, r = bn.divmod(a, b)
+        local q = bn.div(a, b)
         return q
     end
 
     function mt.__mod(a, b)
-        local q, r = bn.divmod(a, b)
+        local r = bn.mod(a, b)
         return r
     end
 
@@ -652,8 +668,8 @@ do
         local num = a.num
         local den = a.den
         local gcd = bn.Int(int_gcd(num, den))
-        a.num = bn.Int(int_divmod(a.num, gcd))
-        a.den = bn.Int(int_divmod(a.den, gcd))
+        a.num = bn.Int(int_div(a.num, gcd))
+        a.den = bn.Int(int_div(a.den, gcd))
     end
 
 -- }}}
@@ -690,12 +706,12 @@ do
         return bn.Float(math.abs(x:tonumber()))
     end
     function bn.acos(x) return bn.Float(math.acos(x:tonumber())) end
-    function bn.acosh(x) return bn.Float(math.acosh(x:tonumber())) end
+    function bn.acosh(x) return bn.Float(mathx.acosh(x:tonumber())) end
     function bn.asin(x) return bn.Float(math.asin(x:tonumber())) end
-    function bn.asinh(x) return bn.Float(math.asinh(x:tonumber())) end
+    function bn.asinh(x) return bn.Float(mathx.asinh(x:tonumber())) end
     function bn.atan(x, y) return bn.Float(math.atan(x:tonumber(), y and y:tonumber())) end
-    function bn.atan2(y, x) return bn.Float(math.atan2(y:tonumber(), x:tonumber())) end
-    function bn.atanh(x) return bn.Float(math.atanh(x:tonumber())) end
+    function bn.atan2(y, x) return bn.Float(mathx.atan2(y:tonumber(), x:tonumber())) end
+    function bn.atanh(x) return bn.Float(mathx.atanh(x:tonumber())) end
     function bn.ceil(x)
         if x.isInt then return x end
         if x.isRat then
@@ -707,13 +723,13 @@ do
     end
     function bn.copysign(x, y) if y >= bn.zero then return bn.abs(x) else return -bn.abs(x) end end
     function bn.cos(x) return bn.Float(math.cos(x:tonumber())) end
-    function bn.cosh(x) return bn.Float(math.cosh(x:tonumber())) end
+    function bn.cosh(x) return bn.Float(mathx.cosh(x:tonumber())) end
     function bn.deg(x) return bn.Float(math.deg(x:tonumber())) end
-    function bn.erf(x) return bn.Float(math.erf(x:tonumber())) end
-    function bn.erfc(x) return bn.Float(math.erfc(x:tonumber())) end
+    function bn.erf(x) return bn.Float(mathx.erf(x:tonumber())) end
+    function bn.erfc(x) return bn.Float(mathx.erfc(x:tonumber())) end
     function bn.exp(x) return bn.Float(math.exp(x:tonumber())) end
-    function bn.exp2(x) return bn.Float(math.exp2(x:tonumber())) end
-    function bn.expm1(x) return bn.Float(math.expm1(x:tonumber())) end
+    function bn.exp2(x) return bn.Float(mathx.exp2(x:tonumber())) end
+    function bn.expm1(x) return bn.Float(mathx.expm1(x:tonumber())) end
     function bn.fdim(x, y)
         if x > y then return x-y end
         return bn.zero
@@ -721,49 +737,49 @@ do
     function bn.floor(x)
         if x.isInt then return x end
         if x.isRat then
-            local q, r = int_divmod(x.num, x.den)
+            local q = int_div(x.num, x.den)
             return bn.Int(q)
         end
         return bn.Int(math.floor(x:tonumber()))
     end
     function bn.fma(x, y, z)
-        if x.isFloat or y.isFloat or z.isFloat then return bn.Float(math.fma(x:tonumber(), y:tonumber(), z:tonumber())) end
+        if x.isFloat or y.isFloat or z.isFloat then return bn.Float(mathx.fma(x:tonumber(), y:tonumber(), z:tonumber())) end
         return x*y + z
     end
     function bn.fmax(x, y)
-        if x.isFloat or y.isFloat then return bn.Float(math.fmax(x:tonumber(), y:tonumber())) end
+        if x.isFloat or y.isFloat then return bn.Float(mathx.fmax(x:tonumber(), y:tonumber())) end
         return bn.max(x, y)
     end
     function bn.fmin(x, y)
-        if x.isFloat or y.isFloat then return bn.Float(math.fmin(x:tonumber(), y:tonumber())) end
+        if x.isFloat or y.isFloat then return bn.Float(mathx.fmin(x:tonumber(), y:tonumber())) end
         return bn.min(x, y)
     end
     function bn.fmod(x, y) return bn.Float(math.fmod(x:tonumber(), y:tonumber())) end
-    function bn.frexp(y) local mant, exp = math.frexp(y:tonumber()) return bn.Float(mant), bn.Int(exp) end
-    function bn.gamma(x) return bn.Float(math.gamma(x:tonumber())) end
-    function bn.hypot(x, y) return bn.Float(math.hypot(x:tonumber(), y:tonumber())) end
-    function bn.isfinite(x) if x.isFloat then return math.isfinite(x:tonumber()) else return true end end
-    function bn.isinf(x) if x.isFloat then return math.isinf(x:tonumber()) else return false end end
-    function bn.isnan(x) if x.isFloat then return math.isnan(x:tonumber()) else return false end end
-    function bn.isnormal(x) if x.isFloat then return math.isnormal(x:tonumber()) else return x ~= bn.zero end end
-    function bn.j0(x) return bn.Float(math.j0(x:tonumber())) end
-    function bn.j1(x) return bn.Float(math.j1(x:tonumber())) end
-    function bn.jn(x, y) return bn.Float(math.jn(x:tonumber(), y:tonumber())) end
+    function bn.frexp(y) local mant, exp = mathx.frexp(y:tonumber()) return bn.Float(mant), bn.Int(exp) end
+    function bn.gamma(x) return bn.Float(mathx.gamma(x:tonumber())) end
+    function bn.hypot(x, y) return bn.Float(mathx.hypot(x:tonumber(), y:tonumber())) end
+    function bn.isfinite(x) if x.isFloat then return mathx.isfinite(x:tonumber()) else return true end end
+    function bn.isinf(x) if x.isFloat then return mathx.isinf(x:tonumber()) else return false end end
+    function bn.isnan(x) if x.isFloat then return mathx.isnan(x:tonumber()) else return false end end
+    function bn.isnormal(x) if x.isFloat then return mathx.isnormal(x:tonumber()) else return x ~= bn.zero end end
+    function bn.j0(x) return bn.Float(mathx.j0(x:tonumber())) end
+    function bn.j1(x) return bn.Float(mathx.j1(x:tonumber())) end
+    function bn.jn(x, y) return bn.Float(mathx.jn(x:tonumber(), y:tonumber())) end
     function bn.ldexp(m, e)
-        if m.isFloat or e.isFloat then return bn.Float(math.ldexp(m:tonumber(), e:tonumber())) end
+        if m.isFloat or e.isFloat then return bn.Float(mathx.ldexp(m:tonumber(), e:tonumber())) end
         return m * bn.two^e
     end
-    function bn.lgamma(x) return bn.Float(math.lgamma(x:tonumber())) end
+    function bn.lgamma(x) return bn.Float(mathx.lgamma(x:tonumber())) end
     function bn.log(x, base)
         if base then return bn.Float(math.log(x:tonumber())/math.log(base)) end
         return bn.Float(math.log(x:tonumber()))
     end
-    function bn.log10(x) return bn.Float(math.log10(x:tonumber())) end
-    function bn.log1p(x) return bn.Float(math.log1p(x:tonumber())) end
-    function bn.log2(x) return bn.Float(math.log2(x:tonumber())) end
-    function bn.logb(x) return bn.Float(math.logb(x:tonumber())) end
+    function bn.log10(x) return bn.Float(mathx.log10(x:tonumber())) end
+    function bn.log1p(x) return bn.Float(mathx.log1p(x:tonumber())) end
+    function bn.log2(x) return bn.Float(mathx.log2(x:tonumber())) end
+    function bn.logb(x) return bn.Float(mathx.logb(x:tonumber())) end
     function bn.max(x, ...)
-        for i, y in ipairs({...}) do
+        for _, y in ipairs({...}) do
             if y > x then
                 x = y
             end
@@ -771,7 +787,7 @@ do
         return x
     end
     function bn.min(x, ...)
-        for i, y in ipairs({...}) do
+        for _, y in ipairs({...}) do
             if y < x then
                 x = y
             end
@@ -789,13 +805,13 @@ do
             return bn.Int(i), bn.Float(f)
         end
     end
-    function bn.nearbyint(x) return bn.Int(math.nearbyint(x:tonumber())) end
-    function bn.nextafter(x, y) return bn.Float(math.nextafter(x:tonumber(), y:tonumber())) end
+    function bn.nearbyint(x) return bn.Int(mathx.nearbyint(x:tonumber())) end
+    function bn.nextafter(x, y) return bn.Float(mathx.nextafter(x:tonumber(), y:tonumber())) end
     function bn.pow(x, y) return x ^ y end
     function bn.rad(x) return bn.Float(math.rad(x:tonumber())) end
-    function bn.remainder(x, y) return bn.Float(math.remainder(x:tonumber(), y:tonumber())) end
-    function bn.round(x) return bn.Float(math.round(x:tonumber())) end
-    function bn.scalbn(x, y) return bn.Float(math.scalbn(x:tonumber(), y:tonumber())) end
+    function bn.remainder(x, y) return bn.Float(mathx.remainder(x:tonumber(), y:tonumber())) end
+    function bn.round(x) return bn.Float(mathx.round(x:tonumber())) end
+    function bn.scalbn(x, y) return bn.Float(mathx.scalbn(x:tonumber(), y:tonumber())) end
     function bn.random(m, n)
         if not m then return bn.Float(math.random()) end
         if not n then return bn.Int(math.random(m:tonumber())) end
@@ -803,15 +819,15 @@ do
     end
     function bn.randomseed(x) math.randomseed(x:tonumber()) end
     function bn.sin(x) return bn.Float(math.sin(x:tonumber())) end
-    function bn.sinh(x) return bn.Float(math.sinh(x:tonumber())) end
+    function bn.sinh(x) return bn.Float(mathx.sinh(x:tonumber())) end
     function bn.sqrt(x) return bn.Float(math.sqrt(x:tonumber())) end
-    function bn.cbrt(x) return bn.Float(math.cbrt(x:tonumber())) end
+    function bn.cbrt(x) return bn.Float(mathx.cbrt(x:tonumber())) end
     function bn.tan(x) return bn.Float(math.tan(x:tonumber())) end
-    function bn.tanh(x) return bn.Float(math.tanh(x:tonumber())) end
-    function bn.trunc(x) return bn.Float(math.trunc(x:tonumber())) end
-    function bn.y0(x) return bn.Float(math.y0(x:tonumber())) end
-    function bn.y1(x) return bn.Float(math.y1(x:tonumber())) end
-    function bn.yn(x, y) return bn.Float(math.yn(x:tonumber(), y:tonumber())) end
+    function bn.tanh(x) return bn.Float(mathx.tanh(x:tonumber())) end
+    function bn.trunc(x) return bn.Float(mathx.trunc(x:tonumber())) end
+    function bn.y0(x) return bn.Float(mathx.y0(x:tonumber())) end
+    function bn.y1(x) return bn.Float(mathx.y1(x:tonumber())) end
+    function bn.yn(x, y) return bn.Float(mathx.yn(x:tonumber(), y:tonumber())) end
 
     function bn.hex(x, bits) return int_tostring(x, 16, bits) end
     function bn.dec(x, bits) return int_tostring(x, 10, bits) end

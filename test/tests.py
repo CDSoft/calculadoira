@@ -36,9 +36,12 @@ class Calc:
         self.nberr = 0
 
     def close(self):
+        assert(self.p.stdin)
         self.p.stdin.write(b"bye\n")
 
     def __call__(self, input):
+        assert(self.p.stdin)
+        assert(self.p.stdout)
         self.p.stdin.write(str.encode(input+"\n"))
         self.p.stdin.flush()
         while True:
