@@ -396,6 +396,14 @@ do
         return n.n
     end
 
+    function bn.to_us_frac(n)
+        if n.isRat then
+            local p, q = bn.divmod(n.num, n.den)
+            return string.format("%s + %s/%s", p, q, n.den)
+        end
+        return n:tostring()
+    end
+
     function bn.divmod(a, b)
         if a.isInt and b.isInt then
             local q, r = int_divmod(a, b)
@@ -450,6 +458,7 @@ do
 
     function mt.tostring(n, base, bits) return bn.tostring(n, base, bits) end
     function mt.__tostring(n, base, bits) return bn.tostring(n, base, bits) end
+    function mt.to_us_frac(n) return bn.to_us_frac(n) end
 
     function mt.tonumber(n) return bn.tonumber(n) end
     function mt.__tonumber(n) return bn.tonumber(n) end

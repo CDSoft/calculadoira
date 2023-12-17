@@ -71,7 +71,7 @@ less related to LuaX.
 # Screenshot
 
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.4.2 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.5.0 |  http://cdelord.fr/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -99,7 +99,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.4.2 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.5.0 |  http://cdelord.fr/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -160,6 +160,7 @@ using floating point numbers.
 
     : 1 + 2/3
     =       5 / 3
+    =       1 + 2/3
     ~       1.6666666666667
 
 Some functions don’t support rational numbers and will produce floating
@@ -218,6 +219,7 @@ numbers are preferred to floating point numbers.
 
     : 1+2/3
     =       5 / 3
+    =       1 + 2/3
     ~       1.6666666666667
 
     : 1/3+2/3
@@ -337,6 +339,7 @@ Boolean values can be used in conditional and boolean expressions.
 
     : x / 5
     =       13 / 5
+    =       2 + 3/5
     ~       2.6
 
     : x // 5                  # integral division
@@ -495,10 +498,12 @@ to laziness, functions can also be mutually recursive.
 
     : rat(pi)                     # Rational approximation
     =       355 / 113
+    =       3 + 16/113
     ~       3.141592920354
 
     : rat(pi, 1e-2)               # Rational approximation with a given precision
     =       22 / 7
+    =       3 + 1/7
     ~       3.1428571428571
 
 ### Math
@@ -685,7 +690,7 @@ to laziness, functions can also be mutually recursive.
 
     : help
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.4.2 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.5.0 |  http://cdelord.fr/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
