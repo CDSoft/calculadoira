@@ -399,7 +399,11 @@ do
     function bn.to_us_frac(n)
         if n.isRat then
             local p, q = bn.divmod(n.num, n.den)
-            return string.format("%s + %s/%s", p, q, n.den)
+            if p:iszero() then
+                return string.format("%s/%s", q, n.den)
+            else
+                return string.format("%s + %s/%s", p, q, n.den)
+            end
         end
         return n:tostring()
     end

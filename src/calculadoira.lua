@@ -28,7 +28,7 @@ local sh = require "sh"
 
 local bn = require "bn"
 
-local version = "4.5.0"
+local version = "4.5.1"
 
 local help = fun.I{v=version}[[
 +---------------------------------------------------------------------+
@@ -1182,7 +1182,9 @@ while true do
                         end)
                     end
                     if val.isRat then
-                        print("=", val:to_us_frac())
+                        if val < bn.zero or val > bn.one then
+                            print("=", val:to_us_frac())
+                        end
                         print("~", val:tonumber())
                     end
                     if mode.float then
