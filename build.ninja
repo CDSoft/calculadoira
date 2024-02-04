@@ -23,7 +23,6 @@ ninja_required_version = 1.11.1
 ######################################################################
 
 builddir = .build
-calculadoira = $builddir/calculadoira
 
 ######################################################################
 # Compilation
@@ -32,7 +31,14 @@ calculadoira = $builddir/calculadoira
 rule luax
   command = luax -q -o $out $in
 
-build $calculadoira: luax src/bn.lua src/calculadoira.ini src/calculadoira.lua
+pool luaxc
+  depth = 1
+
+rule luaxc
+  command = luaxc $arg -o $out $in
+  pool = luaxc
+
+build $builddir/calculadoira: luax src/bn.lua src/calculadoira.ini src/calculadoira.lua
 
 ######################################################################
 # Installation
@@ -43,9 +49,9 @@ build $calculadoira: luax src/bn.lua src/calculadoira.ini src/calculadoira.lua
 ######################################################################
 
 rule run_test
-  command = python3 $in $calculadoira > $out
+  command = python3 $in $builddir/calculadoira > $out
 
-build $builddir/tests.txt: run_test test/tests.py | $calculadoira
+build $builddir/tests.txt: run_test test/tests.py | $builddir/calculadoira
 
 ######################################################################
 # Documentation
@@ -54,13 +60,13 @@ build $builddir/tests.txt: run_test test/tests.py | $calculadoira
 rule panda
   command = PATH=$builddir:$$PATH LANG=en panda -t gfm $in -o $out
 
-build README.md: panda doc/calculadoira.md | $calculadoira
+build README.md: panda doc/calculadoira.md | $builddir/calculadoira
 
 ######################################################################
 # Shortcuts
 ######################################################################
 
-build compile: phony $calculadoira
+build compile: phony $builddir/calculadoira
 build test: phony $builddir/tests.txt
 build doc: phony README.md
 build all: phony compile test doc
@@ -77,7 +83,7 @@ rule install-bin
   description = INSTALL $in to bin
   command = install -v -D -t $${PREFIX:-$prefix}/bin $in
 
-build install-bin: install-bin $calculadoira
+build install-bin: install-bin $builddir/calculadoira
 build install: phony install-bin
 
 ######################################################################

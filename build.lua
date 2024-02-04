@@ -18,12 +18,12 @@ For further information about Calculadoira you can visit
 http://cdelord.fr/calculadoira
 ]]
 
+local F = require "F"
+
 help.name "Calculadoira"
 help.description "$name compilation, test and installation"
 
 var "builddir" ".build"
-
-var "calculadoira" "$builddir/calculadoira"
 
 clean "$builddir"
 
@@ -31,23 +31,44 @@ clean "$builddir"
 section "Compilation"
 ---------------------------------------------------------------------
 
-rule "luax" { command = "luax -q -o $out $in" }
+local targets = F(require "sys".targets):map(F.partial(F.nth, "name"))
+local target, ext = nil, ""
+F(arg) : foreach(function(a)
+    if targets:elem(a) then
+        if target then F.error_without_stack_trace("multiple target definition", 2) end
+        target = a
+        if target:match"windows" then ext = ".exe" end
+    else
+        F.error_without_stack_trace(a..": unknown argument")
+    end
+end)
 
-build "$calculadoira" { "luax", ls "src/*" }
+rule "luax" { command = "luax -q -o $out $in" }
+rule "luaxc" {
+    command = "luaxc $arg -o $out $in",
+    pool = pool "luaxc" { depth = 1 },
+}
+
+local calculadoira = build("$builddir/calculadoira"..ext) {
+    target and "luaxc" or "luax",
+    ls "src/*",
+    arg = target and {"-t", target},
+}
 
 ---------------------------------------------------------------------
 section "Installation"
 ---------------------------------------------------------------------
 
-install "bin" "$calculadoira"
+install "bin" { calculadoira }
 
+if not target then
 ---------------------------------------------------------------------
 section "Tests"
 ---------------------------------------------------------------------
 
 rule "run_test" {
-    command = "python3 $in $calculadoira > $out",
-    implicit_in = "$calculadoira",
+    command = { "python3", "$in", calculadoira, "> $out" },
+    implicit_in = calculadoira,
 }
 
 build "$builddir/tests.txt" { "run_test", "test/tests.py" }
@@ -58,10 +79,11 @@ section "Documentation"
 
 rule "panda" {
     command = "PATH=$builddir:$$PATH LANG=en panda -t gfm $in -o $out",
-    implicit_in = "$calculadoira",
+    implicit_in = calculadoira,
 }
 
 build "README.md" { "panda", "doc/calculadoira.md" }
+end
 
 ---------------------------------------------------------------------
 section "Shortcuts"
@@ -69,12 +91,16 @@ section "Shortcuts"
 
 help "all" "compile, test and generate the documentation"
 help "compile" "compile $name"
+if not target then
 help "test" "run $name tests"
 help "doc" "generate documentation (README.md)"
+end
 
-phony "compile" "$calculadoira"
+phony "compile" { calculadoira }
+if not target then
 phony "test" { "$builddir/tests.txt" }
 phony "doc" { "README.md" }
+end
 
-phony "all" { "compile", "test", "doc" }
+phony "all" { "compile", target and {} or {"test", "doc"} }
 default "all"
