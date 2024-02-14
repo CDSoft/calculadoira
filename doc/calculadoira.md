@@ -3,7 +3,7 @@
 
 <!--
 Calculadoira
-Copyright (C) 2011-2023 Christophe Delord
+Copyright (C) 2011-2024 Christophe Delord
 http://cdelord.fr/calculadoira
 
 This file is part of Calculadoira.

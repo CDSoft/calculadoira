@@ -1,6 +1,6 @@
 <!--
 Calculadoira
-Copyright (C) 2011-2023 Christophe Delord
+Copyright (C) 2011-2024 Christophe Delord
 http://cdelord.fr/calculadoira
 &#10;This file is part of Calculadoira.
 &#10;Calculadoira is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ GitHub](https://github.com/CDSoft/calculadoira).
 # License
 
     Calculadoira
-    Copyright (C) 2011 - 2023 Christophe Delord
+    Copyright (C) 2011 - 2024 Christophe Delord
     http://cdelord.fr/calculadoira
 
     Calculadoira is free software: you can redistribute it and/or modify
