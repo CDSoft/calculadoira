@@ -43,14 +43,12 @@ F(arg) : foreach(function(a)
     end
 end)
 
-rule "luax" { command = "luax -q -o $out $in" }
 rule "luaxc" {
     command = "luaxc $arg -o $out $in",
-    pool = pool "luaxc" { depth = 1 },
 }
 
 local calculadoira = build("$builddir/calculadoira"..ext) {
-    target and "luaxc" or "luax",
+    "luaxc",
     ls "src/*",
     arg = target and {"-t", target},
 }

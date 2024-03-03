@@ -28,17 +28,10 @@ builddir = .build
 # Compilation
 ######################################################################
 
-rule luax
-  command = luax -q -o $out $in
-
-pool luaxc
-  depth = 1
-
 rule luaxc
   command = luaxc $arg -o $out $in
-  pool = luaxc
 
-build $builddir/calculadoira: luax src/bn.lua src/calculadoira.ini src/calculadoira.lua
+build $builddir/calculadoira: luaxc src/bn.lua src/calculadoira.ini src/calculadoira.lua
 
 ######################################################################
 # Installation
@@ -103,7 +96,16 @@ build clean: phony clean-_builddir
 
 rule help
   description = help
-  command = echo "Calculadoira compilation, test and installation"; echo ""; echo "Targets:"; echo "  help      show this help message"; echo "  all       compile, test and generate the documentation"; echo "  compile   compile Calculadoira"; echo "  test      run Calculadoira tests"; echo "  doc       generate documentation (README.md)"; echo "  install   install Calculadoira in PREFIX or ~/.local"; echo "  clean     clean generated files";
+  command = echo "Calculadoira compilation, test and installation"; $
+            echo ""; $
+            echo "Targets:"; $
+            echo "  help      show this help message"; $
+            echo "  all       compile, test and generate the documentation"; $
+            echo "  compile   compile Calculadoira"; $
+            echo "  test      run Calculadoira tests"; $
+            echo "  doc       generate documentation (README.md)"; $
+            echo "  install   install Calculadoira in PREFIX or ~/.local"; $
+            echo "  clean     clean generated files"
 
 build help: help
 
