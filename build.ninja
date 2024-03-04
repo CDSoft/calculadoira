@@ -29,7 +29,8 @@ builddir = .build
 ######################################################################
 
 rule luaxc
-  command = luaxc $arg -o $out $in
+  description = LUAXC $out
+  command = luaxc $arg -q -o $out $in
 
 build $builddir/calculadoira: luaxc src/bn.lua src/calculadoira.ini src/calculadoira.lua
 
@@ -42,6 +43,7 @@ build $builddir/calculadoira: luaxc src/bn.lua src/calculadoira.ini src/calculad
 ######################################################################
 
 rule run_test
+  description = TEST
   command = python3 $in $builddir/calculadoira > $out
 
 build $builddir/tests.txt: run_test test/tests.py | $builddir/calculadoira
@@ -51,6 +53,7 @@ build $builddir/tests.txt: run_test test/tests.py | $builddir/calculadoira
 ######################################################################
 
 rule panda
+  description = PANDA $in
   command = PATH=$builddir:$$PATH LANG=en panda -t gfm $in -o $out
 
 build README.md: panda doc/calculadoira.md | $builddir/calculadoira
