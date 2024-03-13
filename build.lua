@@ -42,7 +42,7 @@ rule "luaxc" {
     command = "luaxc $arg -q -o $out $in",
 }
 
-local calculadoira = build("$builddir/calculadoira"..(target or sys.build).exe) {
+local calculadoira = build("$builddir/calculadoira"..(target or sys).exe) {
     "luaxc",
     ls "src/*",
     arg = target and {"-t", target.name},
