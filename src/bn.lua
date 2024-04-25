@@ -477,24 +477,9 @@ do
         if n.isInt then return n end
         if n.isRat then return n end
         if n.isFloat then
-            local num = 1
-            local den = 1
-            eps = eps or 1e-6
-            local absn = math.abs(n.n)
-            local r = num / den
-            --while r ~= n do
-            while math.abs(absn - r) > eps do
-                if r < absn then
-                    num = num + 1
-                else
-                    den = den + 1
-                    num = math.floor(absn * den)
-                end
-                r = num / den
-            end
-            local rat = bn.Rat(num, den)
-            if n.n < 0 then rat = -rat end
-            return rat
+            local qmath = require "qmath"
+            local rat = qmath.torat(n.n, eps or 1e-6)
+            return bn.Rat(tostring(rat:numer()), tostring(rat:denom()))
         end
     end
 
