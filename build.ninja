@@ -30,9 +30,10 @@ builddir = .build
 
 rule luaxc
   description = LUAXC $out
-  command = luaxc $arg -q -o $out $in
+  command = luax compile $arg -q -o $out $in
 
 build $builddir/calculadoira: luaxc src/bn.lua src/calculadoira.ini src/calculadoira.lua
+  arg = -b -t linux-x86_64
 
 ######################################################################
 # Installation
