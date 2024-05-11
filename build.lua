@@ -45,7 +45,7 @@ rule "luaxc" {
 local calculadoira = build("$builddir/calculadoira"..(target or sys).exe) {
     "luaxc",
     ls "src/*",
-    arg = { "-b", "-t", (target or sys).name },
+    arg = { "-b", "-t", target and target.name or "native" },
 }
 
 ---------------------------------------------------------------------
