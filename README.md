@@ -47,6 +47,13 @@ Its output can be redirected to a script and modified to e.g. delete some files.
 > **If you uncomment all lines, all files will be deleted.**
 > It's up to you to wisely choose which lines to uncomment!
 
+# Configuration
+
+The configuration files are in `$HOME/.config/dedup/`.
+
+`$HOME/.config/dedup/dedup.ignore`
+:   contains one file pattern per line to exclude directories.
+
 # License
 
     This file is part of dedup.

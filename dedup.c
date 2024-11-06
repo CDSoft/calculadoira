@@ -17,8 +17,12 @@
  * http://cdelord.fr/dedup
  */
 
+#define _GNU_SOURCE
+
 #include <assert.h>
+#include <ctype.h>
 #include <dirent.h>
+#include <fnmatch.h>
 #include <linux/limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -54,11 +58,15 @@ void help(void)
 typedef struct {
     bool skip_hidden;
     bool safe;
+    char **ignore_patterns;
+    size_t nb_ignore_patterns;
 } t_opts;
 
 static t_opts opts = {
     .skip_hidden = true,
     .safe = false,
+    .ignore_patterns = NULL,
+    .nb_ignore_patterns = 0,
 };
 
 typedef struct {
@@ -80,6 +88,16 @@ typedef struct {
     bool digest_evaluated;
     bool vanished;
 } t_file_id;
+
+bool ignore(const char *path)
+{
+    for (size_t i = 0; i < opts.nb_ignore_patterns; i++) {
+        if (fnmatch(opts.ignore_patterns[i], path, FNM_PATHNAME | FNM_PERIOD | FNM_EXTMATCH) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
 
 void name_list_init(t_name_list *name_list)
 {
@@ -168,6 +186,7 @@ void join_path(const char *dir, const char *name, char *path)
 
 size_t scan(const char *path, t_file_list *file_list)
 {
+    if (ignore(path)) { return 0; }
     size_t n = 0;
     DIR *d = opendir(path);
     if (d == NULL)
@@ -412,6 +431,28 @@ void print_block(t_file_id *files, size_t first, size_t last)
 
 int main(int argc, const char *argv[])
 {
+    char ignore_file[PATH_MAX];
+    sprintf(ignore_file, "%s/.config/dedup/dedup.ignore", getenv("HOME"));
+    FILE *f = fopen(ignore_file, "rt");
+    if (f != NULL) {
+        ssize_t ret;
+        do {
+            char *pattern = NULL;
+            size_t n = 0;
+            if ((ret = getline(&pattern, &n, f)) > 0) {
+                while (ret > 0 && isspace(pattern[ret-1])) {
+                    pattern[ret-1] = '\0';
+                    ret--;
+                }
+                opts.nb_ignore_patterns++;
+                opts.ignore_patterns = realloc(opts.ignore_patterns, opts.nb_ignore_patterns*sizeof(opts.ignore_patterns[0]));
+                opts.ignore_patterns[opts.nb_ignore_patterns-1] = strdup(pattern);
+            }
+            free(pattern);
+        } while (ret > 0);
+        fclose(f);
+    }
+
     t_file_list file_list;
     file_list_init(&file_list);
 
@@ -422,8 +463,10 @@ int main(int argc, const char *argv[])
         if (strcmp(argv[i], "--skip-hidden") == 0) { opts.skip_hidden = true; continue; }
         if (strcmp(argv[i], "--fast"       ) == 0) { opts.safe = false; continue; }
         if (strcmp(argv[i], "--safe"       ) == 0) { opts.safe = true; continue; }
-        const size_t n = scan(argv[i], &file_list);
-        printf("# - %s (%zu files)\n", argv[i], n);
+        char *path = realpath(argv[i], NULL);
+        const size_t n = scan(path, &file_list);
+        printf("# %s (%zu files)\n", path, n);
+        free(path);
     }
 
     printf("# Memory usage: %lu Mb\n",
