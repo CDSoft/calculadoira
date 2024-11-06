@@ -4,6 +4,13 @@
 
 # Installation
 
+First download `dedup` from Github:
+
+``` sh
+$ git clone https://github.com/CDSoft/dedup
+$ cd dedup
+```
+
 `dedup` can be installed in `~/.local/bin` with:
 
 ``` sh

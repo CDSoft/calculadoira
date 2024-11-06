@@ -23,9 +23,20 @@ var "builddir" ".build"
 local sanitize = false
 
 build.C
-    : set "cc" { sanitize and "clang" or "cc" }
+    : set "cc" "clang"
     : add "cflags" {
+        "-std=gnu2x",
+        "-O3",
+        "-ferror-limit=1",
         "-Wall",
+        "-Wextra",
+        "-Wstrict-prototypes",
+        "-Wmissing-field-initializers",
+        "-Wmissing-prototypes",
+        "-Wmissing-declarations",
+        "-Werror=switch-enum",
+        "-Werror=implicit-fallthrough",
+        "-Werror=missing-prototypes",
         "-Werror",
         sanitize and {
             "-O0",
@@ -34,18 +45,12 @@ build.C
             "-fno-optimize-sibling-calls",
             "-fsanitize=address",
             "-fsanitize=undefined",
-            "-fsanitize=float-divide-by-zero",
-            "-fsanitize=unsigned-integer-overflow",
             "-fsanitize=implicit-conversion",
             "-fsanitize=local-bounds",
-            "-fsanitize=float-cast-overflow",
             "-fsanitize=nullability-arg",
             "-fsanitize=nullability-assign",
             "-fsanitize=nullability-return",
-        } or {
-            "-O3",
-            "-Wno-stringop-overread",
-        },
+        } or {},
     }
     : add "ldflags" {
         sanitize and {
@@ -56,8 +61,6 @@ build.C
         },
     }
 
-install "bin" {
-    build.C:executable "$builddir/dedup" {
-        ls "*.c",
-    },
-}
+local dedup = build.C:executable "$builddir/dedup" { ls "src/*.c" }
+default { dedup }
+install "bin" { dedup }

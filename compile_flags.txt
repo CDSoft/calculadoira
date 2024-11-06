@@ -1,0 +1,11 @@
+-std=gnu2x
+-Wall
+-Wextra
+-Wstrict-prototypes
+-Wmissing-field-initializers
+-Wmissing-prototypes
+-Wmissing-declarations
+-Werror=switch-enum
+-Werror=implicit-fallthrough
+-Werror=missing-prototypes
+-Isrc
