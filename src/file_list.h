@@ -53,4 +53,5 @@ void file_list_drop_last(void);
 char *file_list_get_name(const t_file_id *file_id);
 int compare_files(const void *p1, const void *p2);
 bool similar_files(t_file_id *f1, t_file_id *f2);
+bool identical_files(t_file_id *f1, t_file_id *f2);
 void join_path(const char *dir, const char *name, char *path);

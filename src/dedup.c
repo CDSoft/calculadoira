@@ -30,6 +30,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#define MINIMAL_FILE_SIZE       1024
+
 static size_t scan(const char *path)
 {
     if (ignored(path)) { return 0; }
@@ -70,7 +72,7 @@ static size_t scan(const char *path)
                     file_list_drop_last();
                     break;
                 }
-                if (st.st_size == 0) {
+                if (st.st_size < MINIMAL_FILE_SIZE) {
                     file_list_drop_last();
                     break;
                 }
@@ -93,7 +95,7 @@ static size_t scan(const char *path)
     return n;
 }
 
-static const char *size_unit(size_t size)
+static const volatile char *size_unit(size_t size)
 {
     static const struct { size_t k; size_t u; const char *name; } units[4] = {
         {4, 1024*1024*1024, "Gb"},
@@ -112,15 +114,42 @@ static const char *size_unit(size_t size)
     return out;
 }
 
-static void print_block(t_file_id *files, size_t first, size_t last)
+static size_t print_block(size_t first, size_t last)
 {
-    if (last > first) {
-        printf("\n");
-        printf("# Same files (%s)\n", size_unit(files[first].size));
-        for (size_t i = first; i <= last; i++) {
-            printf("# rm \"%s\"\n", file_list_get_name(&files[i]));
+    t_file_id *files = file_list.files;
+
+    bool files_have_different_inodes = false;
+    for (size_t i = first+1; i <= last; i++) {
+        if (files[i].device != files[first].device || files[i].inode != files[first].inode) {
+            files_have_different_inodes = true;
+            break;
         }
     }
+    if (!files_have_different_inodes) { return 0; }
+
+    printf("\n");
+    printf("# Same files (%s)\n", size_unit(files[first].size));
+
+    size_t lost = 0;
+
+    for (size_t i = first; i <= last; i++) {
+
+        printf("# rm \"%s\"\n", file_list_get_name(&files[i]));
+
+        bool new_file = true;
+        for (size_t j = first; j < i; j++) {
+            if (files[i].device == files[j].device && files[i].inode == files[j].inode) {
+                new_file = false;
+                break;
+            }
+        }
+        if (new_file) {
+            lost += files[i].size;
+        }
+
+    }
+
+    return lost;
 }
 
 int main(int argc, const char *argv[])
@@ -158,14 +187,12 @@ int main(int argc, const char *argv[])
         if (similar_files(&file_list.files[i-1], &file_list.files[i])) {
             block_end = i;
         } else {
-            lost += file_list.files[block_start].size * (block_end-block_start);
-            print_block(file_list.files, block_start, block_end);
+            lost += print_block(block_start, block_end);
             block_start = i;
             block_end = i;
         }
     }
-    lost += file_list.files[block_start].size * (block_end-block_start);
-    print_block(file_list.files, block_start, block_end);
+    lost += print_block(block_start, block_end);
     printf("\n");
     printf("# Lost space: %s\n", size_unit(lost));
 }

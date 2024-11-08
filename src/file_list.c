@@ -217,6 +217,11 @@ bool similar_files(t_file_id *f1, t_file_id *f2)
     return true;
 }
 
+bool identical_files(t_file_id *f1, t_file_id *f2)
+{
+    return f1->device == f2->device && f1->inode == f2->inode;
+}
+
 void join_path(const char *dir, const char *name, char *path)
 {
     strcpy(path, dir);
