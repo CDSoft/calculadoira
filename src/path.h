@@ -17,15 +17,8 @@
  * http://cdelord.fr/dedup
  */
 
-#include "file_list.h"
-#include "name_list.h"
-#include "options.h"
+#pragma once
 
-int main(int argc, const char *argv[])
-{
-    name_list_init();
-    file_list_init();
-    options_init(argc, argv);
-    file_list_sort();
-    file_list_print_similar_files();
-}
+#include "path.h"
+
+void join_path(const char *dir, const char *name, char *path);

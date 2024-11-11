@@ -21,14 +21,9 @@
 
 #include <stdlib.h>
 
-typedef struct {
-    size_t capacity;
-    size_t length;
-    char *buffer;
-} t_name_list;
-
-extern t_name_list name_list;
+typedef size_t t_name;
 
 void name_list_init(void);
-size_t name_list_new(size_t name_size);
-char *name_list_get(size_t name_idx);
+t_name name_list_new(const char *dir, const char *name);
+char *name_list_get(t_name name);
+size_t name_list_size(void);

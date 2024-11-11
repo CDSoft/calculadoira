@@ -21,12 +21,44 @@
 
 #include "name_list.h"
 #include "options.h"
+#include "path.h"
 #include "sha1.h"
 
+#include <libgen.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-t_file_list file_list;
+#define MINIMAL_FILE_SIZE       1024
+#define PARTIAL_CONTENT_SIZE    (4*1024)
+#define READ_BLOCK_SIZE         (4*1024)
+
+#define DIGEST_SIZE             20
+
+typedef struct {
+    t_name name;
+    size_t device, inode;
+    size_t size;
+    unsigned char start_digest[DIGEST_SIZE];
+    unsigned char end_digest[DIGEST_SIZE];
+    unsigned char digest[DIGEST_SIZE];
+    bool start_digest_evaluated;
+    bool end_digest_evaluated;
+    bool digest_evaluated;
+    bool vanished;
+} t_file_id;
+
+typedef struct {
+    size_t capacity;
+    size_t length;
+    t_file_id *files;
+} t_file_list;
+
+static t_file_list file_list;
 
 void file_list_init(void)
 {
@@ -39,7 +71,12 @@ void file_list_init(void)
     }
 }
 
-t_file_id *file_list_new(void)
+static char *file_list_get_name(const t_file_id *file_id)
+{
+    return name_list_get(file_id->name);
+}
+
+static const t_file_id *file_list_new(const char *path, const char *name)
 {
     if (file_list.length == file_list.capacity) {
         file_list.capacity *= 2;
@@ -49,20 +86,65 @@ t_file_id *file_list_new(void)
             exit(EXIT_FAILURE);
         }
     }
+
     t_file_id *file_id = &file_list.files[file_list.length++];
+    memset(file_id, 0, sizeof(t_file_id));
+    file_id->name = name_list_new(path, name);
+
+    struct stat st;
+    const int ret = stat(file_list_get_name(file_id), &st);
+    if (ret != 0) {
+        perror(file_list_get_name(file_id));
+        file_list.length--;
+        return NULL;
+    }
+    if (st.st_size < MINIMAL_FILE_SIZE) {
+        file_list.length--;
+        return NULL;
+    }
+
+    file_id->size = st.st_size;
+    file_id->device = st.st_dev;
+    file_id->inode = st.st_ino;
+
     return file_id;
 }
 
-void file_list_drop_last(void)
+size_t file_list_scan(const char *path)
 {
-    if (file_list.length > 0) {
-        file_list.length--;
+    if (ignored(path)) { return 0; }
+    size_t n = 0;
+    DIR *d = opendir(path);
+    if (d == NULL) {
+        perror(path);
+        return 0; /* ignore unreadable directories */
     }
-}
-
-char *file_list_get_name(const t_file_id *file_id)
-{
-    return name_list_get(file_id->name_idx);
+    struct dirent *file;
+    while ((file = readdir(d)) != NULL) {
+        if (file->d_name[0] == '.' && !scan_hidden_files()) { continue; }
+        switch (file->d_type) {
+            case DT_DIR:
+            {
+                if (strcmp(file->d_name, ".") == 0) break;
+                if (strcmp(file->d_name, "..") == 0) break;
+                char subdir[strlen(path) + 1 + strlen(file->d_name) + 1];
+                join_path(path, file->d_name, subdir);
+                n += file_list_scan(subdir);
+                break;
+            }
+            case DT_REG:
+            {
+                if (file_list_new(path, file->d_name) != NULL) {
+                    n++;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    closedir(d);
+    return n;
 }
 
 static const unsigned char *start_digest(t_file_id *file)
@@ -138,7 +220,7 @@ end:
     return file->digest;
 }
 
-int compare_files(const void *p1, const void *p2)
+static int compare_files(const void *p1, const void *p2)
 {
     t_file_id *f1 = (t_file_id*)p1;
     t_file_id *f2 = (t_file_id*)p2;
@@ -170,7 +252,7 @@ int compare_files(const void *p1, const void *p2)
     }
 
     /* check complete content */
-    if (opts.safe) {
+    if (safe_check()) {
         if (f1->size > 2*PARTIAL_CONTENT_SIZE) {
             const unsigned char *digest_1 = digest(f1);
             const unsigned char *digest_2 = digest(f2);
@@ -185,7 +267,7 @@ int compare_files(const void *p1, const void *p2)
     return strcmp(name1, name2);
 }
 
-bool similar_files(t_file_id *f1, t_file_id *f2)
+static bool similar_files(t_file_id *f1, t_file_id *f2)
 {
     if (f1->size != f2->size) { return false; }
     if (f1->device == f2->device && f1->inode == f2->inode) { return true; }
@@ -205,7 +287,7 @@ bool similar_files(t_file_id *f1, t_file_id *f2)
     }
 
     /* check complete content */
-    if (opts.safe) {
+    if (safe_check()) {
         if (f1->size > 2*PARTIAL_CONTENT_SIZE) {
             const unsigned char *digest_1 = digest(f1);
             const unsigned char *digest_2 = digest(f2);
@@ -217,14 +299,89 @@ bool similar_files(t_file_id *f1, t_file_id *f2)
     return true;
 }
 
-bool identical_files(t_file_id *f1, t_file_id *f2)
+void file_list_sort(void)
 {
-    return f1->device == f2->device && f1->inode == f2->inode;
+    qsort(file_list.files, file_list.length, sizeof(file_list.files[0]), compare_files);
 }
 
-void join_path(const char *dir, const char *name, char *path)
+size_t file_list_size(void)
 {
-    strcpy(path, dir);
-    strcat(path, "/");
-    strcat(path, name);
+    return sizeof(file_list) + file_list.capacity*sizeof(file_list.files[0]);
+}
+
+static const volatile char *size_unit(size_t size)
+{
+    static const struct { size_t k; size_t u; const char *name; } units[4] = {
+        {4, 1024*1024*1024, "Gb"},
+        {4,      1024*1024, "Mb"},
+        {4,           1024, "Kb"},
+        {0,              1, "bytes"},
+    };
+    static char out[64];
+    out[0] = '\0';
+    for (size_t i = 0; i < 4; i++) {
+        if (size >= units[i].k*units[i].u) {
+            sprintf(out, "%zu %s", size/units[i].u, units[i].name);
+            break;
+        }
+    }
+    return out;
+}
+
+static size_t print_block(size_t first, size_t last)
+{
+    t_file_id *files = file_list.files;
+
+    bool files_have_different_inodes = false;
+    for (size_t i = first+1; i <= last; i++) {
+        if (files[i].device != files[first].device || files[i].inode != files[first].inode) {
+            files_have_different_inodes = true;
+            break;
+        }
+    }
+    if (!files_have_different_inodes) { return 0; }
+
+    printf("\n");
+    printf("# %s (%s)\n", basename(file_list_get_name(&files[first])), size_unit(files[first].size));
+
+    size_t lost = 0;
+
+    for (size_t i = first; i <= last; i++) {
+
+        printf("# rm \"%s\"\n", file_list_get_name(&files[i]));
+
+        bool new_file = true;
+        for (size_t j = first; j < i; j++) {
+            if (files[i].device == files[j].device && files[i].inode == files[j].inode) {
+                new_file = false;
+                break;
+            }
+        }
+        if (new_file) {
+            lost += files[i].size;
+        }
+
+    }
+
+    return lost;
+}
+
+void file_list_print_similar_files(void)
+{
+    /* loop over similar file blocks in the sorted file list */
+    size_t lost = 0;
+    size_t block_start = 0;
+    size_t block_end = 0;
+    for (size_t i = 1; i < file_list.length; i++) {
+        if (similar_files(&file_list.files[i-1], &file_list.files[i])) {
+            block_end = i;
+        } else {
+            lost += print_block(block_start, block_end);
+            block_start = i;
+            block_end = i;
+        }
+    }
+    lost += print_block(block_start, block_end);
+    printf("\n");
+    printf("# Lost space: %s\n", size_unit(lost));
 }

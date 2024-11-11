@@ -19,19 +19,34 @@
 
 #include "options.h"
 
+#include "name_list.h"
+#include "file_list.h"
+#include "path.h"
+
 #include <ctype.h>
+#include <fnmatch.h>
 #include <linux/limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
+const char *ignore_file = ".config/dedup/dedup.ignore";
+
+typedef struct {
+    bool show_hidden;
+    bool safe;
+    char **ignore_patterns;
+    size_t nb_ignore_patterns;
+} t_opts;
+
 t_opts opts = {
-    .skip_hidden = true,
+    .show_hidden = false,
     .safe = false,
     .ignore_patterns = NULL,
     .nb_ignore_patterns = 0,
 };
 
-void help(void)
+static void help(void)
 {
     printf(
         "dedup - Deduplicate files\n"
@@ -50,38 +65,74 @@ void help(void)
     exit(EXIT_SUCCESS);
 }
 
-void read_conf(void)
+static void read_conf(void)
 {
-    char ignore_file[PATH_MAX];
-    sprintf(ignore_file, "%s/.config/dedup/dedup.ignore", getenv("HOME"));
-    FILE *f = fopen(ignore_file, "rt");
-    if (f != NULL) {
+    const char *home = getenv("HOME");
+    char ignore_file_path[strlen(home) + 1 + strlen(ignore_file) + 1];
+    join_path(home, ignore_file, ignore_file_path);
+    FILE *f = fopen(ignore_file_path, "rt");
+    if (f == NULL) { return; }
+    while (true) {
+        char *pattern = NULL;
+        size_t n = 0;
         ssize_t ret;
-        do {
-            char *pattern = NULL;
-            size_t n = 0;
-            if ((ret = getline(&pattern, &n, f)) > 0) {
-                while (ret > 0 && isspace(pattern[ret-1])) {
-                    pattern[ret-1] = '\0';
-                    ret--;
-                }
-                opts.nb_ignore_patterns++;
-                opts.ignore_patterns = realloc(opts.ignore_patterns, opts.nb_ignore_patterns*sizeof(opts.ignore_patterns[0]));
-                opts.ignore_patterns[opts.nb_ignore_patterns-1] = pattern;
-            } else {
-                free(pattern);
-            }
-        } while (ret > 0);
-        fclose(f);
+        if ((ret = getline(&pattern, &n, f)) <= 0) {
+            free(pattern);
+            break;
+        }
+        while (ret > 0 && isspace(pattern[ret-1])) {
+            pattern[ret-1] = '\0';
+            ret--;
+        }
+        if (ret == 0) {
+            free(pattern);
+            continue;
+        }
+        opts.nb_ignore_patterns++;
+        opts.ignore_patterns = realloc(opts.ignore_patterns, opts.nb_ignore_patterns*sizeof(opts.ignore_patterns[0]));
+        opts.ignore_patterns[opts.nb_ignore_patterns-1] = pattern;
     }
+    fclose(f);
+}
+
+void options_init(int argc, const char *argv[])
+{
+    read_conf();
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help"       ) == 0) { help(); }
+        if (strcmp(argv[i], "-h"           ) == 0) { help(); }
+        if (strcmp(argv[i], "--hidden"     ) == 0) { opts.show_hidden = true; continue; }
+        if (strcmp(argv[i], "--skip-hidden") == 0) { opts.show_hidden = false; continue; }
+        if (strcmp(argv[i], "--fast"       ) == 0) { opts.safe = false; continue; }
+        if (strcmp(argv[i], "--safe"       ) == 0) { opts.safe = true; continue; }
+        char *path = realpath(argv[i], NULL);
+        const size_t n = file_list_scan(path);
+        printf("# %s (%zu files)\n", path, n);
+        free(path);
+    }
+    printf("# Memory usage: %lu Mb\n",
+            ( file_list_size()
+            + name_list_size()
+            ) / (1024*1024)
+    );
 }
 
 bool ignored(const char *path)
 {
     for (size_t i = 0; i < opts.nb_ignore_patterns; i++) {
-        if (fnmatch(opts.ignore_patterns[i], path, FNM_PATHNAME | FNM_PERIOD | FNM_EXTMATCH) == 0) {
+        if (fnmatch(opts.ignore_patterns[i], path, FNM_PATHNAME | FNM_PERIOD) == 0) {
             return true;
         }
     }
     return false;
+}
+
+bool scan_hidden_files(void)
+{
+    return opts.show_hidden;
+}
+
+bool safe_check(void)
+{
+    return opts.safe;
 }

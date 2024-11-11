@@ -53,8 +53,9 @@ build $builddir/tmp/dedup.tmp/src/dedup.o: C-cc src/dedup.c
 build $builddir/tmp/dedup.tmp/src/file_list.o: C-cc src/file_list.c
 build $builddir/tmp/dedup.tmp/src/name_list.o: C-cc src/name_list.c
 build $builddir/tmp/dedup.tmp/src/options.o: C-cc src/options.c
+build $builddir/tmp/dedup.tmp/src/path.o: C-cc src/path.c
 build $builddir/tmp/dedup.tmp/src/sha1.o: C-cc src/sha1.c
-build $builddir/dedup: C-ld $builddir/tmp/dedup.tmp/src/dedup.o $builddir/tmp/dedup.tmp/src/file_list.o $builddir/tmp/dedup.tmp/src/name_list.o $builddir/tmp/dedup.tmp/src/options.o $builddir/tmp/dedup.tmp/src/sha1.o
+build $builddir/dedup: C-ld $builddir/tmp/dedup.tmp/src/dedup.o $builddir/tmp/dedup.tmp/src/file_list.o $builddir/tmp/dedup.tmp/src/name_list.o $builddir/tmp/dedup.tmp/src/options.o $builddir/tmp/dedup.tmp/src/path.o $builddir/tmp/dedup.tmp/src/sha1.o
 
 default $builddir/dedup
 

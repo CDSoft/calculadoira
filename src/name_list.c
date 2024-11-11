@@ -19,9 +19,18 @@
 
 #include "name_list.h"
 
-#include <stdio.h>
+#include "path.h"
 
-t_name_list name_list;
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    size_t capacity;
+    size_t length;
+    char *buffer;
+} t_name_list;
+
+static t_name_list name_list;
 
 void name_list_init(void)
 {
@@ -34,10 +43,11 @@ void name_list_init(void)
     }
 }
 
-size_t name_list_new(size_t name_size)
+t_name name_list_new(const char *dir, const char *name)
 {
-    if (name_list.length + name_size + 1 >= name_list.capacity) {
-        while (name_list.length + name_size + 1 >= name_list.capacity) {
+    const size_t size = strlen(dir) + 1 + strlen(name) + 1;
+    if (name_list.length + size >= name_list.capacity) {
+        while (name_list.length + size >= name_list.capacity) {
             name_list.capacity *= 2;
         }
         name_list.buffer = realloc(name_list.buffer, name_list.capacity);
@@ -46,12 +56,18 @@ size_t name_list_new(size_t name_size)
             exit(EXIT_FAILURE);
         }
     }
-    const size_t name_idx = name_list.length;
-    name_list.length += name_size + 1;
+    const t_name name_idx = name_list.length;
+    name_list.length += size;
+    join_path(dir, name, &name_list.buffer[name_idx]);
     return name_idx;
 }
 
-char *name_list_get(size_t name_idx)
+char *name_list_get(t_name name_idx)
 {
     return &name_list.buffer[name_idx];
+}
+
+size_t name_list_size(void)
+{
+    return sizeof(name_list) + name_list.capacity;
 }

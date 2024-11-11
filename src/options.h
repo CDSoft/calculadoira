@@ -19,19 +19,9 @@
 
 #pragma once
 
-#include <fnmatch.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
-typedef struct {
-    bool skip_hidden;
-    bool safe;
-    char **ignore_patterns;
-    size_t nb_ignore_patterns;
-} t_opts;
-
-extern t_opts opts;
-
-void help(void);
-void read_conf(void);
+void options_init(int argc, const char *argv[]);
 bool ignored(const char *path);
+bool scan_hidden_files(void);
+bool safe_check(void);
