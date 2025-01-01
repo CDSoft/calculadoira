@@ -22,8 +22,7 @@ var "builddir" ".build"
 
 local sanitize = false
 
-build.C
-    : set "cc" "clang"
+build.clang
     : add "cflags" {
         "-std=gnu2x",
         "-O3",
@@ -39,7 +38,7 @@ build.C
         "-Werror=missing-prototypes",
         "-Werror",
         sanitize and {
-            "-O0",
+            "-Og",
             "-g",
             "-fno-omit-frame-pointer",
             "-fno-optimize-sibling-calls",
@@ -61,6 +60,6 @@ build.C
         },
     }
 
-local dedup = build.C:executable "$builddir/dedup" { ls "src/*.c" }
+local dedup = build.clang "$builddir/dedup" { ls "src/*.c" }
 default { dedup }
 install "bin" { dedup }

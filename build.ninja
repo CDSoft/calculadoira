@@ -32,30 +32,30 @@ ninja_required_version = 1.11.1
 
 builddir = .build
 
-rule C-cc
-  description = C $out
+rule clang-cc
+  description = clang $out
   command = clang -c -MD -MF $depfile -std=gnu2x -O3 -ferror-limit=1 -Wall -Wextra -Wstrict-prototypes -Wmissing-field-initializers -Wmissing-prototypes -Wmissing-declarations -Werror=switch-enum -Werror=implicit-fallthrough -Werror=missing-prototypes -Werror $in -o $out
   depfile = $out.d
 
-rule C-ar
-  description = C $out
+rule clang-ar
+  description = ar $out
   command = ar -crs $out $in
 
-rule C-so
-  description = C $out
-  command = cc -shared -o $out $in
+rule clang-so
+  description = clang $out
+  command = clang -shared -o $out $in
 
-rule C-ld
-  description = C $out
-  command = cc -s -o $out $in
+rule clang-ld
+  description = clang $out
+  command = clang -s -o $out $in
 
-build $builddir/tmp/dedup.tmp/src/dedup.o: C-cc src/dedup.c
-build $builddir/tmp/dedup.tmp/src/file_list.o: C-cc src/file_list.c
-build $builddir/tmp/dedup.tmp/src/name_list.o: C-cc src/name_list.c
-build $builddir/tmp/dedup.tmp/src/options.o: C-cc src/options.c
-build $builddir/tmp/dedup.tmp/src/path.o: C-cc src/path.c
-build $builddir/tmp/dedup.tmp/src/sha1.o: C-cc src/sha1.c
-build $builddir/dedup: C-ld $builddir/tmp/dedup.tmp/src/dedup.o $builddir/tmp/dedup.tmp/src/file_list.o $builddir/tmp/dedup.tmp/src/name_list.o $builddir/tmp/dedup.tmp/src/options.o $builddir/tmp/dedup.tmp/src/path.o $builddir/tmp/dedup.tmp/src/sha1.o
+build $builddir/tmp/dedup.tmp/src/dedup.o: clang-cc src/dedup.c
+build $builddir/tmp/dedup.tmp/src/file_list.o: clang-cc src/file_list.c
+build $builddir/tmp/dedup.tmp/src/name_list.o: clang-cc src/name_list.c
+build $builddir/tmp/dedup.tmp/src/options.o: clang-cc src/options.c
+build $builddir/tmp/dedup.tmp/src/path.o: clang-cc src/path.c
+build $builddir/tmp/dedup.tmp/src/sha1.o: clang-cc src/sha1.c
+build $builddir/dedup: clang-ld $builddir/tmp/dedup.tmp/src/dedup.o $builddir/tmp/dedup.tmp/src/file_list.o $builddir/tmp/dedup.tmp/src/name_list.o $builddir/tmp/dedup.tmp/src/options.o $builddir/tmp/dedup.tmp/src/path.o $builddir/tmp/dedup.tmp/src/sha1.o
 
 default $builddir/dedup
 
