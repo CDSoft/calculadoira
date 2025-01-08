@@ -15,21 +15,13 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <https://www.gnu.org/licenses/>.
 
 For further information about Calculadoira you can visit
-http://cdelord.fr/calculadoira
+https://github.com/cdsoft/calculadoira
 ]]
-
-local F = require "F"
-local sys = require "sys"
 
 help.name "Calculadoira"
 help.description "$name compilation, test and installation"
 
-local target, args = target(arg)
-if #args > 0 then
-    F.error_without_stack_trace(args:unwords()..": unexpected arguments")
-end
-
-var "builddir" (".build"/(target and target.name))
+var "builddir" ".build"
 
 clean "$builddir"
 
@@ -42,10 +34,15 @@ rule "luaxc" {
     command = "luax compile $arg -q -o $out $in",
 }
 
-local calculadoira = build("$builddir/calculadoira"..(target or sys).exe) {
-    "luaxc",
-    ls "src/*",
-    arg = { "-b", "-t", target and target.name or "native" },
+build.luax.add_global "flags" "-q"
+
+local sources = ls "src/*"
+
+local calculadoira = build.luax.native "$builddir/calculadoira" { sources }
+
+require "build-release" {
+    name = "calculadoira",
+    sources = sources,
 }
 
 ---------------------------------------------------------------------
@@ -54,7 +51,6 @@ section "Installation"
 
 install "bin" { calculadoira }
 
-if not target then
 ---------------------------------------------------------------------
 section "Tests"
 ---------------------------------------------------------------------
@@ -78,7 +74,6 @@ rule "panda" {
 }
 
 build "README.md" { "panda", "doc/calculadoira.md" }
-end
 
 ---------------------------------------------------------------------
 section "Shortcuts"
@@ -86,16 +81,12 @@ section "Shortcuts"
 
 help "all" "compile, test and generate the documentation"
 help "compile" "compile $name"
-if not target then
 help "test" "run $name tests"
 help "doc" "generate documentation (README.md)"
-end
 
 phony "compile" { calculadoira }
-if not target then
 phony "test" { "$builddir/tests.txt" }
 phony "doc" { "README.md" }
-end
 
-phony "all" { "compile", target and {} or {"test", "doc"} }
+phony "all" { "compile", "test", "doc" }
 default "all"

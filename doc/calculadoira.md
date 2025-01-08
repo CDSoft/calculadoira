@@ -4,7 +4,7 @@
 <!--
 Calculadoira
 Copyright (C) 2011-2024 Christophe Delord
-http://cdelord.fr/calculadoira
+https://github.com/cdsoft/calculadoira
 
 This file is part of Calculadoira.
 
@@ -43,8 +43,8 @@ echo license | calculadoira | sed -e '1,/: license/d'
 Download and installation
 =========================
 
-[LuaX]: http://cdelord.fr/luax
-[Panda]: http://cdelord.fr/panda
+[LuaX]: https://github.com/cdsoft/luax
+[Panda]: https://github.com/cdsoft/panda
 [Pandoc]: http://pandoc.org/
 
 **Installation from sources:**
@@ -59,12 +59,6 @@ $ git clone https://github.com/CDSoft/luax && ninja install -C luax
 # Then Calculadoira
 $ git clone https://github.com/CDSoft/calculadoira && ninja install -C calculadoira
 ```
-
-**Binaries:**
-
-In case precompiled binaries are needed (GNU/Linux, MacOS, Windows),
-some can be found at [cdelord.fr/pub](http://cdelord.fr/pub).
-These archives contain Calculadoira as well as some other softwares more or less related to LuaX.
 
 Screenshot
 ==========

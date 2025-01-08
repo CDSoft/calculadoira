@@ -2,7 +2,7 @@
 
 # Calculadoira
 # Copyright (C) 2011-2024 Christophe Delord
-# http://cdelord.fr/calculadoira
+# https://github.com/cdsoft/calculadoira
 #
 # This file is part of Calculadoira.
 #

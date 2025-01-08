@@ -1,7 +1,7 @@
 <!--
 Calculadoira
 Copyright (C) 2011-2024 Christophe Delord
-http://cdelord.fr/calculadoira
+https://github.com/cdsoft/calculadoira
 &#10;This file is part of Calculadoira.
 &#10;Calculadoira is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published
@@ -30,7 +30,7 @@ GitHub](https://github.com/CDSoft/calculadoira).
 
     Calculadoira
     Copyright (C) 2011 - 2024 Christophe Delord
-    http://cdelord.fr/calculadoira
+    https://github.com/cdsoft/calculadoira
 
     Calculadoira is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -50,9 +50,10 @@ GitHub](https://github.com/CDSoft/calculadoira).
 **Installation from sources:**
 
 - Prerequisites
-  - [LuaX](http://cdelord.fr/luax)
-  - [Panda](http://cdelord.fr/panda) and [Pandoc](http://pandoc.org/) to
-    generate the documentation (optional)
+  - [LuaX](https://github.com/cdsoft/luax)
+  - [Panda](https://github.com/cdsoft/panda) and
+    [Pandoc](http://pandoc.org/) to generate the documentation
+    (optional)
 
 ``` bash
 # First install LuaX
@@ -61,17 +62,10 @@ $ git clone https://github.com/CDSoft/luax && ninja install -C luax
 $ git clone https://github.com/CDSoft/calculadoira && ninja install -C calculadoira
 ```
 
-**Binaries:**
-
-In case precompiled binaries are needed (GNU/Linux, MacOS, Windows),
-some can be found at [cdelord.fr/pub](http://cdelord.fr/pub). These
-archives contain Calculadoira as well as some other softwares more or
-less related to LuaX.
-
 # Screenshot
 
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.5.1 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.5.1 |  https://github.com/cdsoft/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -99,7 +93,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.5.1 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.5.1 |  https://github.com/cdsoft/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -690,7 +684,7 @@ to laziness, functions can also be mutually recursive.
 
     : help
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.5.1 |  http://cdelord.fr/calculadoira  |
+    |      CALCULADOIRA       v. 4.5.1 |  https://github.com/cdsoft/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -880,7 +874,7 @@ to laziness, functions can also be mutually recursive.
     Credits
     =======
 
-    Calculadoira: http://cdelord.fr/calculadoira
-    LuaX        : http://cdelord.fr/luax
+    Calculadoira: https://github.com/cdsoft/calculadoira
+    LuaX        : https://github.com/cdsoft/luax
 
     "Calculadoira" means "Calculator" in Occitan.
