@@ -28,11 +28,11 @@ local sh = require "sh"
 
 local bn = require "bn"
 
-local version = "4.5.1"
+local version = "4.6.1"
 
 local help = fun.I{v=version}[[
 +---------------------------------------------------------------------+
-|      CALCULADOIRA       v. $(v ) |  https://github.com/cdsoft/calculadoira  |
+|      CALCULADOIRA       v. $(v ) |  github.com/cdsoft/calculadoira  |
 |----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
