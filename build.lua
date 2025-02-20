@@ -18,6 +18,8 @@ For further information about Calculadoira you can visit
 https://github.com/cdsoft/calculadoira
 ]]
 
+local sh = require "sh"
+
 help.name "Calculadoira"
 help.description "$name compilation, test and installation"
 
@@ -28,6 +30,9 @@ clean "$builddir"
 ---------------------------------------------------------------------
 section "Compilation"
 ---------------------------------------------------------------------
+
+var "git_version" { sh "git describe --tags" }
+generator { implicit_in = ".git/refs/tags" }
 
 rule "luaxc" {
     description = "LUAXC $out",
@@ -40,9 +45,19 @@ local sources = ls "src/*"
 
 local calculadoira = build.luax.native "$builddir/calculadoira" { sources }
 
-require "build-release" {
-    name = "calculadoira",
-    sources = sources,
+phony "release" {
+    build.tar "$builddir/release/${git_version}/calculadoira-${git_version}-lua.tar.gz" {
+        base = "$builddir/release/.build",
+        name = "calculadoira-${git_version}-lua",
+        build.luax.lua("$builddir/release/.build/calculadoira-${git_version}-lua/bin/calculadoira.lua") { sources },
+    },
+    require "targets" : map(function(target)
+        return build.tar("$builddir/release/${git_version}/calculadoira-${git_version}-"..target.name..".tar.gz") {
+            base = "$builddir/release/.build",
+            name = "calculadoira-${git_version}-"..target.name,
+            build.luax[target.name]("$builddir/release/.build/calculadoira-${git_version}-"..target.name/"bin/calculadoira") { sources },
+        }
+    end),
 }
 
 ---------------------------------------------------------------------
