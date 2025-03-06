@@ -28,7 +28,7 @@ local sh = require "sh"
 
 local bn = require "bn"
 
-local version = "4.6.4"
+local version = "4.7.0"
 
 local help = fun.I{v=version}[[
 +---------------------------------------------------------------------+
@@ -1130,31 +1130,27 @@ config.run(env)
 
 local last_line = nil
 
-local is_a_tty = terminal.isatty()
-local prompt = is_a_tty and ": " or ""
+local is_a_tty = terminal.isatty(io.stdin)
+local prompt = ": "
 
-local linenoise = require "linenoise"
+local ic = require "isocline"
+ic.set_prompt_marker("", "")
 local history = fun.case(sys.os) {
     windows   = function() return (os.getenv "APPDATA" or "") / "calculadoira_history" end,
     [fun.Nil] = function() return (os.getenv "HOME" or "") / ".calculadoira_history" end,
 }()
-linenoise.load(history)
-
-local function hist(input)
-    linenoise.add(input)
-    linenoise.save(history)
-end
+ic.set_history(is_a_tty and history or nil)
 
 while true do
     local line
     if replay and last_line then
         line = last_line
-        print(": "..line)
+        print(prompt..line)
     else
-        line = linenoise.read(prompt)
+        line = ic.readline(prompt)
         if not line then break end
-        if not is_a_tty then print(": "..line) end
-        hist(line)
+        if #line > 1 and #line:trim() == 0 then ic.history_remove_last() end
+        if not is_a_tty then print(prompt..line) end
     end
     replay = false
     config.run(env) -- autoreload
