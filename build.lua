@@ -32,7 +32,6 @@ section "Compilation"
 ---------------------------------------------------------------------
 
 var "git_version" { sh "git describe --tags" }
-generator { implicit_in = ".git/refs/tags" }
 
 rule "luaxc" {
     description = "LUAXC $out",
