@@ -43,21 +43,45 @@ echo license | calculadoira | sed -e '1,/: license/d'
 Download and installation
 =========================
 
+[Ninja]: https://ninja-build.org
 [LuaX]: https://github.com/cdsoft/luax
+[Bang]: https://github.com/cdsoft/bang
 [Panda]: https://github.com/cdsoft/panda
 [Pandoc]: http://pandoc.org/
 
 **Installation from sources:**
 
 - Prerequisites
+    - [Ninja]
     - [LuaX]
+    - [Bang]
     - [Panda] and [Pandoc] to generate the documentation (optional)
 
-``` bash
-# First install LuaX
-$ git clone https://github.com/CDSoft/luax && ninja install -C luax
-# Then Calculadoira
-$ git clone https://github.com/CDSoft/calculadoira && ninja install -C calculadoira
+## LuaX
+
+``` sh
+$ git clone https://github.com/CDSoft/luax
+$ cd luax
+$ ./bootstrap.sh
+$ ninja install     # install LuaX to ~/.local/bin
+```
+
+## Bang
+
+``` sh
+$ git clone https://github.com/CDSoft/bang
+$ cd bang
+$ ./boot.lua
+$ ninja install     # build bang with Ninja and install it to ~/.local/bin
+```
+
+## Calculadoira
+
+``` sh
+$ git clone https://github.com/CDSoft/calculadoira
+$ cd calculadoira
+$ bang
+$ ninja install     # build calculadoira with Ninja and install it to ~/.local/bin
 ```
 
 Screenshot

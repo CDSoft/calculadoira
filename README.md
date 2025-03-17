@@ -50,22 +50,44 @@ GitHub](https://github.com/CDSoft/calculadoira).
 **Installation from sources:**
 
 - Prerequisites
+  - [Ninja](https://ninja-build.org)
   - [LuaX](https://github.com/cdsoft/luax)
+  - [Bang](https://github.com/cdsoft/bang)
   - [Panda](https://github.com/cdsoft/panda) and
     [Pandoc](http://pandoc.org/) to generate the documentation
     (optional)
 
-``` bash
-# First install LuaX
-$ git clone https://github.com/CDSoft/luax && ninja install -C luax
-# Then Calculadoira
-$ git clone https://github.com/CDSoft/calculadoira && ninja install -C calculadoira
+## LuaX
+
+``` sh
+$ git clone https://github.com/CDSoft/luax
+$ cd luax
+$ ./bootstrap.sh
+$ ninja install     # install LuaX to ~/.local/bin
+```
+
+## Bang
+
+``` sh
+$ git clone https://github.com/CDSoft/bang
+$ cd bang
+$ ./boot.lua
+$ ninja install     # build bang with Ninja and install it to ~/.local/bin
+```
+
+## Calculadoira
+
+``` sh
+$ git clone https://github.com/CDSoft/calculadoira
+$ cd calculadoira
+$ bang
+$ ninja install     # build calculadoira with Ninja and install it to ~/.local/bin
 ```
 
 # Screenshot
 
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.8.0 |  github.com/cdsoft/calculadoira  |
+    |      CALCULADOIRA       v. 4.8.1 |  github.com/cdsoft/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -93,7 +115,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.8.0 |  github.com/cdsoft/calculadoira  |
+    |      CALCULADOIRA       v. 4.8.1 |  github.com/cdsoft/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -684,7 +706,7 @@ to laziness, functions can also be mutually recursive.
 
     : help
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.8.0 |  github.com/cdsoft/calculadoira  |
+    |      CALCULADOIRA       v. 4.8.1 |  github.com/cdsoft/calculadoira  |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
