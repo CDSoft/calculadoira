@@ -321,7 +321,7 @@ static const volatile char *size_unit(size_t size)
     out[0] = '\0';
     for (size_t i = 0; i < 4; i++) {
         if (size >= units[i].k*units[i].u) {
-            sprintf(out, "%zu %s", size/units[i].u, units[i].name);
+            snprintf(out, sizeof(out), "%zu %s", size/units[i].u, units[i].name);
             break;
         }
     }

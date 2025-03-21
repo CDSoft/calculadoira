@@ -106,9 +106,11 @@ void options_init(int argc, const char *argv[])
         if (strcmp(argv[i], "--fast"       ) == 0) { opts.safe = false; continue; }
         if (strcmp(argv[i], "--safe"       ) == 0) { opts.safe = true; continue; }
         char *path = realpath(argv[i], NULL);
-        const size_t n = file_list_scan(path);
-        printf("# %s (%zu files)\n", path, n);
-        free(path);
+        if (path != NULL) {
+            const size_t n = file_list_scan(path);
+            printf("# %s (%zu files)\n", path, n);
+            free(path);
+        }
     }
     printf("# Memory usage: %lu Mb\n",
             ( file_list_size()
