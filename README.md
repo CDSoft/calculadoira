@@ -1,15 +1,18 @@
 # Deduplication of files
 
-`dedup` searches for duplicate files in a set of directories.
+`dedup` is a tool that searches for duplicate files in a set of directories.
+It helps you easily identify identical files to free up disk space.
 
 # Installation
 
-First download `dedup` from Github:
+## Download from Github
 
 ``` sh
 $ git clone https://github.com/CDSoft/dedup
 $ cd dedup
 ```
+
+## Compilation and Installation
 
 `dedup` can be installed in `~/.local/bin` with:
 
@@ -17,49 +20,148 @@ $ cd dedup
 $ ninja install
 ```
 
-Or just compiled in `.build` with:
+Or just compiled in the `.build` directory with:
 
 ``` sh
 $ ninja
 ```
 
-# Usage
+# User Guide
 
-Syntax:
+## Basic Syntax
 
-    dedup [options] directories
+```
+dedup [options] directories
+```
 
-Where options are:
+## Available Options
 
 `--hidden`
-:   Show hidden files
+:   Include hidden files (starting with a dot) in the analysis
 
 `--skip-hidden`
-:   Skip hidden files (faster)
+:   Ignore hidden files (faster, default option)
 
 `--safe`
-:   Compare the whole files
+:   Compare the entire content of files to ensure accurate duplicate detection
 
 `--fast`
-:   Only compare the beginning and the end of the files (faster)
+:   Only compare the beginning and the end of files (faster, default option)
+
+`--help` or `-h`
+:   Display help and exit
+
+## How It Works
 
 `dedup` won't modify the file system.
-It just prints the list of duplicate files on `stdout`.
-Its output can be redirected to a script and modified to e.g. delete some files.
+It just prints the list of duplicate files on the standard output (`stdout`).
+Its output can be redirected to a script and modified to, for example, delete some files.
+
+### Usage Example
+
+```sh
+# Search for duplicates in the Photos directory
+$ dedup ~/Photos > duplicates.sh
+
+# Edit the script to choose which files to delete
+$ nano duplicates.sh
+
+# Run the script to delete the selected files
+$ sh ./duplicates.sh
+```
 
 > [!WARNING]
 > The output is a shell script which deletes all the duplicate files.
-> All lines are commented.
+> All lines are commented by default.
 > The user can uncomment some lines to delete files.
 > **If you uncomment all lines, all files will be deleted.**
 > It's up to you to wisely choose which lines to uncomment!
+
+## Output Format
+
+The output of `dedup` is organized in blocks of identical files.
+Each block starts with the filename and its size, followed by the list of duplicate files.
+At the end, `dedup` displays the total space that could be freed.
+
+Example output:
+
+```
+# image.jpg (2.5 Mb)
+# rm "/home/user/Photos/2023/image.jpg"
+# rm "/home/user/Photos/Backup/image.jpg"
+# rm "/home/user/Documents/image.jpg"
+
+# document.pdf (1.2 Mb)
+# rm "/home/user/Documents/document.pdf"
+# rm "/home/user/Downloads/document.pdf"
+
+# Lost space: 6.2 Mb
+```
+
+## Detection Algorithm
+
+`dedup` uses several steps to identify duplicate files:
+
+1. Sorting files by size (files of different sizes cannot be identical)
+2. Checking for hard links (files sharing the same inode)
+3. Comparing the beginning of files (first 4 KB)
+4. Comparing the end of files (last 4 KB)
+5. In `--safe` mode, comparing the complete content of files
+
+This approach optimizes detection speed while maintaining good accuracy.
 
 # Configuration
 
 The configuration files are in `$HOME/.config/dedup/`.
 
 `$HOME/.config/dedup/dedup.ignore`
-:   contains one file pattern per line to exclude directories.
+:   Contains one file pattern per line to exclude directories or files from the analysis.
+
+## Format of `dedup.ignore` File
+
+Each line in the `dedup.ignore` file contains a glob pattern that will be used to exclude files or directories.
+For example:
+
+```
+*.tmp
+.git
+node_modules
+```
+
+This configuration will ignore all `.tmp` files, `.git` and `node_modules` directories.
+
+# Common Use Cases
+
+## Cleaning Up Duplicate Photos
+
+```sh
+$ dedup --safe ~/Photos > photo_duplicates.sh
+```
+
+## Analyzing Multiple Directories
+
+```sh
+$ dedup ~/Documents ~/Downloads ~/Desktop > duplicates.sh
+```
+
+## Analyzing Hidden Files
+
+```sh
+$ dedup --hidden ~ > hidden_duplicates.sh
+```
+
+# Tips and Best Practices
+
+1. Use the `--safe` option for important files to avoid false positives
+2. Always create a backup before deleting files
+3. Carefully check the generated script before running it
+4. Consider using hard links instead of deletion to save space while preserving files
+
+# Troubleshooting
+
+- If `dedup` is slow on large directories, use the `--fast` and `--skip-hidden` options
+- If you encounter access errors, check the permissions of files and directories
+- For very large sets of files, consider analyzing by subdirectories
 
 # License
 
