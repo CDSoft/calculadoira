@@ -17,8 +17,26 @@
  * http://cdelord.fr/dedup
  */
 
+/**
+ * @file path.h
+ * @brief Path manipulation utilities
+ *
+ * This file provides functions to manipulate file paths.
+ */
+
 #pragma once
 
-#include "path.h"
-
+/**
+ * @brief Joins a directory path and a file name into a complete path
+ *
+ * This function combines a directory path and a file name to create a complete
+ * file path.
+ *
+ * @param dir The directory path
+ * @param name The file name to append to the directory
+ * @param path The buffer where the resulting path will be stored (must be pre-allocated)
+ *
+ * @note The caller is responsible for ensuring that the path buffer is large enough
+ *       to hold the combined path.
+ */
 void join_path(const char *dir, const char *name, char *path);
