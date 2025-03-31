@@ -1,5 +1,7 @@
 # Deduplication of files
 
+<p align=center width="100%"><img src="dedup.svg" style="height:64"/></p>
+
 `dedup` is a tool that searches for duplicate files in a set of directories.
 It helps you easily identify identical files to free up disk space.
 
