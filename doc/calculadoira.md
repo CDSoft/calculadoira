@@ -4,7 +4,7 @@
 <!--
 Calculadoira
 Copyright (C) 2011-2025 Christophe Delord
-https://github.com/cdsoft/calculadoira
+https://codeberg.org/cdsoft/calculadoira
 
 This file is part of Calculadoira.
 
@@ -31,7 +31,7 @@ It may seem a bit spartan and outdated but entering expressions with the keyboar
 is way easier than with a mouse.
 And you get nice editing features for free (edition, copy/paste, history, ...).
 
-You can contribute to [Calculadoira on GitHub](https://github.com/CDSoft/calculadoira).
+You can contribute to [Calculadoira on Codeberg](https://codeberg.org/cdsoft/calculadoira).
 
 License
 =======
@@ -44,9 +44,9 @@ Download and installation
 =========================
 
 [Ninja]: https://ninja-build.org
-[LuaX]: https://github.com/cdsoft/luax
-[Bang]: https://github.com/cdsoft/bang
-[Panda]: https://github.com/cdsoft/panda
+[LuaX]: https://codeberg.org/cdsoft/luax
+[Bang]: https://codeberg.org/cdsoft/bang
+[Panda]: https://codeberg.org/cdsoft/panda
 [Pandoc]: http://pandoc.org/
 
 **Installation from sources:**
@@ -60,7 +60,7 @@ Download and installation
 ## LuaX
 
 ``` sh
-$ git clone https://github.com/CDSoft/luax
+$ git clone https://codeberg.org/cdsoft/luax
 $ cd luax
 $ ./bootstrap.sh
 $ ninja install     # install LuaX to ~/.local/bin
@@ -69,7 +69,7 @@ $ ninja install     # install LuaX to ~/.local/bin
 ## Bang
 
 ``` sh
-$ git clone https://github.com/CDSoft/bang
+$ git clone https://codeberg.org/cdsoft/bang
 $ cd bang
 $ ./boot.lua
 $ ninja install     # build bang with Ninja and install it to ~/.local/bin
@@ -78,7 +78,7 @@ $ ninja install     # build bang with Ninja and install it to ~/.local/bin
 ## Calculadoira
 
 ``` sh
-$ git clone https://github.com/CDSoft/calculadoira
+$ git clone https://codeberg.org/cdsoft/calculadoira
 $ cd calculadoira
 $ bang
 $ ninja install     # build calculadoira with Ninja and install it to ~/.local/bin

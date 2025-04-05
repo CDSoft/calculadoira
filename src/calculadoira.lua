@@ -3,7 +3,7 @@
 local license = [[
 Calculadoira
 Copyright (C) 2011 - 2025 Christophe Delord
-https://github.com/cdsoft/calculadoira
+https://codeberg.org/cdsoft/calculadoira
 
 Calculadoira is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published
@@ -28,11 +28,11 @@ local sh = require "sh"
 
 local bn = require "bn"
 
-local version = "4.8.1"
+local version = "4.8.2"
 
 local help = fun.I{v=version}[[
 +---------------------------------------------------------------------+
-|      CALCULADOIRA       v. $(v ) |  github.com/cdsoft/calculadoira  |
+|      CALCULADOIRA       v. $(v ) | codeberg.org/cdsoft/calculadoira |
 |----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -226,8 +226,8 @@ license                     Show Calculadoira license
 Credits
 =======
 
-Calculadoira: https://github.com/cdsoft/calculadoira
-LuaX        : https://github.com/cdsoft/luax
+Calculadoira: https://codeberg.org/cdsoft/calculadoira
+LuaX        : https://codeberg.org/cdsoft/luax
 
 "Calculadoira" means "Calculator" in Occitan.
 ]]

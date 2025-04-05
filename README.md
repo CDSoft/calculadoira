@@ -1,7 +1,7 @@
 <!--
 Calculadoira
 Copyright (C) 2011-2025 Christophe Delord
-https://github.com/cdsoft/calculadoira
+https://codeberg.org/cdsoft/calculadoira
 &#10;This file is part of Calculadoira.
 &#10;Calculadoira is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published
@@ -24,13 +24,13 @@ way easier than with a mouse. And you get nice editing features for free
 (edition, copy/paste, history, …).
 
 You can contribute to [Calculadoira on
-GitHub](https://github.com/CDSoft/calculadoira).
+Codeberg](https://codeberg.org/cdsoft/calculadoira).
 
 # License
 
     Calculadoira
     Copyright (C) 2011 - 2025 Christophe Delord
-    https://github.com/cdsoft/calculadoira
+    https://codeberg.org/cdsoft/calculadoira
 
     Calculadoira is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published
@@ -51,16 +51,16 @@ GitHub](https://github.com/CDSoft/calculadoira).
 
 - Prerequisites
   - [Ninja](https://ninja-build.org)
-  - [LuaX](https://github.com/cdsoft/luax)
-  - [Bang](https://github.com/cdsoft/bang)
-  - [Panda](https://github.com/cdsoft/panda) and
+  - [LuaX](https://codeberg.org/cdsoft/luax)
+  - [Bang](https://codeberg.org/cdsoft/bang)
+  - [Panda](https://codeberg.org/cdsoft/panda) and
     [Pandoc](http://pandoc.org/) to generate the documentation
     (optional)
 
 ## LuaX
 
 ``` sh
-$ git clone https://github.com/CDSoft/luax
+$ git clone https://codeberg.org/cdsoft/luax
 $ cd luax
 $ ./bootstrap.sh
 $ ninja install     # install LuaX to ~/.local/bin
@@ -69,7 +69,7 @@ $ ninja install     # install LuaX to ~/.local/bin
 ## Bang
 
 ``` sh
-$ git clone https://github.com/CDSoft/bang
+$ git clone https://codeberg.org/cdsoft/bang
 $ cd bang
 $ ./boot.lua
 $ ninja install     # build bang with Ninja and install it to ~/.local/bin
@@ -78,7 +78,7 @@ $ ninja install     # build bang with Ninja and install it to ~/.local/bin
 ## Calculadoira
 
 ``` sh
-$ git clone https://github.com/CDSoft/calculadoira
+$ git clone https://codeberg.org/cdsoft/calculadoira
 $ cd calculadoira
 $ bang
 $ ninja install     # build calculadoira with Ninja and install it to ~/.local/bin
@@ -87,7 +87,7 @@ $ ninja install     # build calculadoira with Ninja and install it to ~/.local/b
 # Screenshot
 
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.8.1 |  github.com/cdsoft/calculadoira  |
+    |      CALCULADOIRA       v. 4.8.2 | codeberg.org/cdsoft/calculadoira |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -115,7 +115,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.8.1 |  github.com/cdsoft/calculadoira  |
+    |      CALCULADOIRA       v. 4.8.2 | codeberg.org/cdsoft/calculadoira |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -706,7 +706,7 @@ to laziness, functions can also be mutually recursive.
 
     : help
     +---------------------------------------------------------------------+
-    |      CALCULADOIRA       v. 4.8.1 |  github.com/cdsoft/calculadoira  |
+    |      CALCULADOIRA       v. 4.8.2 | codeberg.org/cdsoft/calculadoira |
     |----------------------------------+----------------------------------|
     | Modes:                           | Numbers:                         |
     |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -896,7 +896,7 @@ to laziness, functions can also be mutually recursive.
     Credits
     =======
 
-    Calculadoira: https://github.com/cdsoft/calculadoira
-    LuaX        : https://github.com/cdsoft/luax
+    Calculadoira: https://codeberg.org/cdsoft/calculadoira
+    LuaX        : https://codeberg.org/cdsoft/luax
 
     "Calculadoira" means "Calculator" in Occitan.

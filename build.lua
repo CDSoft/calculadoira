@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <https://www.gnu.org/licenses/>.
 
 For further information about Calculadoira you can visit
-https://github.com/cdsoft/calculadoira
+https://codeberg.org/cdsoft/calculadoira
 ]]
 
 local sh = require "sh"
