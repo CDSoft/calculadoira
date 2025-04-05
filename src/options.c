@@ -61,7 +61,7 @@ static void help(void)
         "\n"
         "The default options are --skip-hidden and --fast\n"
         "\n"
-        "For more information, see https://github.com/CDSoft/dedup\n");
+        "For more information, see https://codeberg.org/cdsoft/dedup\n");
     exit(EXIT_SUCCESS);
 }
 

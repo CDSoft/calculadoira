@@ -7,10 +7,10 @@ It helps you easily identify identical files to free up disk space.
 
 # Installation
 
-## Download from Github
+## Download from Codeberg
 
 ``` sh
-$ git clone https://github.com/CDSoft/dedup
+$ git clone https://codeberg.org/cdsoft/dedup
 $ cd dedup
 ```
 
