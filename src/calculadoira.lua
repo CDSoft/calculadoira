@@ -28,7 +28,7 @@ local sh = require "sh"
 
 local bn = require "bn"
 
-local version = "4.8.2"
+local version = require "version"
 
 local help = fun.I{v=version}[[
 +---------------------------------------------------------------------+

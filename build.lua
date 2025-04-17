@@ -18,7 +18,7 @@ For further information about Calculadoira you can visit
 https://codeberg.org/cdsoft/calculadoira
 ]]
 
-local sh = require "sh"
+version "4.8.3"
 
 help.name "Calculadoira"
 help.description "$name compilation, test and installation"
@@ -31,8 +31,6 @@ clean "$builddir"
 section "Compilation"
 ---------------------------------------------------------------------
 
-var "git_version" { sh "git describe --tags" }
-
 rule "luaxc" {
     description = "LUAXC $out",
     command = "luax compile $arg -q -o $out $in",
@@ -40,21 +38,27 @@ rule "luaxc" {
 
 build.luax.add_global "flags" "-q"
 
-local sources = ls "src/*"
+local sources = {
+    ls "src/*",
+    build "$builddir/version" {
+        description = "version",
+        command = "echo $version > $out",
+    },
+}
 
 local calculadoira = build.luax.native "$builddir/calculadoira" { sources }
 
 phony "release" {
-    build.tar "$builddir/release/${git_version}/calculadoira-${git_version}-lua.tar.gz" {
+    build.tar "$builddir/release/${version}/calculadoira-${version}-lua.tar.gz" {
         base = "$builddir/release/.build",
-        name = "calculadoira-${git_version}-lua",
-        build.luax.lua("$builddir/release/.build/calculadoira-${git_version}-lua/bin/calculadoira.lua") { sources },
+        name = "calculadoira-${version}-lua",
+        build.luax.lua("$builddir/release/.build/calculadoira-${version}-lua/bin/calculadoira.lua") { sources },
     },
     require "targets" : map(function(target)
-        return build.tar("$builddir/release/${git_version}/calculadoira-${git_version}-"..target.name..".tar.gz") {
+        return build.tar("$builddir/release/${version}/calculadoira-${version}-"..target.name..".tar.gz") {
             base = "$builddir/release/.build",
-            name = "calculadoira-${git_version}-"..target.name,
-            build.luax[target.name]("$builddir/release/.build/calculadoira-${git_version}-"..target.name/"bin/calculadoira") { sources },
+            name = "calculadoira-${version}-"..target.name,
+            build.luax[target.name]("$builddir/release/.build/calculadoira-${version}-"..target.name/"bin/calculadoira") { sources },
         }
     end),
 }
