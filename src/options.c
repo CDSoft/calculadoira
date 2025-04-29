@@ -46,14 +46,23 @@ t_opts opts = {
     .nb_ignore_patterns = 0,
 };
 
+static void version(void)
+{
+    printf("%s\n", VERSION);
+    exit(EXIT_SUCCESS);
+}
+
 static void help(void)
 {
     printf(
         "dedup - Deduplicate files\n"
+        "version "VERSION"\n"
         "\n"
-        "Usage: dedup [--fast] [--safe] [--hidden] [--skip-hidden] directories\n"
+        "Usage: dedup [-h] [-v] [--fast] [--safe] [--hidden] [--skip-hidden] directories\n"
         "\n"
         "Options:\n"
+        "    -h, --help      show help\n"
+        "    -v, --version   show version ("VERSION")\n"
         "    --fast          fast file comparisons (only first and last bytes)\n"
         "    --safe          safe file comparisons (all bytes, slower)\n"
         "    --hidden        check hidden (dotted) files\n"
@@ -101,6 +110,8 @@ void options_init(int argc, const char *argv[])
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--help"       ) == 0) { help(); }
         if (strcmp(argv[i], "-h"           ) == 0) { help(); }
+        if (strcmp(argv[i], "--version"    ) == 0) { version(); }
+        if (strcmp(argv[i], "-v"           ) == 0) { version(); }
         if (strcmp(argv[i], "--hidden"     ) == 0) { opts.show_hidden = true; continue; }
         if (strcmp(argv[i], "--skip-hidden") == 0) { opts.show_hidden = false; continue; }
         if (strcmp(argv[i], "--fast"       ) == 0) { opts.safe = false; continue; }

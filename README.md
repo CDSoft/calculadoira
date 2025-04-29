@@ -16,7 +16,13 @@ $ cd dedup
 
 ## Compilation and Installation
 
-`dedup` can be installed in `~/.local/bin` with:
+First generate the Ninja build file:
+
+``` sh
+$ bang
+```
+
+Then `dedup` can be installed in `~/.local/bin` with:
 
 ``` sh
 $ ninja install
