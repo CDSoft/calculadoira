@@ -23,27 +23,17 @@ version "4.8.3"
 help.name "Calculadoira"
 help.description "$name compilation, test and installation"
 
-var "builddir" ".build"
-
 clean "$builddir"
 
 ---------------------------------------------------------------------
 section "Compilation"
 ---------------------------------------------------------------------
 
-rule "luaxc" {
-    description = "LUAXC $out",
-    command = "luax compile $arg -q -o $out $in",
-}
-
 build.luax.add_global "flags" "-q"
 
 local sources = {
     ls "src/*",
-    build "$builddir/version" {
-        description = "version",
-        command = "echo $version > $out",
-    },
+    file "$builddir/version" { vars.version },
 }
 
 local calculadoira = build.luax.native "$builddir/calculadoira" { sources }
