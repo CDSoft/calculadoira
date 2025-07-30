@@ -36,9 +36,7 @@ You can contribute to [Calculadoira on Codeberg](https://codeberg.org/cdsoft/cal
 License
 =======
 
-~~~~~~~~~~~~~~~~~~ {cmd=bash}
-echo license | calculadoira | sed -e '1,/: license/d'
-~~~~~~~~~~~~~~~~~~
+@license()
 
 Download and installation
 =========================
@@ -46,7 +44,7 @@ Download and installation
 [Ninja]: https://ninja-build.org
 [LuaX]: https://codeberg.org/cdsoft/luax
 [Bang]: https://codeberg.org/cdsoft/bang
-[Panda]: https://codeberg.org/cdsoft/panda
+[Ypp]: https://codeberg.org/cdsoft/ypp
 [Pandoc]: http://pandoc.org/
 
 **Installation from sources:**
@@ -55,7 +53,7 @@ Download and installation
     - [Ninja]
     - [LuaX]
     - [Bang]
-    - [Panda] and [Pandoc] to generate the documentation (optional)
+    - [Ypp] and [Pandoc] to generate the documentation (optional)
 
 ## LuaX
 
@@ -87,9 +85,7 @@ $ ninja install     # build calculadoira with Ninja and install it to ~/.local/b
 Screenshot
 ==========
 
-~~~~~~~~~~~~~~~~~~ {cmd=bash}
-calculadoira < /dev/null | sed -e '/loading/,$d'
-~~~~~~~~~~~~~~~~~~
+@screenshot()
 
 Usage
 =====
@@ -100,22 +96,14 @@ The next section lists all the operators and functions provided by Calculadoira.
 
 A typical interactive session looks like this:
 
-``` meta
-calculadoira_full = "calculadoira < %s | expand | sed /loading/d"
-```
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira_full}}"}
+@demo [===============================[
 x = 21
 y = 2
 (x * y) ** 2
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 User's manual
 =============
-
-``` meta
-calculadoira = "calculadoira < %s | expand | sed -e '1,/loading/d'"
-```
 
 ## Numbers
 
@@ -123,27 +111,27 @@ calculadoira = "calculadoira < %s | expand | sed -e '1,/loading/d'"
 
 Integers can be decimal, hexadecimal, octal or binary numbers:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 42
 0x24
 0o37
 0b1010
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Rational numbers
 
 Rational numbers can be used to make *exact* computations instead of
 using floating point numbers.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 1 + 2/3
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 Some functions don't support rational numbers and will produce floating point numbers.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 1/2 + cos(0)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Floating point numbers
 
@@ -153,7 +141,7 @@ floating point numbers.
 They are represented internally by 64 bit numbers but can be converted to 32 bit
 numbers as well as to their IEEE 754 representation.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 3.14
 1.23e-6
 e
@@ -163,7 +151,7 @@ float64
 nan
 inf
 -inf
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Automatic type conversion
 
@@ -171,11 +159,11 @@ Number types are automatically converted in a way to preserve the best precision
 Integers are preferred to rational numbers and rational numbers are preferred
 to floating point numbers.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 1+2/3
 1/3+2/3
 (2/3) * 0.5
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Display mode
 
@@ -187,43 +175,43 @@ The user can activate additional display modes by selecting:
 - the IEEE 754 representation of floating point numbers (`float32`, `float64`)
 - `reset` resets the display mode
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 42424242
 dec8            # 8 bit decimal numbers
 hex16           # 16 bit hexadecimal numbers
 oct32           # 32 bit octal numbers
 bin64           # 64 bit binary numbers
 reset           # raw decimal value only
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 Calculadoira automatically activates some display modes under some circonstances:
 
 - integer entered in a specific base
 - usage of a bitwise operator in an expression
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 4               # only the default display mode
 0b100           # this number activates the binary display mode
 1<<10           # this operator activates the hexadecimal display mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ## Booleans
 
 Boolean values can be used in conditional and boolean expressions.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 true
 false
 true and false
 1+1 == 2
 1+1==2 ? "ok" : "bug"
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ## Operators
 
 ### Arithmetic operators
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 x = 13
 -x
 +x
@@ -234,11 +222,11 @@ x / 5
 x // 5                  # integral division
 x % 5                   # integral remainder (Euclidean division)
 x ** 2
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Bitwise operators
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 bin16
 ~1                      # bitwise complement
 1 | 4                   # bitwise or
@@ -246,27 +234,27 @@ bin16
 0b1100 & 0b0110         # bitwise and
 1 << 10                 # left shift
 1024 >> 1               # right shift
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Boolean operators
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 not true
 true or false
 true xor false
 true and false
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Comparison operators
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 12 < 13
 12 <= 13
 12 > 13
 12 >= 13
 12 == 13
 12 != 13
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Operator precedence
 
@@ -293,55 +281,55 @@ Blocks                      `expr1, ..., exprn`
 
 Calculadoira can define and reuse variables.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 x = 1
 y = 2
 x+y
 y = 3
 x+y
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ## Functions
 
 Calculadoira can also define functions.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 f(x) = 2 * x
 f(5)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 Functions can be defined with multiple statements and be recursive.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 fib(n) = (n <= 1 ? 1 : (f1=fib(n-1), f2=fib(n-2), f1+f2))
 fib(1)
 fib(10)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 You can see in the previous example that the evaluation is lazy!
 Thanks to laziness, functions can also be mutually recursive.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 isEven(n) = n == 0 ? true : isOdd(n-1)
 isOdd(n) = n == 0 ? false : isEven(n-1)
 isEven(10)
 isOdd(10)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ## Builtin functions
 
 ### Type conversion
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 int(pi)                     # Integral part
 float(2/3)                  # Conversion to floating point numbers
 rat(pi)                     # Rational approximation
 rat(pi, 1e-2)               # Rational approximation with a given precision
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Math
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 x = pi, y = e, b = 3
 
 abs(x)                      # absolute value of x
@@ -380,40 +368,40 @@ ln(x)                       # logarithm of x in base e
 log10(x)                    # logarithm of x in base 10
 log2(x)                     # logarithm of x in base 2
 log(b, x)                   # logarithm of x in base b
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### IEEE 754 representation
 
 #### 32 bit numbers
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 x = pi, n = 0x402df854
 
 float32
 float2ieee(x)               # IEEE 754 representation of x (32 bits)
 ieee2float(n)               # 32 bit float value of the IEEE 754 integer n
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 #### 64 bit numbers
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 x = pi, n = 0x4005bf0a8b145769
 
 float64
 double2ieee(x)              # IEEE 754 representation of x (64 bits)
 ieee2double(n)              # 64 bit float value of the IEEE 754 integer n
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ### Specific values
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 x = pi
 
 isfinite(x)                 # true if x is finite
 isinf(x)                    # true if x is infinite
 isnan(x)                    # true if x is not a number
 isnormal(x)                 # true if x is a normalized number
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]
 
 ## Other commands
 
@@ -426,6 +414,6 @@ version                     print the version number
 Online help
 ===========
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {cmd="{{calculadoira}}"}
+@run[===============================[
 help
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+]===============================]

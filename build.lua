@@ -75,13 +75,22 @@ build "$builddir/tests.txt" { "run_test", "test/tests.py" }
 section "Documentation"
 ---------------------------------------------------------------------
 
-rule "panda" {
-    description = "PANDA $in",
-    command = "PATH=$builddir:$$PATH LANG=en panda -t gfm $in -o $out",
-    implicit_in = calculadoira,
-}
+local ypp = build.ypp_pandoc : new "ypp.md"
+    : add "flags" {
+        "-a",
+        build.ypp_vars {
+            CALCULADOIRA = calculadoira,
+        },
+        "-l", "doc/run.lua",
+    }
+    : add "implicit_in" { calculadoira }
 
-build "README.md" { "panda", "doc/calculadoira.md" }
+local pandoc = build.pandoc_gfm : new "pandoc.md"
+    : add "flags" {
+        "--tab-stop=8",
+    }
+
+pipe { ypp, pandoc } "README.md" { "doc/calculadoira.md" }
 
 ---------------------------------------------------------------------
 section "Shortcuts"
