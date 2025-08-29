@@ -26,6 +26,14 @@ way easier than with a mouse. And you get nice editing features for free
 You can contribute to [Calculadoira on
 Codeberg](https://codeberg.org/cdsoft/calculadoira).
 
+# Releases
+
+It is strongly recommended to build Calculadoira from source, as this is
+the only reliable way to install the exact version you need.
+
+However, if you do require precompiled binaries, this page offers a
+selection for various platforms: <https://cdelord.fr/pub>.
+
 # License
 
         Calculadoira
@@ -87,7 +95,7 @@ $ ninja install     # build calculadoira with Ninja and install it to ~/.local/b
 # Screenshot
 
         +---------------------------------------------------------------------+
-        |      CALCULADOIRA       v. 4.8.3 | codeberg.org/cdsoft/calculadoira |
+        |      CALCULADOIRA       v. 4.8.4 | codeberg.org/cdsoft/calculadoira |
         |----------------------------------+----------------------------------|
         | Modes:                           | Numbers:                         |
         |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -115,7 +123,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
         +---------------------------------------------------------------------+
-        |      CALCULADOIRA       v. 4.8.3 | codeberg.org/cdsoft/calculadoira |
+        |      CALCULADOIRA       v. 4.8.4 | codeberg.org/cdsoft/calculadoira |
         |----------------------------------+----------------------------------|
         | Modes:                           | Numbers:                         |
         |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -706,7 +714,7 @@ to laziness, functions can also be mutually recursive.
 
         : help
         +---------------------------------------------------------------------+
-        |      CALCULADOIRA       v. 4.8.3 | codeberg.org/cdsoft/calculadoira |
+        |      CALCULADOIRA       v. 4.8.4 | codeberg.org/cdsoft/calculadoira |
         |----------------------------------+----------------------------------|
         | Modes:                           | Numbers:                         |
         |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |

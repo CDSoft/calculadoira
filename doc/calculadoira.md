@@ -33,6 +33,15 @@ And you get nice editing features for free (edition, copy/paste, history, ...).
 
 You can contribute to [Calculadoira on Codeberg](https://codeberg.org/cdsoft/calculadoira).
 
+Releases
+========
+
+It is strongly recommended to build Calculadoira from source,
+as this is the only reliable way to install the exact version you need.
+
+However, if you do require precompiled binaries,
+this page offers a selection for various platforms: <https://cdelord.fr/pub>.
+
 License
 =======
 
