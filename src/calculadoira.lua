@@ -1133,16 +1133,16 @@ local last_line = nil
 local is_a_tty = terminal.isatty(io.stdin)
 local prompt = ": "
 
-local linenoise = require "linenoise"
+local rl = require "readline"
 local history = fun.case(sys.os) {
     windows   = function() return (os.getenv "APPDATA" or "") / "calculadoira_history" end,
     [fun.Nil] = function() return (os.getenv "HOME" or "") / ".calculadoira_history" end,
 }()
-linenoise.load(history)
+rl.load(history)
 
 local function hist(input)
-    linenoise.add(input)
-    linenoise.save(history)
+    rl.add(input)
+    rl.save(history)
 end
 
 while true do
@@ -1151,7 +1151,7 @@ while true do
         line = last_line
         print(prompt..line)
     else
-        line = linenoise.read(prompt)
+        line = rl.read(prompt)
         if not line then break end
         if not is_a_tty then print(prompt..line) end
         hist(line)
