@@ -1134,6 +1134,7 @@ local is_a_tty = terminal.isatty(io.stdin)
 local prompt = ": "
 
 local rl = require "readline"
+rl.name "calculadoira"
 local history = fun.case(sys.os) {
     windows   = function() return (os.getenv "APPDATA" or "") / "calculadoira_history" end,
     [fun.Nil] = function() return (os.getenv "HOME" or "") / ".calculadoira_history" end,

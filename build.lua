@@ -18,7 +18,7 @@ For further information about Calculadoira you can visit
 https://codeberg.org/cdsoft/calculadoira
 ]]
 
-version "4.8.5"
+version "4.9.0"
 
 help.name "Calculadoira"
 help.description "$name compilation, test and installation"
