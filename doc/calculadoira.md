@@ -3,7 +3,7 @@
 
 <!--
 Calculadoira
-Copyright (C) 2011-2025 Christophe Delord
+Copyright (C) 2011-2026 Christophe Delord
 https://codeberg.org/cdsoft/calculadoira
 
 This file is part of Calculadoira.

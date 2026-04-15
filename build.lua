@@ -18,7 +18,7 @@ For further information about Calculadoira you can visit
 https://codeberg.org/cdsoft/calculadoira
 ]]
 
-version "4.9.0"
+version "4.9.1"
 
 help.name "Calculadoira"
 help.description "$name compilation, test and installation"
@@ -44,7 +44,7 @@ phony "release" {
         name = "calculadoira-${version}-lua",
         build.luax.lua("$builddir/release/.build/calculadoira-${version}-lua/bin/calculadoira.lua") { sources },
     },
-    require "targets" : map(function(target)
+    require "luax-targets" : map(function(target)
         return build.tar("$builddir/release/${version}/calculadoira-${version}-"..target.name..".tar.gz") {
             base = "$builddir/release/.build",
             name = "calculadoira-${version}-"..target.name,

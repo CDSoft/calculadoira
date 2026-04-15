@@ -1,6 +1,6 @@
 --[[
 Calculadoira
-Copyright (C) 2011 - 2025 Christophe Delord
+Copyright (C) 2011 - 2026 Christophe Delord
 https://codeberg.org/cdsoft/calculadoira
 
 Calculadoira is free software: you can redistribute it and/or modify

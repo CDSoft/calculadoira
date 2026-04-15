@@ -1,6 +1,6 @@
 <!--
 Calculadoira
-Copyright (C) 2011-2025 Christophe Delord
+Copyright (C) 2011-2026 Christophe Delord
 https://codeberg.org/cdsoft/calculadoira
 &#10;This file is part of Calculadoira.
 &#10;Calculadoira is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ selection for various platforms: <https://cdelord.fr/pub>.
 # License
 
         Calculadoira
-        Copyright (C) 2011 - 2025 Christophe Delord
+        Copyright (C) 2011 - 2026 Christophe Delord
         https://codeberg.org/cdsoft/calculadoira
 
         Calculadoira is free software: you can redistribute it and/or modify
@@ -95,7 +95,7 @@ $ ninja install     # build calculadoira with Ninja and install it to ~/.local/b
 # Screenshot
 
         +---------------------------------------------------------------------+
-        |      CALCULADOIRA       v. 4.9.0 | codeberg.org/cdsoft/calculadoira |
+        |      CALCULADOIRA       v. 4.9.1 | codeberg.org/cdsoft/calculadoira |
         |----------------------------------+----------------------------------|
         | Modes:                           | Numbers:                         |
         |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -123,7 +123,7 @@ section lists all the operators and functions provided by Calculadoira.
 A typical interactive session looks like this:
 
         +---------------------------------------------------------------------+
-        |      CALCULADOIRA       v. 4.9.0 | codeberg.org/cdsoft/calculadoira |
+        |      CALCULADOIRA       v. 4.9.1 | codeberg.org/cdsoft/calculadoira |
         |----------------------------------+----------------------------------|
         | Modes:                           | Numbers:                         |
         |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -185,7 +185,7 @@ using floating point numbers.
         : 1 + 2/3
         =       5 / 3
         =       1 + 2/3
-        ~       1.6666666666667
+        ~       1.6666666666666667
 
 Some functions don’t support rational numbers and will produce floating
 point numbers.
@@ -208,20 +208,20 @@ to 32 bit numbers as well as to their IEEE 754 representation.
         =       1.23e-06
 
         : e
-        =       2.718281828459
+        =       2.7182818284590455
 
         : pi
-        =       3.1415926535898
+        =       3.1415926535897931
 
         : float32
         : pi
-        =       3.1415926535898
-        IEEE    3.1415927410126 <=> 0x40490FDB
+        =       3.1415926535897931
+        IEEE    3.1415927410125732 <=> 0x40490FDB
 
         : float64
         : pi
-        =       3.1415926535898
-        IEEE    3.1415926535898 <=> 0x400921FB54442D18
+        =       3.1415926535897931
+        IEEE    3.1415926535897931 <=> 0x400921FB54442D18
 
         : nan
         =       nan
@@ -244,13 +244,13 @@ numbers are preferred to floating point numbers.
         : 1+2/3
         =       5 / 3
         =       1 + 2/3
-        ~       1.6666666666667
+        ~       1.6666666666666667
 
         : 1/3+2/3
         =       1
 
         : (2/3) * 0.5
-        =       0.33333333333333
+        =       0.33333333333333331
 
 ### Display mode
 
@@ -518,17 +518,17 @@ to laziness, functions can also be mutually recursive.
         =       3
 
         : float(2/3)                  # Conversion to floating point numbers
-        =       0.66666666666667
+        =       0.66666666666666663
 
         : rat(pi)                     # Rational approximation
         =       355 / 113
         =       3 + 16/113
-        ~       3.141592920354
+        ~       3.1415929203539825
 
         : rat(pi, 1e-2)               # Rational approximation with a given precision
         =       22 / 7
         =       3 + 1/7
-        ~       3.1428571428571
+        ~       3.1428571428571428
 
 ### Math
 
@@ -537,7 +537,7 @@ to laziness, functions can also be mutually recursive.
 
         : 
         : abs(x)                      # absolute value of x
-        =       3.1415926535898
+        =       3.1415926535897931
 
         : ceil(x)                     # smallest integer larger than or equal to x
         =       4
@@ -552,7 +552,7 @@ to laziness, functions can also be mutually recursive.
         =       3.0
 
         : mantissa(x)                 # m such that x = m2e, |m| is in [0.5, 1[
-        =       0.78539816339745
+        =       0.78539816339744828
 
         : exponent(x)                 # e such that x = m2e, e is an integer
         =       2
@@ -561,23 +561,23 @@ to laziness, functions can also be mutually recursive.
         =       3
 
         : fract(x)                    # fractional part of x
-        =       0.14159265358979
+        =       0.14159265358979312
 
         : min(x, y)                   # minimum value among its arguments
-        =       2.718281828459
+        =       2.7182818284590455
 
         : max(x, y)                   # maximum value among its arguments
-        =       3.1415926535898
+        =       3.1415926535897931
 
         : 
         : sqr(x)                      # square of x (x**2)
-        =       9.8696044010894
+        =       9.869604401089358
 
         : sqrt(x)                     # square root of x (x**0.5)
-        =       1.7724538509055
+        =       1.7724538509055159
 
         : cbrt(x)                     # cubic root of x (x**(1/3))
-        =       1.4645918875615
+        =       1.4645918875615231
 
         : 
         : cos(x)                      # trigonometric functions
@@ -587,56 +587,56 @@ to laziness, functions can also be mutually recursive.
         =       nan
 
         : cosh(x)
-        =       11.591953275522
+        =       11.591953275521519
 
         : sin(x)
-        =       1.2246467991474e-16
+        =       1.2246467991473532e-16
 
         : asin(x)
         =       nan
 
         : sinh(x)
-        =       11.548739357258
+        =       11.548739357257748
 
         : tan(x)
-        =       -1.2246467991474e-16
+        =       -1.2246467991473532e-16
 
         : atan(x)
-        =       1.2626272556789
+        =       1.2626272556789118
 
         : tanh(x)
         =       0.99627207622075
 
         : atan(y, x)                  # arc tangent of y/x (in radians)
-        =       0.71328454043905
+        =       0.71328454043905043
 
         : atan2(y, x)                 # arc tangent of y/x (in radians)
-        =       0.71328454043905
+        =       0.71328454043905043
 
         : deg(x)                      # angle x (given in radians) in degrees
         =       180.0
 
         : rad(x)                      # angle x (given in degrees) in radians
-        =       0.054831135561608
+        =       0.054831135561607548
 
         : 
         : exp(x)                      # e**x
-        =       23.140692632779
+        =       23.140692632779267
 
         : log(x)                      # logarithm of x in base e
-        =       1.1447298858494
+        =       1.1447298858494002
 
         : ln(x)                       # logarithm of x in base e
-        =       1.1447298858494
+        =       1.1447298858494002
 
         : log10(x)                    # logarithm of x in base 10
-        =       0.49714987269413
+        =       0.49714987269413385
 
         : log2(x)                     # logarithm of x in base 2
-        =       1.6514961294723
+        =       1.6514961294723187
 
         : log(b, x)                   # logarithm of x in base b
-        =       0.95971311856939
+        =       0.9597131185693899
 
 ### IEEE 754 representation
 
@@ -651,16 +651,16 @@ to laziness, functions can also be mutually recursive.
         : x = pi, n = 0x402df854
         =       1076754516
         hex32   0x402DF854
-        IEEE    2.7182817459106 <=> 0x402DF854
+        IEEE    2.7182817459106445 <=> 0x402DF854
 
         : float2ieee(x)               # IEEE 754 representation of x (32 bits)
         =       1078530011
         hex32   0x40490FDB
-        IEEE    3.1415927410126 <=> 0x40490FDB
+        IEEE    3.1415927410125732 <=> 0x40490FDB
 
         : ieee2float(n)               # 32 bit float value of the IEEE 754 integer n
-        =       2.7182817459106
-        IEEE    2.7182817459106 <=> 0x402DF854
+        =       2.7182817459106445
+        IEEE    2.7182817459106445 <=> 0x402DF854
 
 #### 64 bit numbers
 
@@ -673,21 +673,21 @@ to laziness, functions can also be mutually recursive.
         : x = pi, n = 0x4005bf0a8b145769
         =       4613303445314885481
         hex64   0x4005BF0A8B145769
-        IEEE    2.718281828459 <=> 0x4005BF0A8B145769
+        IEEE    2.7182818284590451 <=> 0x4005BF0A8B145769
 
         : double2ieee(x)              # IEEE 754 representation of x (64 bits)
         =       4614256656552045848
         hex64   0x400921FB54442D18
-        IEEE    3.1415926535898 <=> 0x400921FB54442D18
+        IEEE    3.1415926535897931 <=> 0x400921FB54442D18
 
         : ieee2double(n)              # 64 bit float value of the IEEE 754 integer n
-        =       2.718281828459
-        IEEE    2.718281828459 <=> 0x4005BF0A8B145769
+        =       2.7182818284590451
+        IEEE    2.7182818284590451 <=> 0x4005BF0A8B145769
 
 ### Specific values
 
         : x = pi
-        =       3.1415926535898
+        =       3.1415926535897931
 
         : 
         : isfinite(x)                 # true if x is finite
@@ -714,7 +714,7 @@ to laziness, functions can also be mutually recursive.
 
         : help
         +---------------------------------------------------------------------+
-        |      CALCULADOIRA       v. 4.9.0 | codeberg.org/cdsoft/calculadoira |
+        |      CALCULADOIRA       v. 4.9.1 | codeberg.org/cdsoft/calculadoira |
         |----------------------------------+----------------------------------|
         | Modes:                           | Numbers:                         |
         |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -739,8 +739,8 @@ to laziness, functions can also be mutually recursive.
 
         nan, NaN                    Not a Number
         inf, Inf                    Infinite
-        pi                          3.1415926535898
-        e                           2.718281828459
+        pi                          3.1415926535897931
+        e                           2.7182818284590455
 
         Operators / functions       Description
         =========================== ===============================================
