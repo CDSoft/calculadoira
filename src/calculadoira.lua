@@ -1083,7 +1083,7 @@ function Config()
     local self = {}
     local mtime = 0
     if not fs.is_file(ini_path) then
-        fs.write(ini_path, require(default_ini))
+        fs.write(ini_path, (require(default_ini)))
     end
     function self.run(env)
         local st = fs.stat(ini_path)
