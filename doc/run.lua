@@ -42,8 +42,26 @@ local function clean(lines)
         : drop_while_end(string.null)
 end
 
+local function untab(line)
+    local result = {}
+    local col = 0
+    for i = 1, #line do
+        local c = line:sub(i, i)
+        if c == "\t" then
+            local spaces = 8 - col%8
+            result[#result+1] = (" "):rep(spaces)
+            col = col + spaces
+        else
+            result[#result+1] = c
+            col = col + 1
+        end
+    end
+    return F.str(result)
+end
+
 local function extract(start_pattern, stop_pattern)
     return F.compose {
+        F.partial(F.map, untab),
         clean,
         F.partial(cut_after, stop_pattern),
         F.partial(cut_before, start_pattern),

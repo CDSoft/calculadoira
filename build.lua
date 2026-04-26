@@ -75,7 +75,7 @@ build "$builddir/tests.txt" { "run_test", "test/tests.py" }
 section "Documentation"
 ---------------------------------------------------------------------
 
-local ypp = build.ypp_pandoc : new "ypp.md"
+local ypp = build.ypp : new "ypp.md"
     : add "flags" {
         "-a",
         build.ypp_vars {
@@ -84,13 +84,9 @@ local ypp = build.ypp_pandoc : new "ypp.md"
         "-l", "doc/run.lua",
     }
     : add "implicit_in" { calculadoira }
+    : set "depfile" "$builddir/tmp/$out.d"
 
-local pandoc = build.pandoc_gfm : new "pandoc.md"
-    : add "flags" {
-        "--tab-stop=8",
-    }
-
-pipe { ypp, pandoc } "README.md" { "doc/calculadoira.md" }
+ypp "README.md" { "doc/calculadoira.md" }
 
 ---------------------------------------------------------------------
 section "Shortcuts"

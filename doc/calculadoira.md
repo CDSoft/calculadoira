@@ -1,5 +1,4 @@
-% Calculadoira Manual
-% Christophe Delord
+# Calculadoira
 
 <!--
 Calculadoira
@@ -22,9 +21,6 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
-Introduction
-============
-
 Calculadoira is a simple yet powerful calculator.
 Unlike most of other calculators, Calculadoira is based on a textual interface.
 It may seem a bit spartan and outdated but entering expressions with the keyboard
@@ -33,8 +29,7 @@ And you get nice editing features for free (edition, copy/paste, history, ...).
 
 You can contribute to [Calculadoira on Codeberg](https://codeberg.org/cdsoft/calculadoira).
 
-Releases
-========
+## Releases
 
 It is strongly recommended to build Calculadoira from source,
 as this is the only reliable way to install the exact version you need.
@@ -42,47 +37,31 @@ as this is the only reliable way to install the exact version you need.
 However, if you do require precompiled binaries,
 this page offers a selection for various platforms: <https://cdelord.fr/pub>.
 
-License
-=======
+## License
 
 @license()
 
-Download and installation
-=========================
+## Download and installation
 
 [Ninja]: https://ninja-build.org
 [LuaX]: https://codeberg.org/cdsoft/luax
-[Bang]: https://codeberg.org/cdsoft/bang
-[Ypp]: https://codeberg.org/cdsoft/ypp
-[Pandoc]: http://pandoc.org/
 
 **Installation from sources:**
 
 - Prerequisites
     - [Ninja]
     - [LuaX]
-    - [Bang]
-    - [Ypp] and [Pandoc] to generate the documentation (optional)
 
-## LuaX
+### LuaX
 
 ``` sh
 $ git clone https://codeberg.org/cdsoft/luax
 $ cd luax
-$ ./bootstrap.sh
+$ ./build.lua
 $ ninja install     # install LuaX to ~/.local/bin
 ```
 
-## Bang
-
-``` sh
-$ git clone https://codeberg.org/cdsoft/bang
-$ cd bang
-$ ./boot.lua
-$ ninja install     # build bang with Ninja and install it to ~/.local/bin
-```
-
-## Calculadoira
+### Calculadoira
 
 ``` sh
 $ git clone https://codeberg.org/cdsoft/calculadoira
@@ -91,13 +70,11 @@ $ bang
 $ ninja install     # build calculadoira with Ninja and install it to ~/.local/bin
 ```
 
-Screenshot
-==========
+## Screenshot
 
 @screenshot()
 
-Usage
-=====
+## Usage
 
 Calculadoira is an interactive terminal calculator.
 Expressions are entered with the keyboard, evaluated and the result is printed.
@@ -111,12 +88,11 @@ y = 2
 (x * y) ** 2
 ]===============================]
 
-User's manual
-=============
+## User's manual
 
-## Numbers
+### Numbers
 
-### Integers
+#### Integers
 
 Integers can be decimal, hexadecimal, octal or binary numbers:
 
@@ -127,7 +103,7 @@ Integers can be decimal, hexadecimal, octal or binary numbers:
 0b1010
 ]===============================]
 
-### Rational numbers
+#### Rational numbers
 
 Rational numbers can be used to make *exact* computations instead of
 using floating point numbers.
@@ -142,7 +118,7 @@ Some functions don't support rational numbers and will produce floating point nu
 1/2 + cos(0)
 ]===============================]
 
-### Floating point numbers
+#### Floating point numbers
 
 Floating point numbers are single (32 bit) or double (64 bits) precision
 floating point numbers.
@@ -162,7 +138,7 @@ inf
 -inf
 ]===============================]
 
-### Automatic type conversion
+#### Automatic type conversion
 
 Number types are automatically converted in a way to preserve the best precision.
 Integers are preferred to rational numbers and rational numbers are preferred
@@ -174,7 +150,7 @@ to floating point numbers.
 (2/3) * 0.5
 ]===============================]
 
-### Display mode
+#### Display mode
 
 By default only the raw value of the result is displayed.
 The user can activate additional display modes by selecting:
@@ -204,7 +180,7 @@ Calculadoira automatically activates some display modes under some circonstances
 1<<10           # this operator activates the hexadecimal display mode
 ]===============================]
 
-## Booleans
+### Booleans
 
 Boolean values can be used in conditional and boolean expressions.
 
@@ -216,9 +192,9 @@ true and false
 1+1==2 ? "ok" : "bug"
 ]===============================]
 
-## Operators
+### Operators
 
-### Arithmetic operators
+#### Arithmetic operators
 
 @run[===============================[
 x = 13
@@ -233,7 +209,7 @@ x % 5                   # integral remainder (Euclidean division)
 x ** 2
 ]===============================]
 
-### Bitwise operators
+#### Bitwise operators
 
 @run[===============================[
 bin16
@@ -245,7 +221,7 @@ bin16
 1024 >> 1               # right shift
 ]===============================]
 
-### Boolean operators
+#### Boolean operators
 
 @run[===============================[
 not true
@@ -254,7 +230,7 @@ true xor false
 true and false
 ]===============================]
 
-### Comparison operators
+#### Comparison operators
 
 @run[===============================[
 12 < 13
@@ -265,28 +241,28 @@ true and false
 12 != 13
 ]===============================]
 
-### Operator precedence
+#### Operator precedence
 
 From highest to lowest precedence:
 
-Operator family             Syntax
---------------------------- -----------------------------
-Precedence overloading      `(...)`
-Function evaluation         `f(...)`
-Factorial                   `x!`
-Exponentiation              `x**y`
-Unary operators             `+x`, `-y`, `~z`
-Multiplicative operators    `*` `/` `%` `&` `<<` `>>`
-Additive operators          `+` `-` `|` `^`
-Relational operators        `<` `<=` `>` `>=` `==` `!=`
-Logical not                 `not x`
-Logical and                 `and`
-Logical or                  `or` `xor`
-Ternary operator            `x ? y : z`
-Assignement                 `x = y`
-Blocks                      `expr1, ..., exprn`
+| Operator family          | Syntax                      |
+|:-------------------------|:----------------------------|
+| Precedence overloading   | `(...)`                     |
+| Function evaluation      | `f(...)`                    |
+| Factorial                | `x!`                        |
+| Exponentiation           | `x**y`                      |
+| Unary operators          | `+x`, `-y`, `~z`            |
+| Multiplicative operators | `*` `/` `%` `&` `<<` `>>`   |
+| Additive operators       | `+` `-` `\|` `^`            |
+| Relational operators     | `<` `<=` `>` `>=` `==` `!=` |
+| Logical not              | `not x`                     |
+| Logical and              | `and`                       |
+| Logical or               | `or` `xor`                  |
+| Ternary operator         | `x ? y : z`                 |
+| Assignement              | `x = y`                     |
+| Blocks                   | `expr1, ..., exprn`         |
 
-## Variables
+### Variables
 
 Calculadoira can define and reuse variables.
 
@@ -298,7 +274,7 @@ y = 3
 x+y
 ]===============================]
 
-## Functions
+### Functions
 
 Calculadoira can also define functions.
 
@@ -325,9 +301,9 @@ isEven(10)
 isOdd(10)
 ]===============================]
 
-## Builtin functions
+### Builtin functions
 
-### Type conversion
+#### Type conversion
 
 @run[===============================[
 int(pi)                     # Integral part
@@ -336,7 +312,7 @@ rat(pi)                     # Rational approximation
 rat(pi, 1e-2)               # Rational approximation with a given precision
 ]===============================]
 
-### Math
+#### Math
 
 @run[===============================[
 x = pi, y = e, b = 3
@@ -379,9 +355,9 @@ log2(x)                     # logarithm of x in base 2
 log(b, x)                   # logarithm of x in base b
 ]===============================]
 
-### IEEE 754 representation
+#### IEEE 754 representation
 
-#### 32 bit numbers
+##### 32 bit numbers
 
 @run[===============================[
 x = pi, n = 0x402df854
@@ -391,7 +367,7 @@ float2ieee(x)               # IEEE 754 representation of x (32 bits)
 ieee2float(n)               # 32 bit float value of the IEEE 754 integer n
 ]===============================]
 
-#### 64 bit numbers
+##### 64 bit numbers
 
 @run[===============================[
 x = pi, n = 0x4005bf0a8b145769
@@ -401,7 +377,7 @@ double2ieee(x)              # IEEE 754 representation of x (64 bits)
 ieee2double(n)              # 64 bit float value of the IEEE 754 integer n
 ]===============================]
 
-### Specific values
+#### Specific values
 
 @run[===============================[
 x = pi
@@ -412,7 +388,7 @@ isnan(x)                    # true if x is not a number
 isnormal(x)                 # true if x is a normalized number
 ]===============================]
 
-## Other commands
+### Other commands
 
 Other commands              Description
 --------------------------- ---------------------------
@@ -420,8 +396,7 @@ bye, exit, quit             quit
 help                        print this help
 version                     print the version number
 
-Online help
-===========
+## Online help
 
 @run[===============================[
 help
