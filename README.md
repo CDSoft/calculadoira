@@ -92,7 +92,7 @@ $ ninja install     # build calculadoira with Ninja and install it to ~/.local/b
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 +---------------------------------------------------------------------+
-|      CALCULADOIRA       v. 4.9.2 | codeberg.org/cdsoft/calculadoira |
+|      CALCULADOIRA       v. 4.9.3 | codeberg.org/cdsoft/calculadoira |
 |----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -123,7 +123,7 @@ A typical interactive session looks like this:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 +---------------------------------------------------------------------+
-|      CALCULADOIRA       v. 4.9.2 | codeberg.org/cdsoft/calculadoira |
+|      CALCULADOIRA       v. 4.9.3 | codeberg.org/cdsoft/calculadoira |
 |----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -773,7 +773,7 @@ version                     print the version number
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 : help
 +---------------------------------------------------------------------+
-|      CALCULADOIRA       v. 4.9.2 | codeberg.org/cdsoft/calculadoira |
+|      CALCULADOIRA       v. 4.9.3 | codeberg.org/cdsoft/calculadoira |
 |----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |

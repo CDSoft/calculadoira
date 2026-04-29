@@ -18,7 +18,7 @@ For further information about Calculadoira you can visit
 https://codeberg.org/cdsoft/calculadoira
 ]]
 
-version "4.9.2"
+version "4.9.3"
 
 help.name "Calculadoira"
 help.description "$name compilation, test and installation"
@@ -39,16 +39,26 @@ local sources = {
 local calculadoira = build.luax.native "$builddir/calculadoira" { sources }
 
 phony "release" {
-    build.tar "$builddir/release/${version}/calculadoira-${version}-lua.tar.gz" {
-        base = "$builddir/release/.build",
-        name = "calculadoira-${version}-lua",
-        build.luax.lua("$builddir/release/.build/calculadoira-${version}-lua/bin/calculadoira.lua") { sources },
-    },
+    (function()
+        local script = build.luax.lua("$builddir/release/.build/calculadoira-${version}-lua/bin/calculadoira.lua") { sources }
+        return {
+            build.tar "$builddir/release/${version}/calculadoira-${version}-lua.tar.gz" {
+                base = "$builddir/release/.build",
+                name = "calculadoira-${version}-lua",
+                script,
+            },
+            build.cp "$builddir/release/${version}/calculadoira.lua" { script },
+        }
+    end)(),
     require "luax-targets" : map(function(target)
-        return build.tar("$builddir/release/${version}/calculadoira-${version}-"..target.name..".tar.gz") {
-            base = "$builddir/release/.build",
-            name = "calculadoira-${version}-"..target.name,
-            build.luax[target.name]("$builddir/release/.build/calculadoira-${version}-"..target.name/"bin/calculadoira") { sources },
+        local exe = build.luax[target.name]("$builddir/release/.build/calculadoira-${version}-"..target.name/"bin/calculadoira") { sources }
+        return {
+            build.tar("$builddir/release/${version}/calculadoira-${version}-"..target.name..".tar.gz") {
+                base = "$builddir/release/.build",
+                name = "calculadoira-${version}-"..target.name,
+                exe,
+            },
+            build.cp("$builddir/release/${version}/calculadoira-"..target.name..target.exe) { exe }
         }
     end),
 }
