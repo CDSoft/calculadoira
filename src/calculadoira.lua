@@ -1075,9 +1075,13 @@ do
 end
 
 function Config()
+    local home = fun.case(sys.os) {
+        windows   = os.getenv "APPDATA",
+        [fun.Nil] = os.getenv "HOME",
+    }
     local ini_path = fun.case(sys.os) {
-        windows   = (os.getenv "APPDATA" or "") / default_ini,
-        [fun.Nil] = (os.getenv "HOME" or "") / ".config" / default_ini,
+        windows   = home / default_ini,
+        [fun.Nil] = home / ".config" / default_ini,
     }
     local editor = os.getenv "EDITOR" or "vi"
     local self = {}
@@ -1096,7 +1100,7 @@ function Config()
         mtime = st.mtime
         local expr = fs.read(ini_path)
         if not expr then return end
-        print("loading "..ini_path)
+        print("loading "..ini_path:gsub(home, "~"))
         local result, err = calc(expr)
         if not result then
             print("!", err)

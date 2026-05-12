@@ -92,7 +92,7 @@ $ ninja install     # build calculadoira with Ninja and install it to ~/.local/b
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 +---------------------------------------------------------------------+
-|      CALCULADOIRA       v. 4.9.3 | codeberg.org/cdsoft/calculadoira |
+|      CALCULADOIRA       v. 4.9.4 | codeberg.org/cdsoft/calculadoira |
 |----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -123,7 +123,7 @@ A typical interactive session looks like this:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 +---------------------------------------------------------------------+
-|      CALCULADOIRA       v. 4.9.3 | codeberg.org/cdsoft/calculadoira |
+|      CALCULADOIRA       v. 4.9.4 | codeberg.org/cdsoft/calculadoira |
 |----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
@@ -683,7 +683,7 @@ Thanks to laziness, functions can also be mutually recursive.
 =       1.6514961294723187
 
 : log(b, x)                   # logarithm of x in base b
-=       0.9597131185693899
+=       0.95971311856939012
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -773,7 +773,7 @@ version                     print the version number
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 : help
 +---------------------------------------------------------------------+
-|      CALCULADOIRA       v. 4.9.3 | codeberg.org/cdsoft/calculadoira |
+|      CALCULADOIRA       v. 4.9.4 | codeberg.org/cdsoft/calculadoira |
 |----------------------------------+----------------------------------|
 | Modes:                           | Numbers:                         |
 |     hex oct bin float str reset  |     binary: 0b...    |  sep ""   |
