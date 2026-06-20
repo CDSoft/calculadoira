@@ -408,7 +408,7 @@ end
 function FloatNumber()
     return function(n)
         local self = Expr "FloatNumber"
-        function self.dis() return string.sub(m or "", 1, 1)..n end
+        function self.dis() return n end
         function self.eval() return bn.Float(n) end
         return self
     end
