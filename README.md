@@ -58,7 +58,6 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 ## Download and installation
 
 [Ninja]: https://ninja-build.org
@@ -112,7 +111,6 @@ $ ninja install     # build calculadoira with Ninja and install it to ~/.local/b
 +---------------------------------------------------------------------+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 ## Usage
 
 Calculadoira is an interactive terminal calculator.
@@ -152,7 +150,6 @@ A typical interactive session looks like this:
 =       1764
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 ## User's manual
 
 ### Numbers
@@ -181,7 +178,6 @@ oct     0o12
 bin     0b1010
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 #### Rational numbers
 
 Rational numbers can be used to make *exact* computations instead of
@@ -194,14 +190,12 @@ using floating point numbers.
 ~       1.6666666666666667
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 Some functions don't support rational numbers and will produce floating point numbers.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 : 1/2 + cos(0)
 =       1.5
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 #### Floating point numbers
 
@@ -247,7 +241,6 @@ IEEE    inf <=> 0x7FF0000000000000
 IEEE    -inf <=> 0xFFF0000000000000
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 #### Automatic type conversion
 
 Number types are automatically converted in a way to preserve the best precision.
@@ -266,7 +259,6 @@ to floating point numbers.
 : (2/3) * 0.5
 =       0.33333333333333331
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 #### Display mode
 
@@ -313,7 +305,6 @@ bin64   0b0000000000000000000000000000000000000010100001110101011110110010
 =       42424242
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 Calculadoira automatically activates some display modes under some circonstances:
 
 - integer entered in a specific base
@@ -332,7 +323,6 @@ bin     0b100
 hex     0x400
 bin     0b10000000000
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 ### Booleans
 
@@ -356,7 +346,6 @@ Boolean values can be used in conditional and boolean expressions.
 hex     0x6F6B
 str     "ok"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 ### Operators
 
@@ -396,7 +385,6 @@ str     "ok"
 =       169
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 #### Bitwise operators
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -432,7 +420,6 @@ hex16   0x0200
 bin16   0b0000001000000000
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 #### Boolean operators
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -448,7 +435,6 @@ bin16   0b0000001000000000
 : true and false
 =       false
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 #### Comparison operators
 
@@ -471,7 +457,6 @@ bin16   0b0000001000000000
 : 12 != 13
 =       true
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 #### Operator precedence
 
@@ -515,7 +500,6 @@ Calculadoira can define and reuse variables.
 =       4
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 ### Functions
 
 Calculadoira can also define functions.
@@ -525,7 +509,6 @@ Calculadoira can also define functions.
 : f(5)
 =       10
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 Functions can be defined with multiple statements and be recursive.
 
@@ -537,7 +520,6 @@ Functions can be defined with multiple statements and be recursive.
 : fib(10)
 =       89
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 You can see in the previous example that the evaluation is lazy!
 Thanks to laziness, functions can also be mutually recursive.
@@ -551,7 +533,6 @@ Thanks to laziness, functions can also be mutually recursive.
 : isOdd(10)
 =       false
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 ### Builtin functions
 
@@ -575,14 +556,13 @@ Thanks to laziness, functions can also be mutually recursive.
 ~       3.1428571428571428
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 #### Math
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 : x = pi, y = e, b = 3
 =       3
 
-: 
+:
 : abs(x)                      # absolute value of x
 =       3.1415926535897931
 
@@ -616,7 +596,7 @@ Thanks to laziness, functions can also be mutually recursive.
 : max(x, y)                   # maximum value among its arguments
 =       3.1415926535897931
 
-: 
+:
 : sqr(x)                      # square of x (x**2)
 =       9.869604401089358
 
@@ -626,7 +606,7 @@ Thanks to laziness, functions can also be mutually recursive.
 : cbrt(x)                     # cubic root of x (x**(1/3))
 =       1.4645918875615231
 
-: 
+:
 : cos(x)                      # trigonometric functions
 =       -1.0
 
@@ -666,7 +646,7 @@ Thanks to laziness, functions can also be mutually recursive.
 : rad(x)                      # angle x (given in degrees) in radians
 =       0.054831135561607548
 
-: 
+:
 : exp(x)                      # e**x
 =       23.140692632779267
 
@@ -686,7 +666,6 @@ Thanks to laziness, functions can also be mutually recursive.
 =       0.95971311856939012
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 #### IEEE 754 representation
 
 ##### 32 bit numbers
@@ -696,7 +675,7 @@ Thanks to laziness, functions can also be mutually recursive.
 =       1076754516
 hex     0x402DF854
 
-: 
+:
 : float32
 : x = pi, n = 0x402df854
 =       1076754516
@@ -713,7 +692,6 @@ IEEE    3.1415927410125732 <=> 0x40490FDB
 IEEE    2.7182817459106445 <=> 0x402DF854
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 ##### 64 bit numbers
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -721,7 +699,7 @@ IEEE    2.7182817459106445 <=> 0x402DF854
 =       4613303445314885481
 hex     0x4005BF0A8B145769
 
-: 
+:
 : float64
 : x = pi, n = 0x4005bf0a8b145769
 =       4613303445314885481
@@ -738,14 +716,13 @@ IEEE    3.1415926535897931 <=> 0x400921FB54442D18
 IEEE    2.7182818284590451 <=> 0x4005BF0A8B145769
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 #### Specific values
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 : x = pi
 =       3.1415926535897931
 
-: 
+:
 : isfinite(x)                 # true if x is finite
 =       true
 
@@ -758,7 +735,6 @@ IEEE    2.7182818284590451 <=> 0x4005BF0A8B145769
 : isnormal(x)                 # true if x is a normalized number
 =       true
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 ### Other commands
 
@@ -791,7 +767,6 @@ version                     print the version number
 | Commands: ? help license         |     + - * / // % ** !            |
 |           edit                   |     | ^ & >> << ~                |
 +---------------------------------------------------------------------+
-
 
 Constants                   Value
 =========================== ===============================================
@@ -968,4 +943,3 @@ LuaX        : https://codeberg.org/cdsoft/luax
 
 "Calculadoira" means "Calculator" in Occitan.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-

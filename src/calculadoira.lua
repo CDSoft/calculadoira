@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with Calculadoira.  If not, see <http://www.gnu.org/licenses/>.
 ]]
 
+require "strict"
+
 local sys = require "sys"
 local fs = require "fs"
 local terminal = require "term"
@@ -408,7 +410,7 @@ end
 function FloatNumber()
     return function(n)
         local self = Expr "FloatNumber"
-        function self.dis() return string.sub(m or "", 1, 1)..n end
+        function self.dis() return n end
         function self.eval() return bn.Float(n) end
         return self
     end
